@@ -10,7 +10,7 @@ const recentPosts = buildRecentPosts()
 
 export default defineConfig({
   title: '技术博客与科研笔记',
-  description: '使用 VitePress 构建的 Markdown 静态博客，适合技术博客、科研笔记与图形化文档。',
+  description: '技术博客与学习笔记，覆盖 AI、Java、数据库、分布式系统等领域。',
   base,
   lastUpdated: true,
   head: [
@@ -50,10 +50,10 @@ export default defineConfig({
     },
     recentPosts,
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/your-name/blogs' }
+      { icon: 'github', link: 'https://github.com/XuelinHu/blogs' }
     ],
     footer: {
-      message: '基于 VitePress、TypeScript 与 GitHub Actions 构建',
+      message: '基于 VitePress + GitHub Actions 自动部署',
       copyright: 'Copyright © 2026'
     },
     docFooter: {

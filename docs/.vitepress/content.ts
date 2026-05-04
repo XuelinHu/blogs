@@ -4,8 +4,22 @@ import path from 'node:path'
 export type RecentPost = {
   category: string
   date: string
+  excerpt: string
   link: string
   title: string
+}
+
+function extractExcerpt(filePath: string): string {
+  const raw = fs.readFileSync(filePath, 'utf-8')
+  const body = raw.replace(/^---[\s\S]*?\r?\n---\r?\n?/, '')
+  const lines = body.split(/\r?\n/)
+  for (const line of lines) {
+    const trimmed = line.trim()
+    if (trimmed && !trimmed.startsWith('#') && !trimmed.startsWith('!') && !trimmed.startsWith('```')) {
+      return trimmed.length > 200 ? trimmed.slice(0, 200) + '...' : trimmed
+    }
+  }
+  return ''
 }
 
 const docsRoot = path.resolve(process.cwd(), 'docs')
@@ -139,6 +153,7 @@ export function buildRecentPosts(): RecentPost[] {
       posts.push({
         category,
         title: resolveTitle(fullPath),
+        excerpt: extractExcerpt(fullPath),
         link: toRoute(fullPath),
         date: normalized,
         sortValue: Number.isNaN(parsed.getTime()) ? 0 : parsed.getTime()
