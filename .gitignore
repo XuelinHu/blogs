@@ -1,0 +1,6 @@
+node_modules/
+docs/.vitepress/dist/
+docs/public/diagrams/*.svg
+!docs/public/diagrams/.gitkeep
+.DS_Store
+npm-debug.log*
