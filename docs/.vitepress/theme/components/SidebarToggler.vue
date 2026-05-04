@@ -1,15 +1,15 @@
 <script setup lang="ts">
 function expandAll() {
-  document.querySelectorAll('.VPSidebarGroup.collapsed').forEach((el) => {
-    const summary = el.querySelector('summary') as HTMLElement | null
-    if (summary) summary.click()
+  document.querySelectorAll('.VPSidebarItem.level-0.collapsible.collapsed').forEach((el) => {
+    const caret = el.querySelector('.caret') as HTMLElement | null
+    if (caret) caret.click()
   })
 }
 
 function collapseAll() {
-  document.querySelectorAll('.VPSidebarGroup:not(.collapsed)').forEach((el) => {
-    const summary = el.querySelector('summary') as HTMLElement | null
-    if (summary) summary.click()
+  document.querySelectorAll('.VPSidebarItem.level-0.collapsible:not(.collapsed)').forEach((el) => {
+    const caret = el.querySelector('.caret') as HTMLElement | null
+    if (caret) caret.click()
   })
 }
 </script>
