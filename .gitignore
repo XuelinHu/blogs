@@ -1,6 +1,7 @@
 node_modules/
 docs/.vitepress/dist/
 docs/.vitepress/cache/
+.vitepress/
 docs/public/diagrams/*.svg
 !docs/public/diagrams/.gitkeep
 .DS_Store
