@@ -3,7 +3,8 @@ import fs from 'node:fs'
 import {
   getMarkdownFiles,
   resolveTitle,
-  toRoute
+  toRoute,
+  toTitle
 } from './content'
 
 type SidebarItem = {

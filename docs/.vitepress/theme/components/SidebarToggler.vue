@@ -16,8 +16,8 @@ function collapseAll() {
 
 <template>
   <div class="sidebar-toggler">
-    <button class="toggler-btn" @click="expandAll">展开全部</button>
-    <button class="toggler-btn" @click="collapseAll">折叠全部</button>
+    <button class="toggler-btn" @click="expandAll">展开全部<br/>Expand All</button>
+    <button class="toggler-btn" @click="collapseAll">折叠全部<br/>Collapse All</button>
   </div>
 </template>
 

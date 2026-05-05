@@ -3,6 +3,7 @@ import DefaultTheme from 'vitepress/theme'
 import { onMounted, watch } from 'vue'
 import { useRoute } from 'vitepress'
 import SidebarToggler from './components/SidebarToggler.vue'
+import SidebarIcons from './components/SidebarIcons.vue'
 
 const { Layout } = DefaultTheme
 const route = useRoute()
@@ -24,6 +25,7 @@ watch(() => route.path, () => scrollSidebarToActive())
   <Layout>
     <template #sidebar-nav-before>
       <SidebarToggler />
+      <SidebarIcons />
     </template>
   </Layout>
 </template>
