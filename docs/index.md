@@ -11,7 +11,7 @@ hero:
       link: /posts/AI/
     - theme: alt
       text: GitHub
-      link: https://github.com/XuelinHu/blogs
+      link: https://github.com/XuelinHu
 
 features:
   - title: AI & 大模型
