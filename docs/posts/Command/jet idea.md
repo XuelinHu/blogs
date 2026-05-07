@@ -90,7 +90,7 @@ date: 2025-06-22
 
 
 
-# vscode plugin for front 
+# 1. vscode plugin for front
 在VSCode里进行前端开发时，有不少实用的插件能够提升效率。下面为你介绍一些常用的插件及其功能：
 
 1. **ESLint**

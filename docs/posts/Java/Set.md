@@ -3,9 +3,9 @@ title: Set
 date: 2025-07-30
 ---
 
-# Set
+# 1. Set
 
-## Hashset
+## 1.1. Hashset
 
 本质是一个HashMap
 
@@ -17,11 +17,11 @@ public boolean add(E e) {
 }
 ```
 
-## TreeSet
+## 1.2. TreeSet
 
 本质是TreeMap
 
-## LinkedHashSet
+## 1.3. LinkedHashSet
 
 ```java
 
@@ -35,7 +35,7 @@ public class LinkedHashMap<K,V>
     implements Map<K,V>
 ```
 
-## CopyOnWriteArraySet
+## 1.4. CopyOnWriteArraySet
 本质上是`CopyOnWriteArrayList`
 ```java
 

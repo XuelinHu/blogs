@@ -3,9 +3,9 @@ title: 微服务架构
 date: 2025-06-21
 ---
 
-# 微服务架构
+# 1. 微服务架构
 
-## 思维导图
+## 1.1. 思维导图
 技术在进步，不再是之前的单机架构，都是采用微服务的分布式架构，下面是国内常见的技术栈
 
 ```mermaid
@@ -103,7 +103,7 @@ mindmap
         Linkerd
 ```
 
-## 不明白的技术
+## 1.2. 不明白的技术
 
 | 技术名称                | 主要特性                                                                                                    | 编程语言                               |
 | ------------------- | ------------------------------------------------------------------------------------------------------- | ---------------------------------- |
@@ -116,12 +116,12 @@ mindmap
 | **Kubernetes（K8s）** | - 容器编排平台，管理大规模容器集群 <br> - 支持自动部署、扩容、滚动更新 <br> - 云原生核心组件，与 DevOps 深度集成 <br> - 支持 Helm、Operator、CRD 等扩展机制 | Go                                 |
 
 
-## GPT提问时的语法错误
+## 1.3. GPT提问时的语法错误
 
 Great that you're learning English! Let's review your two questions for grammar and phrasing:
 
 ---
-### ✅ Your Original Questions:
+### 1.3.1. ✅ Your Original Questions:
 #### 1.
 > "now, output a list for above technologies with its feature and language"
 **Corrected version**:
@@ -154,7 +154,7 @@ Great that you're learning English! Let's review your two questions for grammar 
   * Better phrased as *"in my previous question"* or *"in the question above"*.
 
 ---
-### ✅ Final, natural version:
+### 1.3.2. ✅ Final, natural version:
 > I am an English learner. What grammar errors exist in my previous question and in this one?
 ---
 

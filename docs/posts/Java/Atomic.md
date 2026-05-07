@@ -3,12 +3,12 @@ title: Atomic
 date: 2025-05-25
 ---
 
-# Atomic类
+# 1. Atomic类
 
 ---
-### 🛠 原句检查：
+### 1.1. 🛠 原句检查：
 > Give me a guide of Atomic in Java incudeing implementation, using, inner control and so on.
-### ✅ 修改建议：
+### 1.2. ✅ 修改建议：
 > Please give me a guide to Atomic classes in Java, including their implementation, usage, internal control, and so on.
 或者更自然一点：
 > Could you provide a guide to Atomic classes in Java, covering their implementation, usage, internal mechanisms, etc.?
@@ -17,7 +17,7 @@ date: 2025-05-25
 下面我给你详细讲解一下 Java 中的 **Atomic 类**，包括它们的实现原理、使用方式和内部控制机制。
 
 ---
-# Atomic 类在 Java 中的全面指南
+# 2. Atomic 类在 Java 中的全面指南
 ---
 
 ## 1. Atomic 类简介
@@ -60,7 +60,7 @@ Java 的 `java.util.concurrent.atomic` 包提供了一系列原子操作类，�
 | `getAndAdd(int delta)`                  | 原子增加指定值，返回增加前的值                   |
 ---
 
-### 使用示例：
+### 2.4.1. 使用示例：
 
 ```java
 AtomicInteger atomicInt = new AtomicInteger(0);
@@ -107,12 +107,12 @@ System.out.println("updated: " + updated);
 * 虽然无锁，但在极端竞争情况下 CAS 可能失败重试，影响性能。
 ---
 
-# CAS
+# 3. CAS
 
 好的！你这句话已经表达清楚了，我稍微帮你优化一下，使它更自然：
 
 ---
-### 🛠 修改建议：
+### 3.1. 🛠 修改建议：
 > I want to know the details of CAS in Java native code, and please give me an example of using Atomic classes.
 ---
 
@@ -122,7 +122,7 @@ System.out.println("updated: " + updated);
 # 1. CAS 在 Java 中的原理和本地代码实现
 ---
 
-### CAS 是什么？
+### 4.1. CAS 是什么？
 
 * **CAS**（比较并交换，Compare-And-Swap）是一种原子操作，用于实现无锁并发。
 * 它包括三个操作数：
@@ -140,21 +140,21 @@ System.out.println("updated: " + updated);
 这个过程是原子执行的。
 
 ---
-### Java 中 CAS 的实现
+### 4.2. Java 中 CAS 的实现
 Java 的 CAS 不是由 Java 语言直接实现的，而是通过 **JNI 调用本地操作系统或 CPU 指令** 来完成。
 * Java 里调用的是 `sun.misc.Unsafe` 类中的 `compareAndSwapInt`、`compareAndSwapLong` 和 `compareAndSwapObject` 等方法。
 * `Unsafe` 是 JVM 内部的类，可以直接访问底层内存和执行原子操作。
 * 这些方法会调用 CPU 的 **原子指令**（如 x86 的 `cmpxchg` 指令）来完成 CAS。
 ---
 
-### 以 x86 架构为例
+### 4.3. 以 x86 架构为例
 
 * CAS 操作用的指令是 `LOCK CMPXCHG`，由 CPU 保证原子性。
 * CPU 会在执行时锁住内存总线，防止其他线程访问该地址。
 * 返回操作是否成功。
 
 ---
-### 在 HotSpot JVM 中流程
+### 4.4. 在 HotSpot JVM 中流程
 1. Java 代码调用 `Unsafe.compareAndSwapInt`。
 2. JVM 调用 JNI 层，将请求传递到底层操作系统。
 3. 操作系统调用 CPU 原子指令执行 CAS。
@@ -207,7 +207,7 @@ public class AtomicExample {
 
 ---
 
-### 说明：
+### 5.1. 说明：
 
 * `AtomicInteger` 保证了 `incrementAndGet()` 操作是原子的，多个线程并发调用不会导致数据竞争。
 * 如果用普通的 `int` 变量，这种并发递增会导致结果不准确。

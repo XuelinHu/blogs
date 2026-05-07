@@ -20,6 +20,24 @@ type SidebarGroup = {
 
 const docsRoot = path.resolve(process.cwd(), 'docs')
 const postsRoot = path.join(docsRoot, 'posts')
+const categoryIcons: Record<string, string> = {
+  AI: '🤖',
+  Command: '⌘',
+  Database: '▣',
+  'Front-end': '◇',
+  Java: '☕',
+  Middleware: '▦',
+  Mobile: '▯',
+  Net: '◎',
+  Paper: '✎',
+  Python: '🐍',
+  Reading: '📖',
+  Sandbox: '⬢',
+  Solution: '💡',
+  Spring: '🌱',
+  Test: '✓',
+  Web3: '◆'
+}
 
 function buildCategoryGroup(dirPath: string): SidebarGroup {
   const folderName = path.basename(dirPath)
@@ -38,9 +56,10 @@ function buildCategoryGroup(dirPath: string): SidebarGroup {
   const groupTitle = fs.existsSync(groupTitleFile)
     ? resolveTitle(groupTitleFile)
     : toTitle(folderName)
+  const icon = categoryIcons[folderName]
 
   return {
-    text: groupTitle,
+    text: icon ? `${icon} ${groupTitle}` : groupTitle,
     collapsed: false,
     items: files.map((filePath) => ({
       text: resolveTitle(filePath),

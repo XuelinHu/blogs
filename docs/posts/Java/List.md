@@ -73,7 +73,7 @@ private E unlinkFirst(Node<E> f) {
 
 ```
 
-# Vector
+# 3. Vector
 
 ```java
 public class Vector<E>
@@ -91,7 +91,7 @@ public class Vector<E>
 ```
 
 
-# CopyOnWriteArrayList
+# 4. CopyOnWriteArrayList
 
 ```java
 public boolean add(E e) {

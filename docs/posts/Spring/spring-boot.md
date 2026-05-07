@@ -81,7 +81,7 @@ class JedisConnectionConfiguration extends RedisConnectionConfiguration {
     }
 ```
 
-## 文件加载
+## 1.5. 文件加载
 使用Spring中的PathMatchingResourcePatternResolver类，来加载多个资源，这些资源是在包中的某个路径下：
 > sqlSessionFactory.setMapperLocations(new PathMatchingResourcePatternResolver().getResources("classpath*:auto/test/dal/mapper/xml/*.xml"));
 

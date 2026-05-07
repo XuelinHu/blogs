@@ -247,7 +247,7 @@ Selenium Grid
 
 在Selenium中处理页面加载延迟和元素加载延迟是自动化测试中的常见问题。以下是一些处理这些延迟的策略：
 
-### 页面加载延迟
+### 8.1. 页面加载延迟
 
 1. **设置隐式等待**：
    使用`implicitlyWait()`方法设置全局等待时间。在这段时间内，Selenium会等待页面元素加载完成。
@@ -266,7 +266,7 @@ Selenium Grid
 3. **处理`NoSuchElementException`**：
    当元素未加载时，Selenium会抛出`NoSuchElementException`。可以使用try-catch块来处理这种异常，并适当地重试或等待。
 
-### 元素加载延迟
+### 8.2. 元素加载延迟
 
 1. **使用显式等待**：
    对于元素加载延迟，显式等待是最常用的方法。你可以等待元素变得可见、可点击或其他任何条件。
@@ -302,7 +302,7 @@ Selenium Grid
 当然可以。在Selenium中，隐式等待（Implicit Wait）和显式等待（Explicit Wait）是两种处理元素加载延迟的机制。
 它们的主要区别在于等待的灵活性和应用范围。
 
-### 隐式等待（Implicit Wait）
+### 9.1. 隐式等待（Implicit Wait）
 
 隐式等待是设置全局的等待时间，告诉Selenium在查找页面上的元素之前等待一定的时间。如果在这个时间内元素加载出来了，
 那么Selenium就会继续执行后续的操作；如果超出这个时间元素仍然没有加载出来，Selenium会抛出`NoSuchElementException`
@@ -314,7 +314,7 @@ driver.manage().timeouts().implicitlyWait(10,TimeUnit.SECONDS);
 
 上面的代码设置了隐式等待时间为10秒。这意味着，在后续的任何元素查找操作之前，Selenium都会等待最多10秒，以便元素能够加载出来。
 
-### 显式等待（Explicit Wait）
+### 9.2. 显式等待（Explicit Wait）
 
 显式等待则更加灵活，它允许你为特定的元素设置等待条件，而不是全局等待。你可以定义等待某个条件成立（如元素可见、可点击等），
 然后Selenium会不断地检查这个条件是否成立，一旦条件成立，就会立即执行后续的代码。
@@ -327,7 +327,7 @@ WebDriverWait wait=new WebDriverWait(driver,10); // 设置最大等待时间为1
 
 上面的代码使用`WebDriverWait`和`ExpectedConditions`来实现显式等待。它会等待最多10秒，直到ID为`someId`的元素可见为止。
 
-### 区别
+### 9.3. 区别
 
 1. **灵活性**：隐式等待是全局的，一旦设置，将对后续的所有元素查找操作生效。而显式等待是针对特定元素的，可以为不同的元素设置不同的等待条件和时间。
 

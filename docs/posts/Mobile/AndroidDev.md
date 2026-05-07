@@ -3,7 +3,7 @@ title: AndroidDev
 date: 2025-05-25
 ---
 
-# 环境变量配置
+# 1. 环境变量配置
 
 mac上，可以编辑 .bash_profile文件
 
@@ -25,7 +25,7 @@ alias jdk17="export JAVA_HOME=$JAVA_17_HOME"
 alias ll='ls -alrth'
 ```
 
-# 常用组件
+# 2. 常用组件
 
 - 1 SDK Tools 
 软件开发工具包（Software Development Kit）

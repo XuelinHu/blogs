@@ -3,7 +3,7 @@ title: PlaLLM adjusting
 date: 2025-07-19
 ---
 
-# 技术栈
+# 1. 技术栈
 - bilibili.com/video/BV1djgRzxEts
 LLaMA Factory 和 Unsloth
 
@@ -21,9 +21,9 @@ llamafactory-cli webui
 nohup llamafactory-cli webui 2>&1 &
 ```
 
-## 对话
+## 1.1. 对话
 
 加速方式 
 
-## easy dataset
+## 1.2. easy dataset
 - https://github.com/ConardLi/easy-dataset

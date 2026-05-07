@@ -51,7 +51,7 @@ select date_add(@dt, interval 1 year);
 select date_add(@dt, interval -1 day); -- sub 1 day
 ```
 
-# 实用SQL
+# 4. 实用SQL
 
 一个SQL查询出每门课程的成绩都大于80的学生姓名
 

@@ -48,7 +48,7 @@ We found that the malicious cracking attack started at 23:16 on July 7th.
 
 # 3. 解决办法
 
-## fail2ban
+## 3.1. fail2ban
 
 Fail2Ban 可以禁止本地回环地址（127.0.0.1），但默认不会封禁 127.0.0.1，因为：
 
@@ -56,7 +56,7 @@ Fail2Ban 可以禁止本地回环地址（127.0.0.1），但默认不会封禁 1
 
 它被列入了默认的 ignoreip 白名单中
 
-## 使用 UFW 禁止非必要的本地连接
+## 3.2. 使用 UFW 禁止非必要的本地连接
 
 如果你不需要从本地其他容器或用户 SSH 到 root，可以：
 

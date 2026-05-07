@@ -122,8 +122,8 @@ This is a sample LaTeX document.
   ```
 
 ---
-## 🔗 **引用**
-### 1️⃣ **文献引用**（BibTeX）
+## 4.2. 🔗 **引用**
+### 4.2.1. 1️⃣ **文献引用**（BibTeX）
 ```latex
 % 在主tex文件中
 \bibliographystyle{plain}
@@ -142,7 +142,7 @@ This is a sample LaTeX document.
 ```latex
 如文献所示~\cite{lamport94}。
 ```
-### 2️⃣ **交叉引用**
+### 4.2.2. 2️⃣ **交叉引用**
 ```latex
 \label{sec:intro} % 放在你要引用的章节/公式/图表
 \ref{sec:intro} % 在正文中引用
@@ -173,8 +173,8 @@ pdflatex yourfile
 ```
 
 ---
-## 🖼️ **插图**
-### 插入图片（需要 `graphicx` 宏包）：
+## 4.4. 🖼️ **插图**
+### 4.4.1. 插入图片（需要 `graphicx` 宏包）：
 ```latex
 \usepackage{graphicx}
 \begin{figure}[htbp]
@@ -204,12 +204,12 @@ pdflatex yourfile
 | r | 右对齐  |
 
 ---
-## 🧮 **公式**
-### 行内公式
+## 4.6. 🧮 **公式**
+### 4.6.1. 行内公式
 ```latex
 这是行内公式 $E=mc^2$。
 ```
-### 独立公式
+### 4.6.2. 独立公式
 ```latex
 \begin{equation}
   E=mc^2

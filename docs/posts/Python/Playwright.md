@@ -9,14 +9,14 @@ Playwright 是 Microsoft 开源的一个强大浏览器自动化工具，支持 
 
 ---
 ## 1. 安装 Playwright
-### Node.js：
+### 1.1. Node.js：
 ```bash
 npm install -D playwright
 # 或选择特定浏览器版本
 npm install -D playwright-chromium
 npx playwright install
 ```
-### Python：
+### 1.2. Python：
 ```bash
 pip install playwright
 playwright install
@@ -25,7 +25,7 @@ playwright install
 
 ##  2. 打开网页并截图
 
-### Node.js (JavaScript / TypeScript)：
+### 2.1. Node.js (JavaScript / TypeScript)：
 
 ```js
 const { chromium } = require('playwright');
@@ -39,7 +39,7 @@ const { chromium } = require('playwright');
 })();
 ```
 
-### Python：
+### 2.2. Python：
 
 ```python
 from playwright.sync_api import sync_playwright
@@ -53,7 +53,7 @@ with sync_playwright() as p:
 ```
 
 ---
-## ✍️ 3. 表单交互（填写、点击、上传等）
+## 3. ✍️ 3. 表单交互（填写、点击、上传等）
 ```python
 page.fill('#username', 'myuser')
 page.fill('#password', 'mypassword')

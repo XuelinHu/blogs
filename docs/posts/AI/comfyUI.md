@@ -14,7 +14,7 @@ date: 2025-06-17
 
 - nohup sh -c 'pip install -r /home/deipss/jupyter_files/ComfyUI/requirements.txt' > nohup.log 2>&1 &
 
-### jupter py 安装
+### 1.2. jupter py 安装
 - https://github.com/comfyanonymous/ComfyUI/blob/master/notebooks/comfyui_colab.ipynb
 因为当时在安装时，是使用的jupter方式来安装的，所以在启动comfy UI时，要从jupter启动
 

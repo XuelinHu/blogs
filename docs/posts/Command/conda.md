@@ -2,7 +2,7 @@
 title: conda
 date: 2025-06-18
 ---
-# conda
+# 1. conda
 
 ## 1. 安装环境
 
@@ -61,7 +61,7 @@ jupyter notebook
 
 ```
 
-## conda如何迁移所有环境
+## 1.4. conda如何迁移所有环境
 
 ```text
 #!/bin/bash

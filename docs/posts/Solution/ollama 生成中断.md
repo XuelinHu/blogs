@@ -3,9 +3,9 @@ title: ollama生成中断
 date: 2025-06-26
 ---
 
-# ollama生成中断
+# 1. ollama生成中断
 
-## 现象
+## 1.1. 现象
 
 定时任务在调用ollama后没有响应，日志中断，不再更新，日志内容如下：
 
@@ -191,7 +191,7 @@ deipss@deipss-All-Series:/****news$ journalctl -u ollama --no-pager | grep "26 0
 
 以下的是AI的回答
 
-### Ollama "invalid option provided" 错误解析
+### 1.1.1. Ollama "invalid option provided" 错误解析
 
 你遇到的这个警告是Ollama在启动或运行时检测到不支持的参数导致的。具体来说：
 
@@ -199,7 +199,7 @@ deipss@deipss-All-Series:/****news$ journalctl -u ollama --no-pager | grep "26 0
 - **错误信息**：`invalid option provided` 指出你传递了一个无效的选项
 - **具体选项**：`option=max_tokens` 明确是 `max_tokens` 参数不被识别
 
-### 可能的原因及解决方案
+### 1.1.2. 可能的原因及解决方案
 
 #### 1. 参数名称拼写错误
 
@@ -228,7 +228,7 @@ deipss@deipss-All-Series:/****news$ journalctl -u ollama --no-pager | grep "26 0
     - 检查具体模型的文档（例如llama2、mistral等模型可能有不同的参数要求）
     - 尝试使用模型支持的参数（如 `temperature`、`top_p` 等）
 
-### 示例：正确设置生成长度参数
+### 1.1.3. 示例：正确设置生成长度参数
 
 如果你的目标是控制生成文本的长度，可以尝试以下方法：
 
@@ -249,7 +249,7 @@ OLLAMA_MAX_TOKENS=200 ollama run llama2
 
 
 
-## 总结
+## 1.2. 总结
 没有找到根本原因是什么，直接kill -9 相关的进程。
 
 

@@ -3,7 +3,7 @@ title: mvn plugin
 date: 2025-05-25
 ---
 
-# 常用的打包插件
+# 1. 常用的打包插件
 
 - maven-jar-plugin：maven 默认打包插件`springboot默认使用该方式打包`，用来创建 project jar
 - maven-shade-plugin：用来打可执行包，executable(fat) jar

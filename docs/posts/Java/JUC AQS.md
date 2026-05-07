@@ -3,12 +3,12 @@ title: JUC AQS
 date: 2025-07-13
 ---
 
-### 🇨🇳 中文回答：
+### 1. 🇨🇳 中文回答：
 
 **AQS** 是 **AbstractQueuedSynchronizer** 的缩写，是 Java `java.util.concurrent` 包中的一个非常核心的同步框架基础类，简称 AQS。
 
 ---
-# AQS 详解
+# 1. AQS 详解
 ---
 
 ## 1. AQS 的作用

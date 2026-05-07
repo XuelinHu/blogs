@@ -3,14 +3,14 @@ title: PyPI
 date: 2025-07-14
 ---
 
-# What is the PyPI
+# 1. What is the PyPI
 
 和Mvn的[仓库平台](https://mvnrepository.com/)类似，PyPI（Python Package Index） 是 Python 官方的第三方软件包仓库，
 相当于 Python 的 “应用商店”。
 
 - 网址：https://pypi.org
 
-# How to publish you whl package
+# 2. How to publish you whl package
 
 - 注册自己的帐号，申请API KEY
 - 配置自己项目中的pyproject.toml

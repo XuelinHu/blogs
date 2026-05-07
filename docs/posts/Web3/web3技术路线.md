@@ -3,14 +3,14 @@ title: web3技术路线
 date: 2025-06-14
 ---
 
-# AI的推荐的线路
+# 1. AI的推荐的线路
 
 当然可以，以下是一份为你量身定制的**区块链技术入门学习路线图**，结合你有编程基础的背景，内容包括必学知识、项目实战和进阶方向。
 
 ---
-## 🧭 第一阶段：基础打牢（1–2 周）
+## 1.1. 🧭 第一阶段：基础打牢（1–2 周）
 目标：了解区块链基本原理和生态结构
-### 📘 学习内容：
+### 1.1.1. 📘 学习内容：
 * 区块链是什么、解决了什么问题
 * 去中心化 vs 中心化
 * 区块、区块头、链、哈希
@@ -20,11 +20,11 @@ date: 2025-06-14
 * 区块链的安全特性（不可篡改、可追溯）
 ---
 
-## 🧱 第二阶段：智能合约与Solidity（2–4 周）
+## 1.2. 🧱 第二阶段：智能合约与Solidity（2–4 周）
 
 目标：掌握智能合约语言及部署流程
 
-### 📘 学习内容：
+### 1.2.1. 📘 学习内容：
 
 * 以太坊结构（EVM、账户、Gas）
 * Solidity 语法基础
@@ -32,35 +32,35 @@ date: 2025-06-14
 * 合约调用与事件、状态变量、函数可见性
 * 合约安全（重入攻击、溢出问题等）
 
-### 🛠️ 实战建议：
+### 1.2.2. 🛠️ 实战建议：
 
 * 写一个“简单投票合约”
 * 编写一个“代币合约”（基于 ERC20）
 
-### 🎯 工具推荐：
+### 1.2.3. 🎯 工具推荐：
 
 * Remix IDE
 * MetaMask 钱包
 * Hardhat（后期可用）
 
 ---
-## 🔄 第三阶段：前后端整合 DApp（2–3 周）
+## 1.3. 🔄 第三阶段：前后端整合 DApp（2–3 周）
 目标：构建一个完整的区块链应用（DApp）
-### 📘 学习内容：
+### 1.3.1. 📘 学习内容：
 * Web3.js / Ethers.js 用法
 * 合约部署与前端交互
 * 钱包连接（MetaMask）及交易触发
 * DApp 的 Gas 费管理与异常处理
-### 🛠️ 项目实战：
+### 1.3.2. 🛠️ 项目实战：
 * 去中心化记账本
 * 简单 NFT 铸造/展示页面
 ---
 
-## 📦 第四阶段：区块链生态与工具（持续学习）
+## 1.4. 📦 第四阶段：区块链生态与工具（持续学习）
 
 目标：理解不同链的结构与工具链
 
-### 推荐内容：
+### 1.4.1. 推荐内容：
 
 * 区块链架构对比：Ethereum vs Solana vs BNB Chain
 * Layer2（如 Arbitrum、Optimism）
@@ -69,7 +69,7 @@ date: 2025-06-14
 * 区块链 API（Alchemy、Infura）
 
 ---
-## 💡 进阶方向（选学）
+## 1.5. 💡 进阶方向（选学）
 | 方向                | 推荐学习内容                        |
 |-------------------|-------------------------------|
 | **Solidity 深度开发** | 高级合约模式、Proxy合约、合约升级           |
@@ -79,7 +79,7 @@ date: 2025-06-14
 | **NFT**           | ERC721、OpenSea 集成             |
 ---
 
-## 🧰 学习资源平台推荐：
+## 1.6. 🧰 学习资源平台推荐：
 
 * [CryptoZombies](https://cryptozombies.io)：游戏化教学 Solidity
 * [Ethernaut](https://ethernaut.openzeppelin.com)：合约安全闯关游戏
@@ -88,7 +88,7 @@ date: 2025-06-14
 * [链闻](https://www.chainnews.com/)：中文区块链新闻
 
 ---
-## ✅ 建议的学习顺序（时间建议）：
+## 1.7. ✅ 建议的学习顺序（时间建议）：
 | 时间    | 学习目标                        |
 |-------|-----------------------------|
 | 第1周   | 掌握区块链基本原理与术语                |
@@ -100,12 +100,12 @@ date: 2025-06-14
 如果你告诉我你未来倾向于从事的是**开发者（DApp开发/后端）**、**研究员（机制/安全方向）**还是**架构师（区块链底层）**
 ，我可以进一步帮你规划路径。
 
-# 技术栈
+# 2. 技术栈
 
 Web3 后端开发工程师主要负责与区块链交互、处理业务逻辑、构建 DApp 的服务器端组件。不同的场景下用的语言不一样，但以下是最常见和实用的编程语言及其适用场景：
 
 ---
-### ✅ 主流后端语言与用途对比
+### 2.1. ✅ 主流后端语言与用途对比
 | 语言                          | 主要用途/场景                                         | 优势                               |
 |-----------------------------|-------------------------------------------------|----------------------------------|
 | **JavaScript / TypeScript** | 编写后端（Node.js）、智能合约交互（如使用 ethers.js / web3.js）   | 与前端生态一致，上手快，社区活跃                 |
@@ -116,7 +116,7 @@ Web3 后端开发工程师主要负责与区块链交互、处理业务逻辑、
 | **C++**                     | 比较底层的区块链开发，如比特币核心客户端                            | 性能极高，但上手复杂                       |
 ---
 
-### 🧱 按你想做的方向选择：
+### 2.2. 🧱 按你想做的方向选择：
 
 #### 📦 1. **写智能合约 + 构建后端 API 接口：**
 
@@ -136,14 +136,14 @@ Web3 后端开发工程师主要负责与区块链交互、处理业务逻辑、
 * 推荐：**Rust (Substrate)、Go (Cosmos SDK)**
 
 ---
-### 📦 实际组合举例
+### 2.3. 📦 实际组合举例
 * **DApp 后端（常规）**：`Solidity` + `Node.js` + `MongoDB/PostgreSQL`
 * **NFT 项目**：`Solidity` + `Python FastAPI` / `Express.js` + `Pinata / IPFS`
 * **DeFi 后端**：`Solidity` + `Go / Node.js` + `GraphQL` + `Event 监听`
 * **链上爬虫 & 数据分析**：`Python` + `Web3.py` + `Pandas/SQL`
 ---
 
-### ✅ 如果你是 Web2 程序员想转 Web3 后端：
+### 2.4. ✅ 如果你是 Web2 程序员想转 Web3 后端：
 
 | Web2 技术           | Web3 对应路径                                |
 |-------------------|------------------------------------------|
@@ -155,14 +155,14 @@ Web3 后端开发工程师主要负责与区块链交互、处理业务逻辑、
 
 需要我给你一份学习路线图或项目实战建议吗？比如 “做一个 NFT 后端服务”、“监听链上交易并入库”等。
 
-# B站的视频
+# 3. B站的视频
 
 - bilibili.com/video/BV1Je4y1r7uB
 - bilibili.com/video/BV1wV411N7eQ/
 
-# JOB网站的检索
+# 4. JOB网站的检索
 
-## Blockchain Dapp Developer
+## 4.1. Blockchain Dapp Developer
 
 ```text
 You’ve shipped multiple production-grade Dapps built using Solidity.
@@ -187,7 +187,7 @@ You are passionate about the web3 community.
 您对 Web3 社区充满热情。
 ```
 
-## Software Engineer - Rust - Backend - Asset Listings
+## 4.2. Software Engineer - Rust - Backend - Asset Listings
 
 ```text
 3+ years of experience in software engineering
@@ -224,7 +224,7 @@ Demonstrates a receptive mindset, adept at engaging in constructive dialogue on 
 展现出开放的心态，擅长与同事就复杂问题进行建设性对话，同时保持适应性和对其他观点的开放态度
 ```
 
-## Software Engineer (Backend) - Asia
+## 4.3. Software Engineer (Backend) - Asia
 
 ```text
 Requirements

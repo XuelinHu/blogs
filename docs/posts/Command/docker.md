@@ -9,7 +9,7 @@ date: 2025-06-18
 
 - URL_ADDRESS- https://www.1panel.cn/
 
-### 使用**1panel**管理docker,1pctl命令
+### 1.1.1. 使用**1panel**管理docker,1pctl命令
 
 ```shell
 Usage:
@@ -33,7 +33,7 @@ deipss@deipss-All-Series:~$ whereis 1pctl
 1pctl: /usr/bin/1pctl /usr/local/bin/1pctl
 ```
 
-### 1panel 文件保存在哪里？
+### 1.1.2. 1panel 文件保存在哪里？
 
 - 默认安装目录：1Panel 默认安装在/opt目录下，这里主要存放 1Panel 自身的二进制文件等。
 

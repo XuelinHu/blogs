@@ -78,10 +78,10 @@ redis启动时会加载这个.aof文件重新构建数据。为避免.aof文件�
 
 ## 3.3. List
 
-### 定义
+### 3.3.1. 定义
 ![img.png](img/list-define.png)
 
-### 特性
+### 3.3.2. 特性
 ![img.png](img/list-feature.png)
 
 - 基于List的消息队列的优劣：

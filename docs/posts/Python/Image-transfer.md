@@ -3,11 +3,11 @@ title: Image-transer
 date: 2025-05-25
 ---
 
-# 风格迁移
+# 1. 风格迁移
 
 本来是想把这个项目的图片进行二次加工，生成不同风格的图片，但是效果并不是非常的好
 
-## 代码
+## 1.1. 代码
 ```python
 import numpy as np
 import torch
@@ -150,6 +150,6 @@ if __name__ == '__main__':
 ```
 
 
-## 素材与结果
+## 1.2. 素材与结果
 
 ![img.png](imgs/stylized-process.png)

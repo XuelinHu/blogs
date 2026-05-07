@@ -14,6 +14,7 @@ const { theme } = useData()
 const recentPosts = computed(
   () => (theme.value.recentPosts as RecentPost[] | undefined) ?? []
 )
+const visiblePosts = computed(() => recentPosts.value.slice(0, 6))
 
 function formatDate(date: string): string {
   const parsed = new Date(date)
@@ -25,12 +26,14 @@ function formatDate(date: string): string {
 <template>
   <section class="home-posts">
     <h2 class="home-posts__title">最新文章</h2>
-    <div class="home-posts__grid">
-      <article v-for="post in recentPosts.slice(0, 3)" :key="post.link" class="post-card">
+    <div class="home-posts__list">
+      <article v-for="post in visiblePosts" :key="post.link" class="post-card">
         <a class="post-card__link" :href="withBase(post.link)">
-          <span class="post-card__category">{{ post.category }}</span>
-          <h3 class="post-card__title">{{ post.title }}</h3>
-          <p class="post-card__excerpt">{{ post.excerpt }}</p>
+          <div class="post-card__main">
+            <span class="post-card__category">{{ post.category }}</span>
+            <h3 class="post-card__title">{{ post.title }}</h3>
+            <p class="post-card__excerpt">{{ post.excerpt }}</p>
+          </div>
           <time class="post-card__date">{{ formatDate(post.date) }}</time>
         </a>
       </article>
@@ -52,10 +55,10 @@ function formatDate(date: string): string {
   font-weight: 700;
 }
 
-.home-posts__grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
+.home-posts__list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
 .post-card {
@@ -72,12 +75,17 @@ function formatDate(date: string): string {
 
 .post-card__link {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 20px;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 18px 20px;
   text-decoration: none;
   color: inherit;
   height: 100%;
+}
+
+.post-card__main {
+  min-width: 0;
 }
 
 .post-card__category {
@@ -97,17 +105,18 @@ function formatDate(date: string): string {
 }
 
 .post-card__excerpt {
-  margin: 0;
+  margin: 6px 0 0;
   font-size: 13px;
   line-height: 1.6;
   color: var(--vp-c-text-2);
-  flex: 1;
 }
 
 .post-card__date {
+  flex-shrink: 0;
   font-size: 12px;
   color: var(--vp-c-text-3);
-  margin-top: auto;
+  padding-top: 2px;
+  white-space: nowrap;
 }
 
 .home-posts__empty {
@@ -116,8 +125,9 @@ function formatDate(date: string): string {
 }
 
 @media (max-width: 768px) {
-  .home-posts__grid {
-    grid-template-columns: 1fr;
+  .post-card__link {
+    flex-direction: column;
+    gap: 10px;
   }
 }
 </style>

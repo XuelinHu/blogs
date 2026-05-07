@@ -106,9 +106,9 @@ git remote set-url origin https://gitee.com/xx/xx.git [新地址]
 git log
 ```
 
-# ignore
+# 8. ignore
 
-## eg.1
+## 8.1. eg.1
 
 ```shell
 

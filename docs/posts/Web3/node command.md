@@ -3,14 +3,14 @@ title: node command
 date: 2025-06-17
 ---
 
-# The common uses of node instructions.
+# 1. The common uses of node instructions.
 
 node and npm，
 
 - node是一种开源的框架
 - npm 是node包的管理工具
 
-## npm run和 node script.js
+## 1.1. npm run和 node script.js
 
 - node script.js可以直接运行基于nodejs的后台服务，如下的js代码中，会有ws服务
 
