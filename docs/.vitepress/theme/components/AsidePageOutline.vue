@@ -5,7 +5,7 @@ import AsidePageOutlineTree, { type OutlineTreeItem } from './AsidePageOutlineTr
 
 type OutlineItem = OutlineTreeItem
 
-const { page } = useData()
+const { page, title } = useData()
 
 const query = ref('')
 const collapsedLinks = ref<string[]>([])
@@ -32,10 +32,28 @@ function readTitle(element: Element): string {
     .trim()
 }
 
-function collectHeaders(): OutlineItem[] {
+function getHeadingElements() {
   const headingElements = Array.from(
-    document.querySelectorAll('.vp-doc :is(h2, h3)')
+    document.querySelectorAll('.vp-doc :is(h1, h2, h3)')
   ).filter((element) => element.id)
+
+  let skippedPageTitle = false
+
+  return headingElements.filter((element) => {
+    const level = Number(element.tagName.slice(1))
+    const headingTitle = readTitle(element)
+
+    if (!skippedPageTitle && level === 1 && headingTitle === title.value) {
+      skippedPageTitle = true
+      return false
+    }
+
+    return true
+  })
+}
+
+function collectHeaders(): OutlineItem[] {
+  const headingElements = getHeadingElements()
 
   const items = headingElements.map((element) => ({
     children: [],
@@ -81,9 +99,7 @@ function updateHeaders() {
 }
 
 function updateActiveLink() {
-  const headingElements = Array.from(
-    document.querySelectorAll('.vp-doc :is(h2, h3)')
-  ).filter((element) => element.id)
+  const headingElements = getHeadingElements()
 
   if (headingElements.length === 0) {
     activeLink.value = ''

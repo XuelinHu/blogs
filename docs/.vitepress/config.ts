@@ -28,7 +28,6 @@ export default defineConfig({
         diagramsDir: path.resolve(process.cwd(), 'docs/public/diagrams'),
         publicPath: `${base.replace(/\/$/, '')}/diagrams`,
         krokiServerUrl: 'https://kroki.io',
-        excludedDiagramTypes: ['mermaid'],
         allowedImportDirs: [path.resolve(process.cwd(), 'docs')]
       })
     }

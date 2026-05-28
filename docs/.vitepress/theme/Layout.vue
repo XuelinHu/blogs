@@ -57,4 +57,62 @@ onUnmounted(() => document.body.classList.remove(categoryIndexBodyClass))
 :global(.VPDocAside .VPDocAsideOutline) {
   display: none !important;
 }
+
+@media (min-width: 1440px) {
+  :global(.VPSidebar) {
+    padding-left: 18px;
+    width: calc((100% - var(--vp-layout-max-width)) / 2 + var(--vp-sidebar-width) + 12px);
+  }
+
+  :global(.VPSidebar .curtain) {
+    margin-left: -18px;
+  }
+
+  :global(.VPDoc .container) {
+    max-width: 1320px;
+  }
+
+  :global(.VPDoc .aside) {
+    max-width: 292px;
+    padding-left: 56px;
+  }
+
+  :global(.VPDoc .aside-container),
+  :global(.VPDoc .aside-curtain) {
+    width: 236px;
+  }
+
+  :global(.VPDoc.has-aside .content-container) {
+    max-width: 664px;
+  }
+}
+
+@media (min-width: 1680px) {
+  :global(.VPSidebar) {
+    padding-left: 12px;
+    width: calc((100% - var(--vp-layout-max-width)) / 2 + var(--vp-sidebar-width) + 24px);
+  }
+
+  :global(.VPSidebar .curtain) {
+    margin-left: -12px;
+  }
+
+  :global(.VPDoc .container) {
+    max-width: 1380px;
+  }
+
+  :global(.VPDoc .aside) {
+    max-width: 312px;
+    padding-left: 72px;
+  }
+
+  :global(.VPDoc .aside-container),
+  :global(.VPDoc .aside-curtain) {
+    width: 240px;
+  }
+
+  :global(.VPDoc.has-aside .content-container) {
+    max-width: 648px;
+  }
+}
 </style>
