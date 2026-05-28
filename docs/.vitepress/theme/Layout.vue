@@ -5,6 +5,7 @@ import { useRoute } from 'vitepress'
 import SidebarToggler from './components/SidebarToggler.vue'
 import SidebarIcons from './components/SidebarIcons.vue'
 import PageMeta from './components/PageMeta.vue'
+import AsideDocTitle from './components/AsideDocTitle.vue'
 
 const { Layout } = DefaultTheme
 const route = useRoute()
@@ -35,6 +36,9 @@ onUnmounted(() => document.body.classList.remove(categoryIndexBodyClass))
   <Layout>
     <template #doc-before>
       <PageMeta />
+    </template>
+    <template #aside-outline-before>
+      <AsideDocTitle />
     </template>
     <template #sidebar-nav-before>
       <SidebarToggler />

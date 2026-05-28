@@ -8,13 +8,13 @@ updated: 2025-06-18
 
 ## 1. 安装环境
 
-- 官方路径 ：https://docs.anaconda.com/free/anaconda/install/linux/
+- 官方路径：https://docs.anaconda.com/free/anaconda/install/linux/
 - anaconda 的版本信息：https://repo.anaconda.com/archive/
 
 ```shell
 conda create -n py36 python=3.6
 conda create -n py310 python=3.10.14
-# 显示当前的环境
+# 显示当前环境
 conda info -e 
 conda env list
 
@@ -45,9 +45,9 @@ source deactivate
 
 ```
 
-## 3. jupyter安装与远程登陆
+## 3. Jupyter 安装与远程登录
 
-- 远程登陆参考文档 https://www.jianshu.com/p/8fc3cd032d3c
+- 远程登录参考文档：https://www.jianshu.com/p/8fc3cd032d3c
 
 ```shell
 
@@ -57,13 +57,13 @@ vim /home/deipss/.jupyter/jupyter_notebook_config.py
 c.NotebookApp.ip='*'
 c.NotebookApp.password = u'argon2:$argon2id$v=19$m=10240,t=10,p=8$VH3vhkEL5tQMKg6FWYWTeQ$9U2v6D8llgrrEIeiwAqiew'
 c.NotebookApp.open_browser = False
-c.NotebookApp.port =7888 #可自行指定一个端口, 访问时使用该端口
+c.NotebookApp.port =7888 # 可自行指定一个端口，访问时使用该端口
 
 jupyter notebook
 
 ```
 
-## 1.4. conda如何迁移所有环境
+## 4. conda 如何迁移所有环境
 
 ```text
 #!/bin/bash
@@ -79,10 +79,9 @@ done
 ~          
 ```
 
-conda activate本身不是CLI的一个命令，所以直接使用conda activate是会报错的，要先使用source将conda.sh将以下的脚本
-的执行到当前的shell环境中
+`conda activate` 本身不是一个独立的二进制 CLI 命令，所以直接执行时可能报错。要先通过 `source` 把 `conda.sh` 加载到当前 shell 环境中。
 
-> 在当前 Shell 环境中执行一个 shell 脚本的内容
+> 作用：在当前 Shell 环境中执行一个 shell 脚本的内容
 ```text
 
 __conda_activate() {

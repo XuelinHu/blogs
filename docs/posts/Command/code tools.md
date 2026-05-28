@@ -1,11 +1,11 @@
 ---
-title: 编码工具
+title: win10新机安装
 date: 2026-05-28
 created: 2025-05-25
 updated: 2026-05-28
 ---
 
-# 1. 编码工具
+# 1. win10 新机安装
 
 - awesome  https://github.com/jaywcjlove/awesome-mac
 
