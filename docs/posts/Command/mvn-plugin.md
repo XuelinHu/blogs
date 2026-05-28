@@ -51,3 +51,15 @@ updated: 2025-05-25
 如上XML配置，如果没有使用maven-assembly-plugin插件的话，
 不会将maven中的其他dependencies打入到jar包中。
 存在jvm运行jar时，提示类不存在的信息。
+
+# 2. 插件选择建议
+
+- 普通 Java 包：优先 `maven-jar-plugin`
+- 需要打 fat jar：优先 `maven-shade-plugin` 或 `maven-assembly-plugin`
+- 需要复杂目录结构或发布包：`maven-assembly-plugin` 更灵活
+
+# 3. 常见问题
+
+- 运行 jar 缺类：通常是依赖没有被打进去。
+- 包太大：通常是把不需要的依赖也打入了 fat jar。
+- 资源文件缺失：要检查 `resources` 和插件配置是否正确。

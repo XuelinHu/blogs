@@ -38,3 +38,19 @@ updated: 2025-05-25
 - https://zhuanlan.zhihu.com/p/626362331 JVM性能调优常用命令Jstat
 - https://www.elastic.co/guide/en/logstash/current/tuning-logstash.html#profiling-the-heap
 - https://www.elastic.co/guide/en/logstash/current/jvm-settings.html
+
+## 4.1. 复盘点
+
+这次问题的本质不是“机器内存不够”，而是 JVM 代际配置和回收器策略不适合当前负载，导致大量对象长时间滞留在老年代。
+
+## 4.2. 调优思路
+
+- 先通过 `jstat` 看 Young GC 和 Full GC 频率。
+- 再确认年轻代、老年代和回收器参数是否合理。
+- 如果对象生命周期分布和默认代际比例不匹配，就要调整新生代大小或更换回收器。
+
+## 4.3. 实战建议
+
+- 调优前先保留现状参数和监控快照，避免回滚无依据。
+- 不要只看堆大小，代际比例和回收器选择同样重要。
+- 调整后要至少观察一段完整业务周期，而不是看几分钟就下结论。

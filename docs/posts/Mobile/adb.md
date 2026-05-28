@@ -82,4 +82,24 @@ or:
 
 adb logcat --help
 
-  
+## 5.1. 常见命令
+
+```bash
+# 查看设备列表
+adb devices -l
+
+# 安装 apk
+adb install demo.apk
+
+# 卸载应用
+adb uninstall com.example.demo
+
+# 查看实时日志
+adb logcat
+```
+
+## 6. 使用建议
+
+- 多设备连接时尽量总是带 `-s 序列号`，避免命令打错设备。
+- 遇到连接异常时，优先试 `adb kill-server` 后再重连。
+- `logcat` 输出很大，排查时最好加 tag、包名或时间过滤条件。

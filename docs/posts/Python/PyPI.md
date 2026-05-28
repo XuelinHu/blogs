@@ -51,3 +51,24 @@ pip install twine
 twine upload dist/*
 ```
 
+# 3. 发布前检查
+
+- 包名是否已被占用。
+- `version` 是否递增。
+- `README.md` 是否可正常展示。
+- 依赖是否写清楚。
+- wheel 和 sdist 是否都能正常生成。
+
+# 4. 常见命令
+
+```bash
+python -m build
+twine check dist/*
+twine upload dist/*
+```
+
+# 5. 使用建议
+
+- 第一次发布前可以先发到 TestPyPI 验证流程。
+- 尽量使用 `pyproject.toml` 统一维护元数据。
+- 如果包要长期维护，建议补 License、Homepage、Issue Tracker 等信息。

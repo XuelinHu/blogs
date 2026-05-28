@@ -41,5 +41,18 @@ unsafe类，或是native声明的方法，会直接使用本机内存，想这�
 **unsafe.allocateMemory(1MB)**
 来实现
 
+# 4. 常见排查方向
+
+- `StackOverflowError`：优先看递归调用、局部变量过大和线程栈大小配置。
+- `unable to create native thread`：优先看线程数、系统限制和每线程栈空间。
+- 元空间 OOM：优先看动态代理、类加载器泄漏和字节码增强。
+- 本机内存 OOM：优先看 DirectBuffer、Unsafe、JNI 或第三方 native 库。
+
+# 5. 实际建议
+
+- 不要只盯着堆，很多“内存溢出”并不发生在 Java 堆里。
+- 结合 `jmap`、`jcmd`、GC 日志、线程栈和系统监控一起分析。
+- 如果线上偶发 OOM，优先保留现场日志和 dump，再做复盘。
+
 
  

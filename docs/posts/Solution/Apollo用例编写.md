@@ -19,3 +19,15 @@ updated: 2025-05-25
 ```shell
 @SpringBootTest(classes{com.ctrip.framework.apollo.spring.boot.ApolloAutoConfiguration.class})
 ```
+
+# 3. 使用建议
+
+- 单测目标如果只是校验某个 Service，不要直接把整个启动类都拉进来。
+- 把 Apollo 自动配置和必要 Bean 显式引入，能减少上下文体积。
+- 如果 Mapper、数据源、配置中心耦合较深，建议再补一层测试配置类统一管理。
+
+# 4. 常见问题
+
+- 配置没生效：通常是 Apollo 配置类没被加载。
+- 启动太重：通常是把完整 Spring Boot 应用一起拉起来了。
+- 单测不稳定：通常是外部依赖没有 mock 或环境隔离不彻底。
