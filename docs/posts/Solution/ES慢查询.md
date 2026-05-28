@@ -1,6 +1,8 @@
 ---
 title: jvm_sandbox_repeater数据ES慢查询
 date: 2025-05-25
+created: 2025-05-25
+updated: 2025-05-25
 ---
 
 # 1. 背景

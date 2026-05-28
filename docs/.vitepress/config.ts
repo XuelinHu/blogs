@@ -14,7 +14,8 @@ export default defineConfig({
   base,
   lastUpdated: true,
   head: [
-    ['meta', { name: 'theme-color', content: '#3c8772' }]
+    ['meta', { name: 'theme-color', content: '#3c8772' }],
+    ['link', { rel: 'icon', type: 'image/svg+xml', href: `${base}icon-hxl.svg` }]
   ],
   markdown: {
     lineNumbers: true,

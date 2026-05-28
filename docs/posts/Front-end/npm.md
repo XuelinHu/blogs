@@ -1,6 +1,8 @@
 ---
 title: npm
 date: 2025-05-25
+created: 2025-05-25
+updated: 2025-05-25
 ---
 
 # 1. 安装 node

@@ -1,6 +1,8 @@
 ---
 title: free cad
 date: 2025-06-03
+created: 2025-06-03
+updated: 2025-06-03
 ---
 
 # 1. free-cad

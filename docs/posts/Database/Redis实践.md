@@ -1,6 +1,8 @@
 ---
 title: Redis实践
 date: 2025-05-25
+created: 2025-05-25
+updated: 2025-05-25
 ---
 
 - 图片来源：https://www.bilibili.com/video/BV1cr4y1671t?p=160&vd_source=f52d9488d7d3c21ed33580e4dce1a022

@@ -1,5 +1,7 @@
 ---
 title: JVM虚拟机
+created: 2026-05-04
+updated: 2026-05-04
 ---
 
 # 1. jvm作用

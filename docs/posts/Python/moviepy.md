@@ -1,6 +1,8 @@
 ---
 title: moviepy
 date: 2025-06-17
+created: 2025-06-17
+updated: 2025-06-17
 ---
 
 # 1. v2

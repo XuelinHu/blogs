@@ -1,83 +1,98 @@
 ---
 title: ollama
 date: 2025-06-17
+created: 2025-06-17
+updated: 2025-06-17
 ---
 
-# 1. ollama安装安装
+# 1. Ollama
 
-- [allama](https://github.com/jmhessel/allama)
-- [install](https://github.com/ollama/ollama/blob/main/docs/linux.md)
-- 环境变量OLLAMA_PORT默认也是11434
+- 安装文档：https://github.com/ollama/ollama/blob/main/docs/linux.md
+- 相关项目：https://github.com/jmhessel/allama
 
-## 1.1. 安装过程
+Ollama 是一个本地运行大语言模型的工具，适合在个人电脑或服务器上快速拉起 `Qwen`、`Llama`、`DeepSeek` 这类模型。它同时提供：
 
-```shell
+- 命令行调用
+- 本地 HTTP API
+- 模型拉取、运行和管理能力
+
+默认服务端口通常是 `11434`。
+
+## 2. 安装
+
+### 2.1. Linux 安装过程
+
+下面是一个常见的 Linux 安装流程：
+
+```bash
 # 下载 Ollama 的 Linux AMD64 ROCm 版本安装包
 curl -L https://ollama.com/download/ollama-linux-amd64-rocm.tgz -o ollama-linux-amd64-rocm.tgz
 
 # 解压安装包到 /usr 目录
 sudo tar -C /usr -xzf ollama-linux-amd64-rocm.tgz
 
-# 创建 ollama 用户，用于运行 Ollama 服务
-# -r 表示创建一个系统用户，-s 指定用户的登录 shell 为 /bin/false，禁止用户登录
-# -U 表示创建一个与用户同名的组，-m 表示创建用户的主目录，-d 指定家目录的路径
+# 创建 ollama 用户
 sudo useradd -r -s /bin/false -U -m -d /usr/share/ollama ollama
 
-# 将当前用户添加到 ollama 组，以便当前用户可以与 Ollama 服务交互
+# 将当前用户添加到 ollama 组
 sudo usermod -a -G ollama $(whoami)
+```
 
-# 编辑 Ollama 服务的 systemd 配置文件
-vim /etc/systemd/system/ollama.service
+### 2.2. systemd 服务配置
 
+创建服务文件：
+
+```bash
+sudo vim /etc/systemd/system/ollama.service
+```
+
+示例配置：
+
+```ini
 [Unit]
-# 描述 Ollama 服务
 Description=Ollama Service
-# 指定网络在线后启动服务
 After=network-online.target
 
 [Service]
-# 指定服务启动命令
 ExecStart=/usr/bin/ollama serve
-# 指定运行服务的用户和组
 User=ollama
 Group=ollama
-# 配置服务异常退出后自动重启
 Restart=always
-# 配置重启前等待的时间
 RestartSec=3
-# 设置环境变量
 Environment="PATH=$PATH"
 
 [Install]
-# 指定服务安装时的依赖目标
 WantedBy=multi-user.target
+```
 
-# 重新加载 systemd 配置，以便识别到新创建的 Ollama 服务
+启用并启动服务：
+
+```bash
 sudo systemctl daemon-reload
-
-# 启用 Ollama 服务，使其在系统启动时自动运行
 sudo systemctl enable ollama
-
-# 启动 Ollama 服务
 sudo systemctl start ollama
-
-# 检查 Ollama 服务的状态，确保其正在运行
 sudo systemctl status ollama
-
 ```
 
-## 1.2. 需要添加环境变量才能远程访问
+## 3. 远程访问配置
 
-```shell
-vim /etc/systemd/system/ollama.service
+如果只做本机访问，默认配置通常就够了。  
+如果需要从局域网或其他机器访问，需要补环境变量：
 
-[Service]
+```bash
+sudo vim /etc/systemd/system/ollama.service
+```
+
+在 `[Service]` 中增加：
+
+```ini
 Environment="OLLAMA_HOST=0.0.0.0"
 Environment="OLLAMA_ORIGINS=*"
-
 ```
 
-```shell
+完整示例：
+
+```ini
 [Unit]
 Description=Ollama Service
 After=network-online.target
@@ -91,50 +106,131 @@ RestartSec=3
 Environment="PATH=$PATH"
 Environment="OLLAMA_HOST=0.0.0.0"
 Environment="OLLAMA_ORIGINS=*"
+
 [Install]
 WantedBy=multi-user.target
 ```
 
-# 2. 启用一个模型
+修改后重启服务：
 
-> ollama run deepseek-r1:7b 
-默认是为启用端口11434，可以使用url访问：http://ip:11434
-
-- http://ip:11434/api/tags 获取所有模型
-
-以下代码是和ollama进行交互
-```python
-def generate_text(self, prompt: str, model: str = "deepseek-r1:8b", options: Dict[str, Any] = None) -> Dict[
-    str, Any]:
-    """
-    使用Ollama服务生成文本。
-
-    :param prompt: 输入的提示文本
-    :param model: 使用的模型名称，默认为"deepseek-r1:8b"
-    :param options: 其他选项，如max_tokens等
-    :return: 包含生成文本的字典
-    :"stream": False  默认是True，会一点一点的返回结果，有多次返回，设置为False，则在一次返回所有结果
-    """
-    url = f"{self.base_url}/api/generate"
-    payload = {
-        "model": model,
-        "prompt": prompt,
-        "options": options or {},
-        "stream": False
-    }
-    response = requests.post(url, json=payload)
-    return response.json()
+```bash
+sudo systemctl daemon-reload
+sudo systemctl restart ollama
 ```
 
-## 2.1. Ollama Commands
+此时可以通过：
 
-```shell
-Large language model runner
+```text
+http://ip:11434
+```
 
-Usage:
-  ollama [flags]
-  ollama [command]
+访问接口。
 
+## 4. 最常用命令
+
+### 4.1. 启动服务
+
+```bash
+ollama serve
+```
+
+如果你已经通过 `systemd` 管理服务，通常不需要手工执行这条命令。
+
+### 4.2. 拉取模型
+
+```bash
+ollama pull deepseek-r1:7b
+```
+
+常见用途：
+
+- 第一次下载模型
+- 提前把模型拉到本地
+- 便于后续离线运行
+
+### 4.3. 运行模型
+
+```bash
+ollama run deepseek-r1:7b
+```
+
+这条命令会：
+
+- 如果本地没有模型，先拉取
+- 然后进入交互式对话
+
+### 4.4. 查看本地模型
+
+```bash
+ollama list
+```
+
+或者：
+
+```bash
+ollama ls
+```
+
+如果当前版本只支持 `list`，以实际命令为准。
+
+### 4.5. 查看正在运行的模型
+
+```bash
+ollama ps
+```
+
+这条命令很适合用来判断：
+
+- 哪个模型已经被加载到内存
+- 当前有没有模型仍在驻留
+
+### 4.6. 停止运行中的模型
+
+```bash
+ollama stop deepseek-r1:7b
+```
+
+适合在模型暂时不用时主动释放资源。
+
+### 4.7. 删除模型
+
+```bash
+ollama rm deepseek-r1:7b
+```
+
+### 4.8. 查看模型详情
+
+```bash
+ollama show deepseek-r1:7b
+```
+
+### 4.9. 基于 Modelfile 创建模型
+
+```bash
+ollama create my-model -f Modelfile
+```
+
+这类命令适合：
+
+- 包装系统提示词
+- 组合已有基础模型
+- 固定参数
+
+### 4.10. 复制模型
+
+```bash
+ollama cp deepseek-r1:7b deepseek-r1:7b-backup
+```
+
+## 5. 命令总览
+
+```bash
+ollama --help
+```
+
+常见输出大意如下：
+
+```text
 Available Commands:
   serve       Start ollama
   create      Create a model from a Modelfile
@@ -147,133 +243,240 @@ Available Commands:
   ps          List running models
   cp          Copy a model
   rm          Remove a model
-  help        Help about any command
-
-Flags:
-  -h, --help      help for ollama
-  -v, --version   Show version information
-
-Use "ollama [command] --help" for more information about a command.
 ```
 
-在ubuntu中安装ollama后，后台服务一直是处于启动中状态，通过`nvidia-smi`查看时，发现长时间未调用接口，GPU就并未加载模型文件，当访问接口时，GPU加载模型文件，并开始运行。
+## 6. 一个完整使用流程
 
+如果要在服务器上跑一个本地模型，通常可以按这个顺序：
 
-## 2.2. models save path
-```shell
-/usr/share/ollama/.ollama/models/blobs$ du -sh *
-2.2G    sha256-05fc42664a9311c427413f9bf2077bd5ee7d59d6a5a034d54fc738f93976d065
-4.0K    sha256-0cb05c6e4e02614fa7f4c5d9ddcd5ae7e630e5df98602f1c0894ed0cacd11eeb
-4.0K    sha256-369ca498f347f710d068cbb38bf0b8692dd3fa30f30ca2ff755e211c94768150
-4.0K    sha256-40fb844194b25e429204e5163fb379ab462978a262b86aadd73d8944445c09fd
-4.0K    sha256-56bb8bd477a519ffa694fc449c2413c6f0e1d3b1c88fa7e3c9d88d3ae49d4dcb
-4.6G    sha256-6340dc3229b0d08ea9cc49b75d4098702983e17b4c096d57afbbf2ffc813f2be
-4.0K    sha256-6e4c38e1172f42fdbff13edf9a7a017679fb82b0fde415a3e8b3c31c6ed4a4e4
-4.0K    sha256-966de95ca8a62200913e3f8bfbf84c8494536f1b94b49166851e76644e966396
-4.4G    sha256-96c415656d377afbff962f6cdb2394ab092ccbcbaab4b82525bc4ca800fe8a49
-8.0K    sha256-a70ff7e570d97baaf4e62ac6e6ad9975e04caa6d900d3742d37698494479e0cd
-4.0K    sha256-a85fe2a2e58e2426116d3686dfdc1a6ea58640c1e684069976aa730be6c1fa01
-1.1G    sha256-aabd4debf0c8f08881923f2c25fc0fdeed24435271c2b3e92c4af36704040dbc
-4.0K    sha256-c5ad996bda6eed4df6e3b605a9869647624851ac248209d22fd5e2c0cc1121d3
-4.0K    sha256-e32efebd977975adfef79e5999f12ef9dac99d3cebe3eea09614e77ea2e3ef26
-4.0K    sha256-f4d24e9138dd4603380add165d2b0d970bef471fac194b436ebd50e6147c6588
-8.0K    sha256-fcc5a6bec9daf9b561a68827b67ab6088e1dba9d1fa2a50d7bbcc8384e0a265d
+1. 安装 Ollama。
+2. 配置并启动 `ollama serve` 服务。
+3. 通过 `ollama pull` 下载模型。
+4. 通过 `ollama run` 先做一次人工交互测试。
+5. 再通过 HTTP API 或代码接入业务系统。
+6. 通过 `ollama ps` 和 `nvidia-smi` 观察显存占用和模型状态。
+
+## 7. HTTP API 使用
+
+### 7.1. 查看本地模型列表
+
+```bash
+curl http://127.0.0.1:11434/api/tags
 ```
 
-# 3. Ollama和Hugging Face
+如果是远程访问：
 
-Ollama是一款开源跨平台的大模型工具，于2023年7月9日在GitHub上线。它可以让用户在服务器中运行Qwen、Llama、DeepSeekR1等多种语言模型。
-Ollama由开发者社区创建并维护，是一个开源项目。它基于Python语言，结合现代Web技术和CLI（命令行界面）工具开发。
+```bash
+curl http://ip:11434/api/tags
+```
 
-Hugging Face是一家成立于2016年1月1日的开源人工智能创业公司，专注于NLP技术，总部位于美国纽约，CEO为Clément
-Delangue。它提供AI模型服务，有一系列预训练模型涉及多领域；构建了完整开源产品矩阵，涵盖自然语言处理库等；建立了AI开发生态，包含开发者社区等；
-还提供围绕NLP、Vision等方向的AI解决方案服务以获取费用。Hugging
-Face由其团队开发，其开源产品矩阵如自然语言处理库等是基于多种技术开发的，例如Transformer架构等，这些技术为其在自然语言处理等领域的发展提供了基础。
-其开发的模型则是基于大量的数据集和先进的机器学习算法进行训练的。
+### 7.2. 生成文本
 
-### 3.1. Ollama使用的技术及相关规范
+```bash
+curl http://127.0.0.1:11434/api/generate \
+  -d '{
+    "model": "deepseek-r1:7b",
+    "prompt": "请介绍一下 Ollama 的用途",
+    "stream": false
+  }'
+```
 
-#### 3.1.1. 命令行界面（CLI）部分
+### 7.3. 对话接口
 
-- **Go 语言**
-    - **技术说明**：Ollama 的核心是用 Go 语言编写的。Go 语言具有高效的性能、出色的并发处理能力和简洁的语法，非常适合构建命令行工具和服务器应用。它能够快速编译成机器码，使得
-      Ollama 的 CLI 工具启动速度快，响应迅速。
-    - **相关规范**：遵循 Go 语言的编码规范，例如代码格式化使用 `gofmt` 工具，以保证代码的一致性和可读性。同时，在错误处理、包管理等方面也遵循
-      Go 语言的最佳实践。
-- **Cobra 库**
-    - **技术说明**：Cobra 是一个用于创建强大的现代 CLI 应用程序的 Go 语言库。Ollama 使用 Cobra
-      来构建其命令行界面，它提供了命令解析、子命令支持、参数处理等功能，使得用户可以方便地使用各种命令来管理和运行模型。
-    - **相关规范**：遵循 Cobra 的文档和最佳实践来定义命令和参数，例如使用 `cobra.Command` 结构体来定义命令，使用
-      `PersistentFlags` 和 `Flags` 方法来定义命令行参数。
+如果模型支持聊天格式，可以调用：
 
-#### 3.1.2. 现代 Web 技术部分
+```bash
+curl http://127.0.0.1:11434/api/chat \
+  -d '{
+    "model": "deepseek-r1:7b",
+    "messages": [
+      { "role": "user", "content": "请总结一下 LoRA 微调。" }
+    ],
+    "stream": false
+  }'
+```
 
-- **RESTful API**
-    - **技术说明**：Ollama 提供了 RESTful API，允许开发者通过 HTTP 请求与 Ollama 服务进行交互。RESTful API
-      具有简单、灵活、可扩展等优点，使得开发者可以方便地将 Ollama 集成到自己的 Web 应用或其他系统中。
-    - **相关规范**：遵循 RESTful API 的设计原则，例如使用标准的 HTTP 方法（GET、POST、PUT、DELETE 等）来表示不同的操作，使用
-      JSON 作为数据交换格式，使用合适的 HTTP 状态码来表示操作结果。
-- **WebSocket**
-    - **技术说明**：在某些场景下，Ollama 可能会使用 WebSocket 协议来实现实时通信。WebSocket 是一种在单个 TCP
-      连接上进行全双工通信的协议，适用于需要实时更新数据的场景，例如实时对话等。
-    - **相关规范**：遵循 WebSocket 协议的规范，包括握手过程、数据帧格式等。在 Go 语言中，可以使用 `gorilla/websocket` 等库来实现
-      WebSocket 通信。
+### 7.4. 向量接口
 
-#### 3.1.3. 模型管理和运行部分
+部分场景还会用到 embeddings：
 
-- **Docker**
-    - **技术说明**：Ollama 支持使用 Docker 来管理和运行模型。Docker 是一种容器化技术，可以将应用程序及其依赖打包成一个独立的容器，实现环境隔离和快速部署。
-    - **相关规范**：遵循 Docker 的最佳实践，例如使用 Dockerfile 来定义容器的构建过程，使用 Docker Compose 来管理多个容器的部署。
-- **TensorFlow、PyTorch 等机器学习框架**
-    - **技术说明**：Ollama 支持多种预训练模型，这些模型通常是使用 TensorFlow、PyTorch 等机器学习框架进行训练的。在运行模型时，Ollama
-      会调用相应的框架来进行推理。
-    - **相关规范**：遵循这些机器学习框架的使用规范，例如在加载模型时需要注意模型的格式和版本，在进行推理时需要处理好输入和输出的格式。
+```bash
+curl http://127.0.0.1:11434/api/embeddings \
+  -d '{
+    "model": "nomic-embed-text",
+    "prompt": "Ollama 是本地模型运行工具"
+  }'
+```
 
-### 3.2. Hugging Face使用的技术及相关规范
+适合：
 
-#### 3.2.1. 核心机器学习框架
+- 向量检索
+- RAG
+- 相似度计算
 
-- **Transformer 架构**
-    - **技术说明**：Hugging Face 的很多模型都是基于 Transformer 架构开发的，如 BERT、GPT 等。Transformer
-      架构具有强大的并行计算能力和长序列处理能力，是当前自然语言处理领域的主流架构。
-    - **相关规范**：遵循 Transformer 架构的设计原则，例如使用多头注意力机制、前馈神经网络等组件，同时在模型训练和推理过程中也需要遵循相应的算法和优化策略。
-- **PyTorch 和 TensorFlow**
-    - **技术说明**：Hugging Face 的 `transformers` 库支持使用 PyTorch 和 TensorFlow
-      两种机器学习框架。这使得开发者可以根据自己的需求选择合适的框架来进行模型的训练和推理。
-    - **相关规范**：遵循 PyTorch 和 TensorFlow 的使用规范，例如在定义模型时需要使用相应的类和方法，在训练过程中需要使用合适的优化器和损失函数。
+## 8. Python 接入示例
 
-#### 3.2.2. Web 服务和 API 部分
+下面是一个简单的文本生成示例：
 
-- **FastAPI**
-    - **技术说明**：Hugging Face 使用 FastAPI 来构建其 Web 服务和 API。FastAPI 是一个基于 Python 的高性能 Web
-      框架，它具有快速开发、易于使用、自动生成文档等优点。
-    - **相关规范**：遵循 FastAPI 的文档和最佳实践来定义路由、处理请求和响应，例如使用 `@app.get`、`@app.post` 等装饰器来定义路由，使用
-      Pydantic 来进行数据验证和序列化。
-- **RESTful API 设计**
-    - **技术说明**：Hugging Face 的 API 遵循 RESTful 设计原则，提供了一系列的端点来进行模型的推理、训练等操作。
-    - **相关规范**：与 Ollama 类似，遵循 RESTful API 的设计原则，使用标准的 HTTP 方法和 JSON 数据格式，同时提供详细的 API
-      文档和 SDK 来方便开发者使用。
+```python
+import requests
+from typing import Any, Dict
 
-#### 3.2.3. 社区和版本管理部分
 
-- **Git 和 GitHub**
-    - **技术说明**：Hugging Face 使用 Git 作为版本控制系统，使用 GitHub 作为代码托管平台。这使得开发者可以方便地进行代码的管理、协作和贡献。
-    - **相关规范**：遵循 Git 和 GitHub 的使用规范，例如使用分支管理、提交规范等，同时在 GitHub 上还遵循开源项目的社区规范，如贡献者协议、代码审查流程等。
+def generate_text(
+    prompt: str,
+    model: str = "deepseek-r1:8b",
+    options: Dict[str, Any] | None = None
+) -> Dict[str, Any]:
+    url = "http://127.0.0.1:11434/api/generate"
+    payload = {
+        "model": model,
+        "prompt": prompt,
+        "options": options or {},
+        "stream": False
+    }
+    response = requests.post(url, json=payload, timeout=300)
+    response.raise_for_status()
+    return response.json()
+```
 
-# 4. Ollama是使用GO编写
+这里比较关键的参数是：
 
-他是如何调用模型进行推理的，我理解模型大多是C语言编写的
+- `model`：模型名
+- `prompt`：输入文本
+- `options`：温度、上下文长度等推理选项
+- `stream`：是否流式返回
 
-Ollama是一个用Go编写的语言模型运行时，它可以调用多种模型进行推理，包括用C语言编写的模型。以下是Ollama调用模型进行推理的一般过程：
+### 8.1. `stream`
 
-1. **模型加载**
-   ：Ollama首先会根据用户指定的模型名称或路径，从本地存储或远程服务器加载相应的模型文件。对于用C语言编写的模型，可能存在一个适配层或接口，将**模型的C语言代码封装**起来，以便Go语言能够与之交互。这个适配层可能会提供一些函数或方法，用于初始化模型、设置参数等。
-2. **数据预处理**
-   ：在将输入数据传递给模型进行推理之前，Ollama会对输入进行预处理。这可能包括将文本转换为模型所需的格式，例如将字符串转换为向量表示，或者对文本进行分词、编码等操作。Go语言中有许多用于文本处理和数据转换的库，可以帮助完成这些预处理步骤。
-3. **调用模型推理函数**
-   ：一旦模型加载完成并且输入数据预处理好，Ollama就会通过适配层调用模型的推理函数。这个函数通常是用C语言编写的，它接受预处理后的输入数据，并执行模型的推理算法，生成输出结果。在Go语言中，可以使用
-   `cgo`工具来调用C语言函数，实现Go与C语言代码的交互。
-4. **结果处理**：模型推理函数返回的结果可能是某种特定的格式，例如向量、张量或文本。Ollama会对这些结果进行后处理，将其转换为用户可以理解的格式，例如将向量转换为文本字符串，或者对结果进行进一步的分析和解读。
-5. **输出结果**：最后，Ollama将处理后的结果输出给用户，可以是在命令行中打印出来，或者通过API返回给调用者。
+- `True`：会分块逐步返回结果，适合聊天界面
+- `False`：一次性返回完整结果，适合后端接口封装
 
-不同的模型可能有不同的具体实现和调用方式，Ollama需要根据具体模型的特点和要求来进行适配和调用。同时，为了提高性能和效率，Ollama可能还会采用一些优化措施，如模型量化、并行计算等。
+## 9. 常见命令场景
+
+### 9.1. 下载但先不运行
+
+```bash
+ollama pull qwen2.5:7b
+```
+
+### 9.2. 临时测试模型对话
+
+```bash
+ollama run qwen2.5:7b
+```
+
+### 9.3. 看看 GPU 是否真的在工作
+
+```bash
+ollama ps
+nvidia-smi
+```
+
+在 Ubuntu 中安装 Ollama 后，后台服务通常一直是启动状态，但并不代表 GPU 持续加载模型。很多时候只有真正访问接口或执行 `run` 时，模型才会被加载到显存中。
+
+### 9.4. 清理不再使用的模型
+
+```bash
+ollama rm qwen2.5:7b
+```
+
+## 10. 模型存储路径
+
+模型文件通常可以在类似如下目录中看到：
+
+```bash
+/usr/share/ollama/.ollama/models/blobs
+```
+
+例如：
+
+```bash
+cd /usr/share/ollama/.ollama/models/blobs
+du -sh *
+```
+
+这能帮助你快速判断：
+
+- 哪些 blob 占用空间最大
+- 当前磁盘压力主要来自哪些模型
+
+## 11. Ollama 和 Hugging Face 的区别
+
+简单说：
+
+- `Hugging Face` 更像模型生态和模型平台
+- `Ollama` 更像本地模型运行器
+
+Hugging Face 提供：
+
+- 模型仓库
+- 数据集
+- Transformers 生态
+- 云端和社区能力
+
+Ollama 提供：
+
+- 本地模型下载
+- 本地推理运行
+- 本地 API 暴露
+- 本地模型管理
+
+如果你的目标是“快速在服务器上把模型跑起来”，Ollama 更直接。  
+如果你的目标是“训练、下载、管理、托管、找模型”，Hugging Face 范围更大。
+
+## 12. Ollama 使用的技术
+
+### 12.1. CLI 部分
+
+Ollama 的核心主要使用 `Go` 编写，CLI 部分通常会结合类似 `Cobra` 这样的命令行工具库实现。
+
+选择 Go 的原因通常包括：
+
+- 启动速度快
+- 并发能力强
+- 适合做本地服务和命令行工具
+
+### 12.2. 服务接口部分
+
+Ollama 对外暴露的是本地 HTTP API，本质上属于 REST 风格接口，便于：
+
+- 本地脚本调用
+- Web 服务集成
+- Agent 工具接入
+
+## 13. Ollama 是怎么调用模型推理的
+
+Ollama 虽然是用 Go 写的，但模型推理核心并不一定是纯 Go 实现。更准确地说，它更像一个“模型运行调度层”，负责：
+
+- 加载模型文件
+- 管理模型生命周期
+- 提供统一 API
+- 调度底层推理引擎
+
+一个简化理解是：
+
+1. Ollama 接收 CLI 或 HTTP 请求。
+2. 把输入文本转换成底层推理引擎能处理的格式。
+3. 加载或唤醒目标模型。
+4. 调用底层推理实现完成 token 生成。
+5. 把结果流式或一次性返回给调用方。
+
+所以 Ollama 更接近“服务层和调度层”，而不是单纯“自己从头实现全部模型计算框架”。
+
+## 14. 小结
+
+Ollama 的价值主要在于：
+
+- 让本地模型运行更简单
+- 让模型下载、运行、管理和 API 接入统一起来
+- 适合作为个人环境、测试环境和中小型服务的模型运行入口
+
+如果只是想把模型快速跑起来，先熟悉这几个命令就够用了：
+
+- `ollama pull`
+- `ollama run`
+- `ollama list`
+- `ollama ps`
+- `ollama rm`
+- `curl /api/generate`

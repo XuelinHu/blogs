@@ -1,6 +1,8 @@
 ---
 title: jet idea
 date: 2025-06-22
+created: 2025-06-22
+updated: 2025-06-22
 ---
 
 ## 1. 编码提效

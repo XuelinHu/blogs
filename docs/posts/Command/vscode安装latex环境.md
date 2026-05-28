@@ -1,6 +1,8 @@
 ---
 title: vscode安装latex环境
 date: 2021-05-29
+created: 2021-05-29
+updated: 2021-05-29
 ---
 
 # 1. 下载安装

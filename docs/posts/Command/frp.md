@@ -1,6 +1,8 @@
 ---
 title: frp
 date: 2025-07-09
+created: 2025-07-09
+updated: 2025-07-09
 ---
 
 # 1. service

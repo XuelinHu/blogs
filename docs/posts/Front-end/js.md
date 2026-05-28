@@ -1,6 +1,8 @@
 ---
 title: js.md
 date: 2025-07-20
+created: 2025-07-20
+updated: 2025-07-20
 ---
 
 - 💡 ES6 是 JavaScript 的语言标准，不需要启用，现代浏览器天然支持大多数 ES6+ 特性

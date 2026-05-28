@@ -1,6 +1,8 @@
 ---
 title: mac os
 date: 2025-06-21
+created: 2025-06-21
+updated: 2025-06-21
 ---
 
 # 1. homebrew

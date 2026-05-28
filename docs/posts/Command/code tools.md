@@ -1,6 +1,8 @@
 ---
 title: 编码工具
-date: 2025-05-25
+date: 2026-05-28
+created: 2025-05-25
+updated: 2026-05-28
 ---
 
 # 1. 编码工具
@@ -41,6 +43,7 @@ date: 2025-05-25
 - charles(抓包收费)  whistle（抓包免费）
 - MobaXterm 远程登陆
 - tabby 远程登陆
+- WizTree Windows 磁盘占用分析工具
 - ~~postman postwoman~~
 - hoppscotch 用来代替postman的
 - SwitchHosts (mac上是ihost)

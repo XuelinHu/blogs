@@ -1,6 +1,8 @@
 ---
 title: web3北大公开课-以太坊
 date: 2025-06-26
+created: 2025-06-26
+updated: 2025-06-26
 ---
 
 - https://etherscan.io/nft-top-contracts

@@ -1,6 +1,8 @@
 ---
 title: sandbox请求参数篡改排查
 date: 2025-05-25
+created: 2025-05-25
+updated: 2025-05-25
 ---
 
 # 1. 排查sandbox-repeater的请求参数被篡改

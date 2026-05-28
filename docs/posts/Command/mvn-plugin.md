@@ -1,6 +1,8 @@
 ---
 title: mvn plugin
 date: 2025-05-25
+created: 2025-05-25
+updated: 2025-05-25
 ---
 
 # 1. 常用的打包插件

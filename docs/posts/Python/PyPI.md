@@ -1,6 +1,8 @@
 ---
 title: PyPI
 date: 2025-07-14
+created: 2025-07-14
+updated: 2025-07-14
 ---
 
 # 1. What is the PyPI

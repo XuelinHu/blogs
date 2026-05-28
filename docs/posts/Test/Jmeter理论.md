@@ -1,6 +1,8 @@
 ---
 title: Jmeter理论
 date: 2025-05-25
+created: 2025-05-25
+updated: 2025-05-25
 ---
 
 ## 1. JMeter的工作原理是什么？

@@ -1,6 +1,8 @@
 ---
 title: JUC AQS
 date: 2025-07-13
+created: 2025-07-13
+updated: 2025-07-13
 ---
 
 ### 1. 🇨🇳 中文回答：

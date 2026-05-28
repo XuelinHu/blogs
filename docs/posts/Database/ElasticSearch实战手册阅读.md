@@ -1,6 +1,8 @@
 ---
 title: ElasticSearch实战手册阅读
 date: 2025-05-25
+created: 2025-05-25
+updated: 2025-05-25
 ---
 
 # 1. index 设计优化

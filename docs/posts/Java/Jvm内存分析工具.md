@@ -1,6 +1,8 @@
 ---
 title: Jvm内存分析
 date: 2025-05-25
+created: 2025-05-25
+updated: 2025-05-25
 ---
 
 # 1. 使用以下命令进行dump java文件

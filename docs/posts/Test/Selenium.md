@@ -1,6 +1,8 @@
 ---
 title: Selenium面试题
 date: 2025-05-25
+created: 2025-05-25
+updated: 2025-05-25
 ---
 
 ## 1. 什么是Selenium，以及它在自动化测试中的作用是什么？

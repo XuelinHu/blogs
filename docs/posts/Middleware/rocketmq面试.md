@@ -1,6 +1,8 @@
 ---
 title: rocketmq面试
 date: 2025-05-25
+created: 2025-05-25
+updated: 2025-05-25
 ---
 
 1. 请简述RocketMQ的主要概念和特点。

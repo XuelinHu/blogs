@@ -54,6 +54,11 @@ export function readFrontmatterDate(filePath: string): string | null {
   return readFrontmatterValue(raw, 'date')
 }
 
+export function readFrontmatterUpdated(filePath: string): string | null {
+  const raw = fs.readFileSync(filePath, 'utf-8')
+  return readFrontmatterValue(raw, 'updated')
+}
+
 export function readHeadingTitle(filePath: string): string | null {
   const raw = fs.readFileSync(filePath, 'utf-8')
   const lines = raw.split(/\r?\n/)
@@ -142,9 +147,12 @@ export function buildRecentPosts(): RecentPost[] {
       }
 
       const explicitDate = readFrontmatterDate(fullPath)
+      const explicitUpdated = readFrontmatterUpdated(fullPath)
       const stat = fs.statSync(fullPath)
-      const normalized = explicitDate
-        ? normalizeDate(explicitDate)
+      const normalized = explicitUpdated
+        ? normalizeDate(explicitUpdated)
+        : explicitDate
+          ? normalizeDate(explicitDate)
         : stat.mtime.toISOString().slice(0, 10)
       const parsed = new Date(normalized)
       const relativePath = path.relative(postsRoot, fullPath).replace(/\\/g, '/')

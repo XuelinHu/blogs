@@ -1,6 +1,8 @@
 ---
 title: aysn-profiler压力测试性能观测设计
 date: 2025-05-25
+created: 2025-05-25
+updated: 2025-05-25
 ---
 
 # 1. 需求

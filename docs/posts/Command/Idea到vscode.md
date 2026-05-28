@@ -1,6 +1,8 @@
 ---
 title: Idea到vscode
 date: 2025-05-29
+created: 2025-05-29
+updated: 2025-05-29
 ---
 
 # 1. Idea 到 vscode 的常用快捷键

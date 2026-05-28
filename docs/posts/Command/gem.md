@@ -1,6 +1,8 @@
 ---
 title: gem
 date: 2025-06-18
+created: 2025-06-18
+updated: 2025-06-18
 ---
 
 # 1. ruby gem bundle 三者的关系

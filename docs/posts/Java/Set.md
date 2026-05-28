@@ -1,6 +1,8 @@
 ---
 title: Set
 date: 2025-07-30
+created: 2025-07-30
+updated: 2025-07-30
 ---
 
 # 1. Set

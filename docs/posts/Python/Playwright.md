@@ -1,6 +1,8 @@
 ---
 title: Playwright
 date: 2025-07-15
+created: 2025-07-15
+updated: 2025-07-15
 ---
 
 Playwright 是 Microsoft 开源的一个强大浏览器自动化工具，支持 Chromium、Firefox 和 WebKit，适合用于端到端测试、爬虫和自动化任务。
