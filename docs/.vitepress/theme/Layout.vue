@@ -6,6 +6,7 @@ import SidebarToggler from './components/SidebarToggler.vue'
 import SidebarIcons from './components/SidebarIcons.vue'
 import PageMeta from './components/PageMeta.vue'
 import AsideDocTitle from './components/AsideDocTitle.vue'
+import AsidePageOutline from './components/AsidePageOutline.vue'
 
 const { Layout } = DefaultTheme
 const route = useRoute()
@@ -39,6 +40,7 @@ onUnmounted(() => document.body.classList.remove(categoryIndexBodyClass))
     </template>
     <template #aside-outline-before>
       <AsideDocTitle />
+      <AsidePageOutline />
     </template>
     <template #sidebar-nav-before>
       <SidebarToggler />
@@ -50,5 +52,9 @@ onUnmounted(() => document.body.classList.remove(categoryIndexBodyClass))
 <style scoped>
 :global(body.category-index-page #VPContent > div > div > div.content > div > main > div > div > nav) {
   display: none;
+}
+
+:global(.VPDocAside .VPDocAsideOutline) {
+  display: none !important;
 }
 </style>
