@@ -1,5 +1,5 @@
 ---
-title: PlaLLM adjusting
+title: LLM adjusting
 date: 2026-05-28
 created: 2025-07-19
 updated: 2026-05-28

@@ -26,6 +26,7 @@ const categoryIcons: Record<string, string> = {
   Database: '▣',
   'Front-end': '◇',
   Java: '☕',
+  LLM: '◉',
   Middleware: '▦',
   Mobile: '▯',
   Net: '◎',

@@ -8,6 +8,29 @@ const repositoryName = process.env.GITHUB_REPOSITORY?.split('/')[1] || 'blogs'
 const base = process.env.VITEPRESS_BASE || `/${repositoryName}/`
 const recentPosts = buildRecentPosts()
 
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
+function configureMermaidFence(md: any) {
+  const defaultFence = md.renderer.rules.fence?.bind(md.renderer.rules)
+
+  md.renderer.rules.fence = (tokens: any[], idx: number, options: any, env: any, self: any) => {
+    const token = tokens[idx]
+    const language = token.info.trim().split(/\s+/)[0].toLowerCase()
+
+    if (language === 'mermaid') {
+      return `<div class="mermaid-diagram"><pre class="mermaid">${escapeHtml(token.content)}</pre></div>`
+    }
+
+    return defaultFence(tokens, idx, options, env, self)
+  }
+}
+
 export default defineConfig({
   title: '技术博客与科研笔记',
   description: '技术博客与学习笔记，覆盖 AI、Java、数据库、分布式系统等领域。',
@@ -24,10 +47,12 @@ export default defineConfig({
       level: [1, 2, 3]
     },
     config: (md) => {
+      configureMermaidFence(md)
       configureDiagramsPlugin(md, {
         diagramsDir: path.resolve(process.cwd(), 'docs/public/diagrams'),
         publicPath: `${base.replace(/\/$/, '')}/diagrams`,
         krokiServerUrl: 'https://kroki.io',
+        excludedDiagramTypes: ['mermaid'],
         allowedImportDirs: [path.resolve(process.cwd(), 'docs')]
       })
     }
@@ -36,6 +61,7 @@ export default defineConfig({
     nav: [
       { text: '首页', link: '/' },
       { text: 'AI', link: '/posts/AI/' },
+      { text: 'LLM', link: '/posts/LLM/' },
       { text: 'Java', link: '/posts/Java/' },
       { text: '数据库', link: '/posts/Database/' },
       { text: 'Solution', link: '/posts/Solution/' }

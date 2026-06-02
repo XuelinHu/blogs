@@ -1,5 +1,14 @@
 # blogs
 
+<p align="center">
+  <img height="20" src="https://img.shields.io/badge/vitepress-1.6.4-646CFF" />
+  <img height="20" src="https://img.shields.io/badge/typescript-6.0.3-3178C6" />
+  <img height="20" src="https://img.shields.io/badge/mermaid-11.15.0-FF3670" />
+  <img height="20" src="https://img.shields.io/badge/vitepress_plugin_diagrams-1.3.0-3C8772" />
+  <img height="20" src="https://img.shields.io/badge/nodejs-24-339933" />
+  <img height="20" src="https://img.shields.io/badge/github_actions-used-2088FF" />
+</p>
+
 迁移自旧博客的 VitePress 静态博客项目，部署目标为 GitHub Pages，技术栈为 VitePress + TypeScript + GitHub Actions。
 
 ## 当前内容状态
@@ -81,6 +90,7 @@ npm run docs:preview
 │     ├─ Database/
 │     ├─ Front-end/
 │     ├─ Java/
+│     ├─ LLM/
 │     ├─ Mobile/
 │     ├─ Net/
 │     ├─ Paper/
@@ -104,7 +114,7 @@ npm run docs:preview
 已支持。
 
 - 旧博客中已有多篇文章直接使用 Mermaid
-- 当前 VitePress 可以正常构建这些页面
+- 当前 VitePress 会在浏览器端按需渲染 Mermaid，避免 Kroki 生成 SVG 超时导致图片变成占位图或 504 页面
 
 写法示例：
 
@@ -165,6 +175,7 @@ digraph G {
 这意味着：
 
 - PlantUML：当前是“插件渲染”
+- Mermaid：当前是“浏览器端渲染”
 - draw.io：当前是“静态图片引用”
 
 ## 数学公式支持
@@ -187,6 +198,6 @@ $$
 ## 当前结论
 
 - PlantUML：已支持，并且构建产物中能看到生成后的 SVG
-- Mermaid：已支持，旧博客文章可正常构建
+- Mermaid：已支持，采用浏览器端渲染，不再依赖 kroki.io 生成 Mermaid 图片
 - draw.io：已支持静态图片引用方式
 - 旧博客迁移文章：已作为当前站点主体内容保留

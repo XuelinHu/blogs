@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import DefaultTheme from 'vitepress/theme'
-import { onMounted, onUnmounted, watch } from 'vue'
+import { nextTick, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute } from 'vitepress'
 import SidebarToggler from './components/SidebarToggler.vue'
 import SidebarIcons from './components/SidebarIcons.vue'
@@ -26,10 +26,36 @@ function syncCategoryIndexClass(path: string) {
   document.body.classList.toggle(categoryIndexBodyClass, isCategoryIndexPage)
 }
 
+async function renderMermaidDiagrams() {
+  const nodes = Array.from(document.querySelectorAll<HTMLElement>('.vp-doc pre.mermaid:not([data-processed="true"])'))
+
+  if (nodes.length === 0) {
+    return
+  }
+
+  try {
+    const { default: mermaid } = await import('mermaid')
+    mermaid.initialize({
+      startOnLoad: false,
+      securityLevel: 'strict',
+      theme: document.documentElement.classList.contains('dark') ? 'dark' : 'default'
+    })
+    await mermaid.run({ nodes })
+  } catch (error) {
+    console.error('Failed to render Mermaid diagrams:', error)
+  }
+}
+
+function scheduleMermaidRender() {
+  void nextTick(() => renderMermaidDiagrams())
+}
+
 onMounted(() => scrollSidebarToActive())
 onMounted(() => syncCategoryIndexClass(route.path))
+onMounted(() => scheduleMermaidRender())
 watch(() => route.path, () => scrollSidebarToActive())
 watch(() => route.path, (path) => syncCategoryIndexClass(path))
+watch(() => route.path, () => scheduleMermaidRender())
 onUnmounted(() => document.body.classList.remove(categoryIndexBodyClass))
 </script>
 
@@ -56,6 +82,28 @@ onUnmounted(() => document.body.classList.remove(categoryIndexBodyClass))
 
 :global(.VPDocAside .VPDocAsideOutline) {
   display: none !important;
+}
+
+:global(.vp-doc .mermaid-diagram) {
+  margin: 16px 0;
+  overflow-x: auto;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+  padding: 16px;
+  background: var(--vp-c-bg-soft);
+}
+
+:global(.vp-doc .mermaid-diagram .mermaid) {
+  display: flex;
+  justify-content: center;
+  margin: 0;
+  min-width: max-content;
+  background: transparent;
+}
+
+:global(.vp-doc .mermaid-diagram svg) {
+  max-width: 100%;
+  height: auto;
 }
 
 @media (min-width: 1440px) {
