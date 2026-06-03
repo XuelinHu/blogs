@@ -2,10 +2,10 @@
 title: 资源受限大模型评测与 QLoRA 项目源码导读
 date: 2026-06-02
 created: 2026-06-02
-updated: 2026-06-02
+updated: 2026-06-03
 ---
 
-# 1. 资源受限大模型评测与 QLoRA 项目源码导读
+# 资源受限大模型评测与 QLoRA 项目源码导读
 
 这篇是对 `/ds1/workspace/ai/resource-constrained-llm-eval` 项目的系统阅读笔记。假设读者刚接触大语言模型微调，因此会先讲项目整体在做什么，再讲每个 Python 文件的作用，最后把和大模型微调相关的常见框架、方法和本项目中的具体用法整理清楚。
 
@@ -15,7 +15,7 @@ updated: 2026-06-02
 
 [[toc]]
 
-## 2. 这个项目到底在做什么
+## 1. 这个项目到底在做什么
 
 这个项目不是一个普通的聊天机器人项目，而是一个实验型项目，目标更接近论文实验：
 
@@ -35,7 +35,7 @@ updated: 2026-06-02
 
 这就是“资源受限”的含义：不是多卡 A100/H100，而是在单张消费级显卡上尽量完成 4B、7B、8B 级别模型的评测和微调。
 
-## 3. 项目目录怎么读
+## 2. 项目目录怎么读
 
 核心目录如下：
 
@@ -59,7 +59,7 @@ paper/           论文 LaTeX 工作区
 7. `src/rc_llm_eval/pipelines/qlora.py`：看 QLoRA 怎么训练。
 8. `src/rc_llm_eval/utils/modeling.py`：看模型、分词器、量化和 PEFT adapter 怎么加载。
 
-## 4. 一张图看完整流程
+## 3. 一张图看完整流程
 
 ```mermaid
 flowchart TD
@@ -84,9 +84,9 @@ flowchart TD
     N --> O[导出论文 LaTeX 表格]
 ```
 
-## 5. 配置文件：项目的实验说明书
+## 4. 配置文件：项目的实验说明书
 
-### 5.1. 主实验配置
+### 4.1. 主实验配置
 
 路径：
 
@@ -190,7 +190,7 @@ qlora:
 - `gradient_accumulation_steps: 16`：梯度累积 16 次，相当于扩大有效 batch size。
 - `max_seq_length: 2048`：训练时最长输入长度。
 
-### 5.2. 模型注册表
+### 4.2. 模型注册表
 
 路径：
 
@@ -236,7 +236,7 @@ qwen2_5_7b_instruct:
 | `gemma_2_9b_it` | `google/gemma-2-9b-it` | 9B | 超过 8B，但也进入配置。 |
 | `glm_4_9b_chat_hf` | `THUDM/glm-4-9b-chat-hf` | 9B | GLM 聊天模型。 |
 
-### 5.3. 任务注册表
+### 4.3. 任务注册表
 
 路径：
 
@@ -273,7 +273,7 @@ configs/datasets/tasks.yaml
 - `category`：样本类别。
 - `source`：来源文件。
 
-## 6. Python 入口：cli.py
+## 5. Python 入口：cli.py
 
 路径：
 
@@ -315,7 +315,7 @@ python -m src.rc_llm_eval.cli run-qlora \
 
 新手可以把 `cli.py` 理解成项目的“总开关”：它不做具体训练细节，而是根据命令调用对应的 pipeline。
 
-## 7. Baseline 评测流水线
+## 6. Baseline 评测流水线
 
 路径：
 
@@ -329,7 +329,7 @@ src/rc_llm_eval/pipelines/baseline.py
 2. 跑本地域问答。
 3. 记录效率指标。
 
-### 7.1. 公开 benchmark：lm-eval
+### 6.1. 公开 benchmark：lm-eval
 
 核心函数：
 
@@ -367,7 +367,7 @@ confirm_run_unsafe_code=True
 
 这表示允许执行代码类评测。这个开关要谨慎使用，只应该在可信环境里跑。
 
-### 7.2. 本地域问答评测
+### 6.2. 本地域问答评测
 
 核心函数：
 
@@ -399,7 +399,7 @@ run_local_domain_eval(...)
 
 这部分比只看 `exact_match` 更合理，因为大模型经常会多输出解释，完全匹配会很苛刻。
 
-### 7.3. 效率评测
+### 6.3. 效率评测
 
 核心函数：
 
@@ -427,7 +427,7 @@ warmup_count = min(baseline_cfg["warmup_prompts"], len(prompts))
 
 原因是第一次推理可能受到 CUDA kernel 初始化、缓存构建等影响，直接统计首条样本会导致延迟偏高。
 
-### 7.4. 完整 run_eval 流程
+### 6.4. 完整 run_eval 流程
 
 核心函数：
 
@@ -466,7 +466,7 @@ results/single_gpu_3090/baseline/<model_key>/
 <model>_<precision>_summary.csv
 ```
 
-## 8. QLoRA 微调流水线
+## 7. QLoRA 微调流水线
 
 路径：
 
@@ -476,7 +476,7 @@ src/rc_llm_eval/pipelines/qlora.py
 
 这是最重要的微调代码。
 
-### 8.1. QLoRA 是什么
+### 7.1. QLoRA 是什么
 
 先理解三个概念：
 
@@ -490,7 +490,7 @@ src/rc_llm_eval/pipelines/qlora.py
 
 这非常适合 24GB 单卡场景。
 
-### 8.2. QLoRA 训练整体流程
+### 7.2. QLoRA 训练整体流程
 
 `run_qlora(...)` 做的事情：
 
@@ -517,7 +517,7 @@ src/rc_llm_eval/pipelines/qlora.py
   -> 钉钉通知
 ```
 
-### 8.3. 4bit 量化配置
+### 7.3. 4bit 量化配置
 
 代码使用：
 
@@ -537,7 +537,7 @@ BitsAndBytesConfig(
 - `bnb_4bit_quant_type="nf4"`：使用 NF4 量化格式，这是 QLoRA 常用格式。
 - `bnb_4bit_use_double_quant=True`：二次量化，进一步节省显存。
 
-### 8.4. 模型加载
+### 7.4. 模型加载
 
 代码使用：
 
@@ -561,7 +561,7 @@ AutoModelForCausalLM.from_pretrained(
 - `trust_remote_code`：是否允许加载模型仓库里的自定义 Python 代码。
 - `cache_dir`：模型缓存目录。
 
-### 8.5. k-bit 训练准备
+### 7.5. k-bit 训练准备
 
 代码：
 
@@ -571,7 +571,7 @@ model = prepare_model_for_kbit_training(model)
 
 这是 PEFT 里的函数。它会对 k-bit 量化模型做训练前准备，例如处理某些层的 dtype、梯度需求等，让 4bit 模型能稳定挂 LoRA 训练。
 
-### 8.6. LoRA 配置
+### 7.6. LoRA 配置
 
 代码：
 
@@ -610,7 +610,7 @@ up_proj, down_proj, gate_proj
 
 这比只插 `q_proj/v_proj` 更激进一些，adapter 表达能力更强，但训练参数也更多。
 
-### 8.7. 数据加载和编码
+### 7.7. 数据加载和编码
 
 代码：
 
@@ -648,7 +648,7 @@ tokens["labels"] = [ids.copy() for ids in tokens["input_ids"]]
 
 这个写法是“全段 causal LM 训练”。它没有只对 answer 部分计算 loss，因此 question 部分也会参与训练目标。项目论文表格里也出现了 completion-only adapter 的计划，说明后续可能会改成只训练答案部分。
 
-### 8.8. TrainingArguments
+### 7.8. TrainingArguments
 
 代码使用 Transformers 的 `TrainingArguments`：
 
@@ -684,7 +684,7 @@ TrainingArguments(
 - `eval_strategy=epoch`：每个 epoch 做一次验证。
 - `save_strategy=epoch`：每个 epoch 保存一次。
 
-### 8.9. Trainer
+### 7.9. Trainer
 
 代码使用：
 
@@ -732,7 +732,7 @@ results/single_gpu_3090/qlora/<model_key>/
 
 `adapter/` 里保存的是 LoRA adapter，不是完整大模型权重。
 
-## 9. 模型加载与量化工具
+## 8. 模型加载与量化工具
 
 路径：
 
@@ -742,7 +742,7 @@ src/rc_llm_eval/utils/modeling.py
 
 这个文件负责统一加载模型、tokenizer、量化配置和 PEFT adapter。
 
-### 9.1. dtype 映射
+### 8.1. dtype 映射
 
 ```python
 resolve_dtype("bfloat16") -> torch.bfloat16
@@ -752,7 +752,7 @@ resolve_dtype("float32") -> torch.float32
 
 配置文件里写的是字符串，真正传给 PyTorch 时要变成 `torch.dtype`。
 
-### 9.2. 量化模式
+### 8.2. 量化模式
 
 ```python
 build_quantization_config(mode, dtype_name)
@@ -777,7 +777,7 @@ BitsAndBytesConfig(
 )
 ```
 
-### 9.3. 推理时挂 adapter
+### 8.3. 推理时挂 adapter
 
 ```python
 if peft_path:
@@ -793,11 +793,11 @@ if peft_path:
 
 这也是 PEFT 的优势：不用保存一份完整 7B/8B 模型，只保存很小的 adapter。
 
-## 10. 数据集构建：铁路领域数据怎么来
+## 9. 数据集构建：铁路领域数据怎么来
 
 项目里有两个数据集构建脚本。
 
-### 10.1. domain_qa
+### 9.1. domain_qa
 
 路径：
 
@@ -839,7 +839,7 @@ data/domain/
 
 训练时真正用的是 `text` 字段。
 
-### 10.2. domain_regqa
+### 9.2. domain_regqa
 
 路径：
 
@@ -878,11 +878,11 @@ data/domain_regqa/
 
 它的优势是可追溯，答案是原文子串，适合做规章类问答评估。
 
-## 11. 和大模型微调相关的常见框架
+## 10. 和大模型微调相关的常见框架
 
 下面按“本项目真实使用情况”分组。
 
-## 11.1. PyTorch
+### 10.1. PyTorch
 
 安装声明：
 
@@ -912,7 +912,7 @@ if torch.cuda.is_available():
 
 > PyTorch 是底层深度学习框架，Transformers、PEFT、bitsandbytes 这些上层工具最终都依赖它。
 
-## 11.2. Transformers
+### 10.2. Transformers
 
 安装声明：
 
@@ -944,7 +944,7 @@ transformers>=4.51.0
 
 > Transformers 是 Hugging Face 的核心库，负责“模型怎么加载、tokenizer 怎么加载、训练器怎么跑”。
 
-## 11.3. Datasets
+### 10.3. Datasets
 
 安装声明：
 
@@ -974,7 +974,7 @@ dataset = load_dataset(
 
 > Datasets 是数据加载和预处理工具。它把 JSONL 这种普通文件变成 Trainer 能吃的数据对象。
 
-## 11.4. PEFT
+### 10.4. PEFT
 
 安装声明：
 
@@ -1002,7 +1002,7 @@ peft>=0.12.0
 
 > PEFT 是“参数高效微调”工具。它让你不用训练整个大模型，只训练很小的一部分 adapter。
 
-## 11.5. bitsandbytes
+### 10.5. bitsandbytes
 
 安装声明：
 
@@ -1035,7 +1035,7 @@ BitsAndBytesConfig(
 
 > bitsandbytes 是量化工具。没有它，7B/8B 模型在 24GB 单卡上做训练会非常吃紧。
 
-## 11.6. Accelerate
+### 10.6. Accelerate
 
 安装声明：
 
@@ -1055,7 +1055,7 @@ accelerate>=0.30.0
 
 > Accelerate 是 Hugging Face 的训练/推理加速和设备管理工具。即使代码里没直接导入，它也经常作为 Transformers 的底层依赖发挥作用。
 
-## 11.7. TRL
+### 10.7. TRL
 
 安装声明：
 
@@ -1081,7 +1081,7 @@ TRL 常见用途：
 
 > TRL 是更偏“指令微调、偏好优化、RLHF”的框架。本项目现在走的是更基础的 Transformers Trainer。
 
-## 11.8. lm-evaluation-harness
+### 10.8. lm-evaluation-harness
 
 安装声明：
 
@@ -1106,7 +1106,7 @@ from lm_eval.models.huggingface import HFLM
 
 > lm-eval 是大模型评测框架，不是微调框架。它负责告诉你模型微调前后到底表现如何。
 
-## 11.9. Hugging Face Hub
+### 10.9. Hugging Face Hub
 
 代码中使用：
 
@@ -1130,7 +1130,7 @@ scripts/prefetch_models.py
 
 > Hugging Face Hub 是模型仓库。训练前最好先把模型下载好，否则长实验中途下载失败会很麻烦。
 
-## 11.10. TensorBoard
+### 10.10. TensorBoard
 
 安装声明：
 
@@ -1160,7 +1160,7 @@ runs/resource-constrained-llm-eval/<run_name>/
 
 > TensorBoard 是训练可视化工具，方便看模型是不是在正常收敛。
 
-## 11.11. pandas / numpy / matplotlib / scikit-learn
+### 10.11. pandas / numpy / matplotlib / scikit-learn
 
 安装声明：
 
@@ -1178,7 +1178,7 @@ scikit-learn>=1.5.0
 - `matplotlib`：依赖中有，适合后续画图。
 - `scikit-learn`：依赖中有，当前核心代码未明显直接使用。
 
-## 11.12. PyYAML
+### 10.12. PyYAML
 
 安装声明：
 
@@ -1201,7 +1201,7 @@ src/rc_llm_eval/utils/config.py
 
 > YAML 是实验配置文件格式。模型、任务、训练参数不写死在 Python 里，而是写在 YAML 里，方便改实验。
 
-## 12. 常见但本项目没有直接采用的微调框架
+## 11. 常见但本项目没有直接采用的微调框架
 
 为了建立完整知识地图，下面这些也是大模型微调里经常见到的框架，但当前项目没有作为主流程使用。
 
@@ -1226,7 +1226,7 @@ src/rc_llm_eval/utils/config.py
 
 本项目选择的是“可控、论文实验友好”的路线：自己写 pipeline，用 Transformers + PEFT + bitsandbytes 串起来。
 
-## 13. 本项目的 QLoRA 训练和评测命令
+## 12. 本项目的 QLoRA 训练和评测命令
 
 查看计划：
 
@@ -1281,11 +1281,11 @@ make summarize
 make export-paper-tables
 ```
 
-## 14. 当前已经落盘的结果
+## 13. 当前已经落盘的结果
 
 从 `results/` 和 `paper/tables/` 看，项目已经产生了不少实验输出。
 
-### 14.1. baseline 结果
+### 13.1. baseline 结果
 
 存在这些聚合文件：
 
@@ -1318,7 +1318,7 @@ paper/tables/generated_efficiency_results.tex
 - 但当前结果里 `int4/int8` 吞吐不一定更快，可能因为量化 kernel、硬件、batch size、实现路径等因素影响。
 - `bf16` 显存更高，但在这批效率样本上 tokens/s 反而更高。
 
-### 14.2. QLoRA 训练结果
+### 13.2. QLoRA 训练结果
 
 存在这些训练结果：
 
@@ -1340,7 +1340,7 @@ results/single_gpu_3090/qlora/qwen3_8b/eval_metrics.json
 
 说明这两个模型已经完成过 Domain-QA adapter 训练。
 
-### 14.3. QLoRA 后评测结果
+### 13.3. QLoRA 后评测结果
 
 存在：
 
@@ -1364,9 +1364,9 @@ paper/tables/qlora_results.tex
 - `char_f1` 和 `reference_contained` 更能反映部分命中。
 - 表格里还有一些 placeholder，说明后续 adapter 变体还没全部完成。
 
-## 15. 对新手最重要的概念串起来
+## 14. 对新手最重要的概念串起来
 
-### 15.1. tokenizer 是什么
+### 14.1. tokenizer 是什么
 
 大模型不能直接读中文或英文字符串，它读的是 token id。
 
@@ -1382,7 +1382,7 @@ labels = input_ids.copy()
 
 意思是让模型学习“根据前文预测下一个 token”。
 
-### 15.2. causal LM 是什么
+### 14.2. causal LM 是什么
 
 `AutoModelForCausalLM` 加载的是因果语言模型。
 
@@ -1394,7 +1394,7 @@ labels = input_ids.copy()
 
 聊天模型、补全文本模型、本项目 QLoRA 训练都属于这个路线。
 
-### 15.3. adapter 是什么
+### 14.3. adapter 是什么
 
 adapter 是挂在原模型上的小模块。
 
@@ -1412,7 +1412,7 @@ adapter：
 
 训练结束后只保存 adapter，下次推理时再把它挂回基础模型。
 
-### 15.4. 为什么用 QLoRA
+### 14.4. 为什么用 QLoRA
 
 如果全量微调 7B/8B 模型，24GB 显存通常很紧张，甚至跑不起来。
 
@@ -1426,7 +1426,7 @@ QLoRA 的策略是：
 
 这样就能在单卡 3090 上做领域适配实验。
 
-### 15.5. baseline 和 fine-tune 的区别
+### 14.5. baseline 和 fine-tune 的区别
 
 baseline：
 
@@ -1453,7 +1453,7 @@ post-QLoRA eval：
 显存、速度、准确率是否值得
 ```
 
-## 16. 这个项目的工程设计优点
+## 15. 这个项目的工程设计优点
 
 1. 配置和代码分离：模型、任务、训练参数都在 YAML 中。
 2. 单卡友好：默认 batch size 小，使用 gradient accumulation。
@@ -1463,7 +1463,7 @@ post-QLoRA eval：
 6. 领域数据明确：铁路术语、翻译、规章问答都有来源。
 7. 微调方式务实：采用 PEFT + bitsandbytes 的 QLoRA 路线。
 
-## 17. 需要注意的问题
+## 16. 需要注意的问题
 
 1. 当前 QLoRA 训练是全段 causal LM loss，question 和 answer 都参与 loss；如果想更贴近问答微调，可以改成只对 answer 部分计算 loss。
 2. `trl` 已安装但当前没有直接使用；如果后续要做标准 SFT，可以考虑 `SFTTrainer`。
@@ -1473,6 +1473,6 @@ post-QLoRA eval：
 6. 结果表中有 placeholder，说明部分 adapter 变体和对比实验还未完全落地。
 7. 模型列表里有 9B 模型，虽然项目主题偏 8B 以内，但配置中确实包含 `gemma_2_9b_it` 和 `glm_4_9b_chat_hf`。
 
-## 18. 一句话总结
+## 17. 一句话总结
 
 这个项目用 `Transformers + PEFT + bitsandbytes + Datasets + Trainer` 搭出了一条可控的 QLoRA 微调流水线，用 `lm-eval + 本地域评测 + 效率测试` 评估模型效果和资源消耗，再用 `pandas` 导出论文表格。对新手来说，最值得重点读的是 `qlora.py`、`baseline.py`、`modeling.py` 和三个 YAML 配置文件，因为它们完整串起了“模型加载、量化、adapter 微调、评测、结果汇总”的大模型实验闭环。
