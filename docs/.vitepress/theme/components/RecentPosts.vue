@@ -21,6 +21,12 @@ function formatDate(date: string): string {
   if (Number.isNaN(parsed.getTime())) return date
   return new Intl.DateTimeFormat('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' }).format(parsed)
 }
+
+function visualLabel(post: RecentPost): string {
+  const trimmed = post.category.trim()
+  if (trimmed.length <= 8) return trimmed
+  return trimmed.slice(0, 8)
+}
 </script>
 
 <template>
@@ -29,6 +35,11 @@ function formatDate(date: string): string {
     <div class="home-posts__list">
       <article v-for="post in visiblePosts" :key="post.link" class="post-card">
         <a class="post-card__link" :href="withBase(post.link)">
+          <div class="post-card__visual" aria-hidden="true">
+            <span class="post-card__visual-label">{{ visualLabel(post) }}</span>
+            <span class="post-card__visual-sub">NOTE</span>
+            <span class="post-card__visual-dot"></span>
+          </div>
           <div class="post-card__main">
             <span class="post-card__category">{{ post.category }}</span>
             <h3 class="post-card__title">{{ post.title }}</h3>
@@ -44,15 +55,16 @@ function formatDate(date: string): string {
 
 <style scoped>
 .home-posts {
-  max-width: 960px;
-  margin: 48px auto 0;
+  max-width: 1080px;
+  margin: 52px auto 0;
   padding: 0 24px;
 }
 
 .home-posts__title {
   margin: 0 0 24px;
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 700;
+  letter-spacing: 0;
 }
 
 .home-posts__list {
@@ -63,29 +75,114 @@ function formatDate(date: string): string {
 
 .post-card {
   border: 1px solid var(--vp-c-divider);
-  border-radius: 12px;
-  background: var(--vp-c-bg-soft);
-  transition: border-color 0.2s, box-shadow 0.2s;
+  border-radius: 10px;
+  background: var(--vp-c-bg);
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+  overflow: hidden;
 }
 
 .post-card:hover {
   border-color: var(--vp-c-brand-1);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 14px 32px rgba(15, 23, 42, 0.08);
+  transform: translateY(-2px);
 }
 
 .post-card__link {
   display: flex;
-  align-items: flex-start;
+  align-items: stretch;
   justify-content: space-between;
-  gap: 24px;
-  padding: 18px 20px;
+  gap: 18px;
+  padding: 14px;
   text-decoration: none;
   color: inherit;
   height: 100%;
 }
 
+.post-card__visual {
+  position: relative;
+  flex: 0 0 150px;
+  min-height: 128px;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  overflow: hidden;
+  border-radius: 8px;
+  padding: 16px;
+  color: #ffffff;
+  background:
+    linear-gradient(135deg, rgba(37, 99, 235, 0.98), rgba(13, 148, 136, 0.96)),
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0 1px, transparent 1px 12px);
+}
+
+.post-card__visual::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.42), transparent);
+  transform: translateX(-130%);
+  transition: transform 0.35s;
+}
+
+.post-card:hover .post-card__visual::before {
+  animation: visual-sweep 1.6s ease-in-out infinite;
+}
+
+.post-card__visual::after {
+  content: '';
+  position: absolute;
+  right: -26px;
+  top: -24px;
+  width: 82px;
+  height: 82px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.post-card__visual-label {
+  position: relative;
+  z-index: 1;
+  font-size: 22px;
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: 0;
+}
+
+.post-card__visual-sub {
+  position: relative;
+  z-index: 1;
+  margin-top: 7px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  opacity: 0.8;
+}
+
+.post-card__visual-dot {
+  position: absolute;
+  left: 14px;
+  top: 14px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 16px 0 0 rgba(255, 255, 255, 0.62), 32px 0 0 rgba(255, 255, 255, 0.34);
+}
+
 .post-card__main {
+  flex: 1 1 auto;
   min-width: 0;
+  border-radius: 8px;
+  padding: 9px 10px;
+  transition: background-color 0.2s;
+}
+
+.post-card:hover .post-card__main {
+  background: #eff6ff;
+}
+
+:global(.dark) .post-card:hover .post-card__main {
+  background: rgba(37, 99, 235, 0.18);
 }
 
 .post-card__category {
@@ -115,7 +212,7 @@ function formatDate(date: string): string {
   flex-shrink: 0;
   font-size: 12px;
   color: var(--vp-c-text-3);
-  padding-top: 2px;
+  padding: 11px 4px 0 0;
   white-space: nowrap;
 }
 
@@ -128,6 +225,24 @@ function formatDate(date: string): string {
   .post-card__link {
     flex-direction: column;
     gap: 10px;
+  }
+
+  .post-card__visual {
+    flex: 0 0 auto;
+    min-height: 96px;
+  }
+
+  .post-card__date {
+    padding: 0 10px 8px;
+  }
+}
+
+@keyframes visual-sweep {
+  from {
+    transform: translateX(-130%);
+  }
+  to {
+    transform: translateX(130%);
   }
 }
 </style>

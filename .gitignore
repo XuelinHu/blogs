@@ -8,6 +8,7 @@ docs/.vitepress/*
 docs/.vitepress/theme/*
 !docs/.vitepress/theme/components/
 docs/.vitepress/theme/components/*
+!docs/.vitepress/theme/components/HeroTrail.vue
 !docs/.vitepress/theme/components/AsidePageOutline.vue
 !docs/.vitepress/theme/components/AsidePageOutlineTree.vue
 docs/public/diagrams/*.svg
