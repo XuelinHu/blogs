@@ -15,6 +15,26 @@ const recentPosts = computed(
   () => (theme.value.recentPosts as RecentPost[] | undefined) ?? []
 )
 const visiblePosts = computed(() => recentPosts.value.slice(0, 6))
+const categoryThemes: Record<string, { start: string; end: string; rgb: string }> = {
+  AI: { start: '#2563eb', end: '#06b6d4', rgb: '37, 99, 235' },
+  LLM: { start: '#7c3aed', end: '#2563eb', rgb: '124, 58, 237' },
+  Java: { start: '#ea580c', end: '#dc2626', rgb: '234, 88, 12' },
+  Database: { start: '#16a34a', end: '#0d9488', rgb: '22, 163, 74' },
+  Middleware: { start: '#0891b2', end: '#4f46e5', rgb: '8, 145, 178' },
+  Spring: { start: '#65a30d', end: '#16a34a', rgb: '101, 163, 13' },
+  Solution: { start: '#0f766e', end: '#2563eb', rgb: '15, 118, 110' },
+  Test: { start: '#db2777', end: '#f59e0b', rgb: '219, 39, 119' },
+  Command: { start: '#475569', end: '#2563eb', rgb: '71, 85, 105' },
+  'Front-end': { start: '#f97316', end: '#ec4899', rgb: '249, 115, 22' },
+  Python: { start: '#2563eb', end: '#f59e0b', rgb: '37, 99, 235' },
+  Reading: { start: '#9333ea', end: '#db2777', rgb: '147, 51, 234' },
+  Paper: { start: '#0d9488', end: '#84cc16', rgb: '13, 148, 136' },
+  Mobile: { start: '#0284c7', end: '#22c55e', rgb: '2, 132, 199' },
+  Net: { start: '#4f46e5', end: '#06b6d4', rgb: '79, 70, 229' },
+  Sandbox: { start: '#b45309', end: '#dc2626', rgb: '180, 83, 9' },
+  Web3: { start: '#7c3aed', end: '#14b8a6', rgb: '124, 58, 237' }
+}
+const fallbackTheme = { start: '#2563eb', end: '#0d9488', rgb: '37, 99, 235' }
 
 function formatDate(date: string): string {
   const parsed = new Date(date)
@@ -27,13 +47,22 @@ function visualLabel(post: RecentPost): string {
   if (trimmed.length <= 8) return trimmed
   return trimmed.slice(0, 8)
 }
+
+function categoryStyle(post: RecentPost) {
+  const theme = categoryThemes[post.category] ?? fallbackTheme
+  return {
+    '--post-start': theme.start,
+    '--post-end': theme.end,
+    '--post-rgb': theme.rgb
+  }
+}
 </script>
 
 <template>
   <section class="home-posts">
     <h2 class="home-posts__title">最新文章</h2>
     <div class="home-posts__list">
-      <article v-for="post in visiblePosts" :key="post.link" class="post-card">
+      <article v-for="post in visiblePosts" :key="post.link" class="post-card" :style="categoryStyle(post)">
         <a class="post-card__link" :href="withBase(post.link)">
           <div class="post-card__visual" aria-hidden="true">
             <span class="post-card__visual-label">{{ visualLabel(post) }}</span>
@@ -82,8 +111,8 @@ function visualLabel(post: RecentPost): string {
 }
 
 .post-card:hover {
-  border-color: var(--vp-c-brand-1);
-  box-shadow: 0 14px 32px rgba(15, 23, 42, 0.08);
+  border-color: var(--post-start);
+  box-shadow: 0 14px 32px rgba(var(--post-rgb), 0.14);
   transform: translateY(-2px);
 }
 
@@ -111,7 +140,7 @@ function visualLabel(post: RecentPost): string {
   padding: 16px;
   color: #ffffff;
   background:
-    linear-gradient(135deg, rgba(37, 99, 235, 0.98), rgba(13, 148, 136, 0.96)),
+    linear-gradient(135deg, var(--post-start), var(--post-end)),
     repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0 1px, transparent 1px 12px);
 }
 
@@ -182,13 +211,13 @@ function visualLabel(post: RecentPost): string {
 }
 
 :global(.dark) .post-card:hover .post-card__main {
-  background: rgba(37, 99, 235, 0.18);
+  background: rgba(var(--post-rgb), 0.18);
 }
 
 .post-card__category {
   font-size: 12px;
   font-weight: 600;
-  color: var(--vp-c-brand-1);
+  color: var(--post-start);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }

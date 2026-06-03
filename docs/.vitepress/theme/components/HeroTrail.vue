@@ -2,12 +2,12 @@
 import { withBase } from 'vitepress'
 
 const milestones = [
-  { label: 'AI', detail: '模型工具' },
-  { label: 'LLM', detail: '训练评测' },
-  { label: 'Java', detail: '后端基础' },
-  { label: '数据库', detail: '存储检索' },
-  { label: '分布式', detail: '系统设计' },
-  { label: '测试', detail: '质量效率' }
+  { label: 'AI', detail: '模型工具', start: '#2563eb', end: '#06b6d4', rgb: '37, 99, 235' },
+  { label: 'LLM', detail: '训练评测', start: '#7c3aed', end: '#2563eb', rgb: '124, 58, 237' },
+  { label: 'Java', detail: '后端基础', start: '#ea580c', end: '#dc2626', rgb: '234, 88, 12' },
+  { label: '数据库', detail: '存储检索', start: '#16a34a', end: '#0d9488', rgb: '22, 163, 74' },
+  { label: '分布式', detail: '系统设计', start: '#0891b2', end: '#4f46e5', rgb: '8, 145, 178' },
+  { label: '测试', detail: '质量效率', start: '#db2777', end: '#f59e0b', rgb: '219, 39, 119' }
 ]
 </script>
 
@@ -29,16 +29,25 @@ const milestones = [
 
     <div class="hero-trail__map" aria-label="文章分类学习路线">
       <div class="hero-trail__track"></div>
-      <div class="hero-trail__runner" aria-hidden="true">
-        <span class="hero-trail__head"></span>
-        <span class="hero-trail__body"></span>
-        <span class="hero-trail__arm hero-trail__arm--front"></span>
-        <span class="hero-trail__arm hero-trail__arm--back"></span>
-        <span class="hero-trail__leg hero-trail__leg--front"></span>
-        <span class="hero-trail__leg hero-trail__leg--back"></span>
+      <div class="hero-trail__vehicle" aria-hidden="true">
+        <span class="hero-trail__smoke hero-trail__smoke--one"></span>
+        <span class="hero-trail__smoke hero-trail__smoke--two"></span>
+        <span class="hero-trail__smoke hero-trail__smoke--three"></span>
+        <span class="hero-trail__beacon"></span>
+        <span class="hero-trail__flash"></span>
+        <span class="hero-trail__car-top"></span>
+        <span class="hero-trail__car-body"></span>
+        <span class="hero-trail__car-window"></span>
+        <span class="hero-trail__wheel hero-trail__wheel--front"></span>
+        <span class="hero-trail__wheel hero-trail__wheel--back"></span>
       </div>
       <div class="hero-trail__milestones">
-        <div v-for="item in milestones" :key="item.label" class="hero-trail__milestone">
+        <div
+          v-for="item in milestones"
+          :key="item.label"
+          class="hero-trail__milestone"
+          :style="{ '--trail-start': item.start, '--trail-end': item.end, '--trail-rgb': item.rgb }"
+        >
           <span class="hero-trail__pin"></span>
           <strong>{{ item.label }}</strong>
           <small>{{ item.detail }}</small>
@@ -161,7 +170,7 @@ const milestones = [
   top: 128px;
   height: 4px;
   border-radius: 999px;
-  background: linear-gradient(90deg, #60a5fa, #22c55e, #3b82f6);
+  background: linear-gradient(90deg, #2563eb, #7c3aed, #ea580c, #16a34a, #0891b2, #db2777);
 }
 
 .hero-trail__track::after {
@@ -173,75 +182,113 @@ const milestones = [
   animation: track-light 3.8s ease-in-out infinite;
 }
 
-.hero-trail__runner {
+.hero-trail__vehicle {
   position: absolute;
-  top: 78px;
+  top: 90px;
   left: 26px;
-  width: 46px;
-  height: 68px;
-  animation: runner-path 8s linear infinite;
+  width: 74px;
+  height: 44px;
+  animation: vehicle-path 8s linear infinite;
 }
 
-.hero-trail__head,
-.hero-trail__body,
-.hero-trail__arm,
-.hero-trail__leg {
+.hero-trail__car-body,
+.hero-trail__car-top,
+.hero-trail__car-window,
+.hero-trail__beacon,
+.hero-trail__flash,
+.hero-trail__smoke,
+.hero-trail__wheel {
   position: absolute;
   display: block;
-  background: #1d4ed8;
 }
 
-.hero-trail__head {
-  left: 16px;
-  top: 2px;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-}
-
-.hero-trail__body {
-  left: 20px;
-  top: 20px;
-  width: 8px;
-  height: 26px;
-  border-radius: 999px;
-  transform: rotate(8deg);
-}
-
-.hero-trail__arm,
-.hero-trail__leg {
-  left: 22px;
-  width: 6px;
-  height: 24px;
-  border-radius: 999px;
-  transform-origin: top center;
-}
-
-.hero-trail__arm {
-  top: 22px;
+.hero-trail__car-body {
+  left: 12px;
+  bottom: 7px;
+  width: 54px;
   height: 22px;
-  background: #2563eb;
+  border-radius: 8px 12px 7px 7px;
+  background: linear-gradient(135deg, #2563eb, #06b6d4);
+  box-shadow: inset 0 -4px 0 rgba(15, 23, 42, 0.18), 0 8px 16px rgba(37, 99, 235, 0.25);
 }
 
-.hero-trail__arm--front {
-  animation: limb-front 0.7s ease-in-out infinite;
+.hero-trail__car-top {
+  left: 28px;
+  bottom: 25px;
+  width: 26px;
+  height: 14px;
+  border-radius: 9px 9px 3px 3px;
+  background: linear-gradient(135deg, #60a5fa, #2563eb);
 }
 
-.hero-trail__arm--back {
-  animation: limb-back 0.7s ease-in-out infinite;
+.hero-trail__car-window {
+  left: 34px;
+  bottom: 28px;
+  width: 14px;
+  height: 8px;
+  border-radius: 6px 6px 2px 2px;
+  background: rgba(255, 255, 255, 0.82);
 }
 
-.hero-trail__leg {
-  top: 43px;
-  background: #0f766e;
+.hero-trail__wheel {
+  bottom: 2px;
+  width: 13px;
+  height: 13px;
+  border: 3px solid #0f172a;
+  border-radius: 50%;
+  background: #f8fafc;
+  animation: wheel-spin 0.52s linear infinite;
 }
 
-.hero-trail__leg--front {
-  animation: limb-back 0.7s ease-in-out infinite;
+.hero-trail__wheel--front {
+  left: 50px;
 }
 
-.hero-trail__leg--back {
-  animation: limb-front 0.7s ease-in-out infinite;
+.hero-trail__wheel--back {
+  left: 18px;
+}
+
+.hero-trail__beacon {
+  left: 40px;
+  top: 1px;
+  width: 10px;
+  height: 8px;
+  border-radius: 8px 8px 2px 2px;
+  background: #f59e0b;
+  box-shadow: 0 0 0 rgba(245, 158, 11, 0.5);
+  animation: beacon-flash 0.8s ease-in-out infinite;
+}
+
+.hero-trail__flash {
+  left: 44px;
+  top: -5px;
+  width: 22px;
+  height: 18px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(250, 204, 21, 0.58), transparent 68%);
+  animation: flash-pulse 0.8s ease-in-out infinite;
+}
+
+.hero-trail__smoke {
+  left: 0;
+  bottom: 15px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(100, 116, 139, 0.28);
+  filter: blur(0.2px);
+  opacity: 0;
+  animation: smoke-tail 1.15s ease-out infinite;
+}
+
+.hero-trail__smoke--two {
+  bottom: 20px;
+  animation-delay: 0.22s;
+}
+
+.hero-trail__smoke--three {
+  bottom: 12px;
+  animation-delay: 0.44s;
 }
 
 .hero-trail__milestones {
@@ -269,8 +316,8 @@ const milestones = [
   height: 18px;
   border: 3px solid #ffffff;
   border-radius: 50%;
-  background: #2563eb;
-  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.18);
+  background: linear-gradient(135deg, var(--trail-start), var(--trail-end));
+  box-shadow: 0 0 0 4px rgba(var(--trail-rgb), 0.18);
 }
 
 .hero-trail__milestone strong,
@@ -281,6 +328,7 @@ const milestones = [
 .hero-trail__milestone strong {
   font-size: 13px;
   line-height: 1.4;
+  color: var(--trail-start);
 }
 
 .hero-trail__milestone small {
@@ -310,7 +358,7 @@ const milestones = [
   }
 }
 
-@keyframes runner-path {
+@keyframes vehicle-path {
   from {
     left: 26px;
   }
@@ -319,23 +367,51 @@ const milestones = [
   }
 }
 
-@keyframes limb-front {
-  0%,
-  100% {
-    transform: rotate(38deg);
-  }
-  50% {
-    transform: rotate(-42deg);
+@keyframes wheel-spin {
+  to {
+    transform: rotate(360deg);
   }
 }
 
-@keyframes limb-back {
+@keyframes beacon-flash {
   0%,
   100% {
-    transform: rotate(-42deg);
+    box-shadow: 0 0 0 rgba(245, 158, 11, 0);
+    opacity: 0.65;
   }
+
   50% {
-    transform: rotate(38deg);
+    box-shadow: 0 0 18px rgba(245, 158, 11, 0.95);
+    opacity: 1;
+  }
+}
+
+@keyframes flash-pulse {
+  0%,
+  100% {
+    opacity: 0.2;
+    transform: scale(0.72);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.12);
+  }
+}
+
+@keyframes smoke-tail {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.4);
+  }
+
+  22% {
+    opacity: 0.8;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-30px, -10px) scale(1.6);
   }
 }
 
@@ -380,11 +456,16 @@ const milestones = [
     bottom: 32px;
     width: 4px;
     height: auto;
-    background: linear-gradient(180deg, #60a5fa, #22c55e, #3b82f6);
+    background: linear-gradient(180deg, #2563eb, #7c3aed, #ea580c, #16a34a, #0891b2, #db2777);
   }
 
-  .hero-trail__runner {
-    display: none;
+  .hero-trail__vehicle {
+    display: block;
+    top: 42px;
+    left: 8px;
+    transform: scale(0.72);
+    transform-origin: top left;
+    animation: vehicle-path-mobile 8s linear infinite;
   }
 
   .hero-trail__milestones {
@@ -405,6 +486,15 @@ const milestones = [
   .hero-trail__pin {
     left: 5px;
     top: 2px;
+  }
+}
+
+@keyframes vehicle-path-mobile {
+  from {
+    top: 42px;
+  }
+  to {
+    top: calc(100% - 76px);
   }
 }
 </style>
