@@ -295,3 +295,7 @@ git add <files>
 git commit -m "docs: update blog notes"
 git push origin master
 ```
+
+## 开源协议
+
+本项目使用 GNU General Public License v2.0（GPL-2.0）开源，详见 `LICENSE`。
