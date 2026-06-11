@@ -1,12 +1,12 @@
 # blogs
 
 <p align="center">
-  <img height="20" src="https://img.shields.io/badge/vitepress-1.6.4-646CFF" />
-  <img height="20" src="https://img.shields.io/badge/typescript-6.0.3-3178C6" />
-  <img height="20" src="https://img.shields.io/badge/mermaid-11.15.0-FF3670" />
-  <img height="20" src="https://img.shields.io/badge/vitepress_plugin_diagrams-1.3.0-3C8772" />
-  <img height="20" src="https://img.shields.io/badge/nodejs-24-339933" />
-  <img height="20" src="https://img.shields.io/badge/github_actions-pages-2088FF" />
+  <img height="20" alt="VitePress 1.6.4" src="https://img.shields.io/badge/vitepress-1.6.4-646CFF" />
+  <img height="20" alt="TypeScript 6.0.3" src="https://img.shields.io/badge/typescript-6.0.3-3178C6" />
+  <img height="20" alt="Mermaid 11.15.0" src="https://img.shields.io/badge/mermaid-11.15.0-FF3670" />
+  <img height="20" alt="VitePress Plugin Diagrams 1.3.0" src="https://img.shields.io/badge/vitepress_plugin_diagrams-1.3.0-3C8772" />
+  <img height="20" alt="GitHub Actions enabled" src="https://img.shields.io/badge/github_actions-enabled-2088FF" />
+  <img height="20" alt="License GPL-2.0" src="https://img.shields.io/badge/license-GPL--2.0-3DA639" />
 </p>
 
 VitePress 静态技术博客，部署到 GitHub Pages：
