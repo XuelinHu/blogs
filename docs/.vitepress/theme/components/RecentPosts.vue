@@ -42,6 +42,12 @@ function formatDate(date: string): string {
   return new Intl.DateTimeFormat('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' }).format(parsed)
 }
 
+function formatDateEn(date: string): string {
+  const parsed = new Date(date)
+  if (Number.isNaN(parsed.getTime())) return ''
+  return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'short', day: '2-digit' }).format(parsed)
+}
+
 function visualLabel(post: RecentPost): string {
   const trimmed = post.category.trim()
   if (trimmed.length <= 8) return trimmed
@@ -74,7 +80,10 @@ function categoryStyle(post: RecentPost) {
             <h3 class="post-card__title">{{ post.title }}</h3>
             <p class="post-card__excerpt">{{ post.excerpt }}</p>
           </div>
-          <time class="post-card__date">{{ formatDate(post.date) }}</time>
+          <time class="post-card__date" :datetime="post.date">
+            <span class="post-card__date-main">{{ formatDate(post.date) }}</span>
+            <span class="post-card__date-sub">{{ formatDateEn(post.date) }}</span>
+          </time>
         </a>
       </article>
     </div>
@@ -239,10 +248,30 @@ function categoryStyle(post: RecentPost) {
 
 .post-card__date {
   flex-shrink: 0;
-  font-size: 12px;
+  min-width: 112px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: flex-start;
   color: var(--vp-c-text-3);
-  padding: 11px 4px 0 0;
+  padding: 9px 4px 0 0;
   white-space: nowrap;
+}
+
+.post-card__date-main {
+  color: var(--vp-c-text-1);
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.post-card__date-sub {
+  margin-top: 4px;
+  color: var(--vp-c-text-3);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0;
 }
 
 .home-posts__empty {
@@ -262,6 +291,8 @@ function categoryStyle(post: RecentPost) {
   }
 
   .post-card__date {
+    min-width: 0;
+    align-items: flex-start;
     padding: 0 10px 8px;
   }
 }

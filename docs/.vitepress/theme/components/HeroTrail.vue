@@ -185,7 +185,7 @@ const milestones = [
 .hero-trail__vehicle {
   position: absolute;
   top: 90px;
-  left: 26px;
+  left: -76px;
   width: 74px;
   height: 44px;
   animation: vehicle-path 8s linear infinite;
@@ -360,10 +360,10 @@ const milestones = [
 
 @keyframes vehicle-path {
   from {
-    left: 26px;
+    left: -76px;
   }
   to {
-    left: calc(100% - 72px);
+    left: 100%;
   }
 }
 
@@ -461,7 +461,7 @@ const milestones = [
 
   .hero-trail__vehicle {
     display: block;
-    top: 42px;
+    top: -44px;
     left: 8px;
     transform: scale(0.72);
     transform-origin: top left;
@@ -491,10 +491,10 @@ const milestones = [
 
 @keyframes vehicle-path-mobile {
   from {
-    top: 42px;
+    top: -44px;
   }
   to {
-    top: calc(100% - 76px);
+    top: 100%;
   }
 }
 </style>
