@@ -295,6 +295,15 @@ git add <files>
 git commit -m "docs: update blog notes"
 git push origin master
 ```
+<!-- codex-runtime-config:start -->
+## 运行配置与数据存储
+
+- 开发服务：`npm run docs:dev`，VitePress 默认本机端口通常为 `5173`。
+- 构建预览：`npm run docs:preview`，VitePress 默认预览端口通常为 `4173`。
+- 生产部署：GitHub Pages，通过 `.github/workflows/deploy.yml` 发布 `docs/.vitepress/dist`。
+- 数据库：无外部数据库；内容数据来自 `docs/posts/**.md`、VitePress 配置和静态资源。
+- 敏感信息：无数据库账号；如后续接入评论、搜索或统计服务，请使用环境变量，不要提交密钥。
+<!-- codex-runtime-config:end -->
 
 ## 开源协议
 
