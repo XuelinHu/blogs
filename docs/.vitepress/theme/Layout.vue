@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import DefaultTheme from 'vitepress/theme'
-import { nextTick, onMounted, onUnmounted, watch } from 'vue'
-import { useRoute } from 'vitepress'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useData, useRoute } from 'vitepress'
 import SidebarToggler from './components/SidebarToggler.vue'
 import SidebarIcons from './components/SidebarIcons.vue'
 import PageMeta from './components/PageMeta.vue'
@@ -10,7 +10,22 @@ import AsidePageOutline from './components/AsidePageOutline.vue'
 
 const { Layout } = DefaultTheme
 const route = useRoute()
+const { page } = useData()
 const categoryIndexBodyClass = 'category-index-page'
+const outlineHiddenBodyClass = 'page-outline-hidden'
+const outlineStorageKey = 'blog-page-outline-visible'
+const outlineVisible = ref(true)
+const showOutlineToggle = computed(() => page.value.frontmatter.layout !== 'home')
+
+function syncOutlineVisibility() {
+  document.body.classList.toggle(outlineHiddenBodyClass, !outlineVisible.value)
+}
+
+function toggleOutline() {
+  outlineVisible.value = !outlineVisible.value
+  localStorage.setItem(outlineStorageKey, String(outlineVisible.value))
+  syncOutlineVisibility()
+}
 
 function scrollSidebarToActive() {
   requestAnimationFrame(() => {
@@ -50,13 +65,20 @@ function scheduleMermaidRender() {
   void nextTick(() => renderMermaidDiagrams())
 }
 
-onMounted(() => scrollSidebarToActive())
+onMounted(() => {
+  outlineVisible.value = localStorage.getItem(outlineStorageKey) !== 'false'
+  syncOutlineVisibility()
+  scrollSidebarToActive()
+})
 onMounted(() => syncCategoryIndexClass(route.path))
 onMounted(() => scheduleMermaidRender())
 watch(() => route.path, () => scrollSidebarToActive())
 watch(() => route.path, (path) => syncCategoryIndexClass(path))
 watch(() => route.path, () => scheduleMermaidRender())
-onUnmounted(() => document.body.classList.remove(categoryIndexBodyClass))
+onUnmounted(() => {
+  document.body.classList.remove(categoryIndexBodyClass)
+  document.body.classList.remove(outlineHiddenBodyClass)
+})
 </script>
 
 <template>
@@ -71,6 +93,23 @@ onUnmounted(() => document.body.classList.remove(categoryIndexBodyClass))
     <template #sidebar-nav-before>
       <SidebarToggler />
       <SidebarIcons />
+    </template>
+    <template #doc-bottom>
+      <button
+        v-if="showOutlineToggle"
+        class="page-outline-toggle"
+        type="button"
+        :aria-label="outlineVisible ? '隐藏本页目录' : '显示本页目录'"
+        :aria-pressed="outlineVisible"
+        :title="outlineVisible ? '隐藏本页目录' : '显示本页目录'"
+        @click="toggleOutline"
+      >
+        <span
+          class="page-outline-toggle__icon"
+          :class="{ 'is-hidden': !outlineVisible }"
+          aria-hidden="true"
+        />
+      </button>
     </template>
   </Layout>
 </template>
@@ -106,6 +145,80 @@ onUnmounted(() => document.body.classList.remove(categoryIndexBodyClass))
   height: auto;
 }
 
+.page-outline-toggle {
+  position: fixed;
+  top: 50%;
+  right: 14px;
+  z-index: 30;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+  padding: 0;
+  color: var(--vp-c-text-2);
+  background: color-mix(in srgb, var(--vp-c-bg) 92%, transparent);
+  box-shadow: 0 8px 24px rgb(15 23 42 / 0.1);
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+  transform: translateY(-50%);
+  transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.page-outline-toggle:hover {
+  color: var(--vp-c-brand-1);
+  border-color: var(--vp-c-brand-1);
+  background: var(--vp-c-bg);
+}
+
+.page-outline-toggle__icon {
+  position: relative;
+  display: block;
+  width: 20px;
+  height: 16px;
+  border: 1.5px solid currentColor;
+  border-radius: 3px;
+}
+
+.page-outline-toggle__icon::after {
+  position: absolute;
+  top: 0;
+  right: 4px;
+  bottom: 0;
+  border-left: 1.5px solid currentColor;
+  content: '';
+  transition: right 0.2s ease;
+}
+
+.page-outline-toggle__icon.is-hidden::after {
+  right: 0;
+}
+
+@media (min-width: 1280px) {
+  .page-outline-toggle {
+    display: inline-flex;
+  }
+
+  :global(.VPDoc.has-aside .content-container) {
+    max-width: 760px !important;
+  }
+
+  :global(body.page-outline-hidden .VPDoc .aside) {
+    display: none;
+  }
+
+  :global(body.page-outline-hidden .VPDoc .content) {
+    margin: 0 auto;
+    max-width: 1024px;
+  }
+
+  :global(body.page-outline-hidden .VPDoc .content-container) {
+    max-width: 960px !important;
+  }
+}
+
 @media (min-width: 1440px) {
   :global(.VPSidebar) {
     padding-left: 18px;
@@ -131,7 +244,7 @@ onUnmounted(() => document.body.classList.remove(categoryIndexBodyClass))
   }
 
   :global(.VPDoc.has-aside .content-container) {
-    max-width: 664px;
+    max-width: 760px !important;
   }
 }
 
@@ -160,7 +273,7 @@ onUnmounted(() => document.body.classList.remove(categoryIndexBodyClass))
   }
 
   :global(.VPDoc.has-aside .content-container) {
-    max-width: 648px;
+    max-width: 760px !important;
   }
 }
 </style>
