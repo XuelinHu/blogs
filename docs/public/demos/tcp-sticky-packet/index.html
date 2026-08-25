@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>TCP 粘包交互演示</title>
+  <style>
+    :root { color-scheme: light; font-family: Inter, "Microsoft YaHei", sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 16px; color: #233044; background: #f7faf9; }
+    .demo { max-width: 980px; margin: auto; border: 1px solid #cfe1da; border-radius: 12px; background: #fff; box-shadow: 0 10px 28px #23483d12; overflow: hidden; }
+    header { padding: 16px 18px 8px; border-bottom: 1px solid #e3ece8; }
+    h1 { margin: 0; font-size: 18px; color: #245d50; }
+    p { margin: 6px 0 0; font-size: 13px; line-height: 1.6; color: #607269; }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 18px; }
+    button { border: 1px solid #b9d5ca; border-radius: 7px; padding: 8px 11px; color: #245d50; background: #eff8f4; font: inherit; font-size: 12px; cursor: pointer; }
+    button:hover, button:focus-visible { border-color: #33836d; background: #dff1e9; outline: none; }
+    button.primary { color: white; border-color: #33836d; background: #33836d; }
+    button.primary:hover { background: #286b5a; }
+    .status { margin: 0 18px 12px; padding: 9px 11px; border-radius: 7px; background: #f2f7f5; color: #496258; font-size: 12px; }
+    canvas { display: block; width: 100%; height: 330px; border-top: 1px solid #e3ece8; border-bottom: 1px solid #e3ece8; background: #fbfdfc; }
+    .legend { display: flex; flex-wrap: wrap; gap: 12px; padding: 10px 18px 14px; color: #687970; font-size: 11px; }
+    .legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; margin-right: 5px; vertical-align: -1px; border-radius: 3px; background: var(--c); }
+    .note { padding: 0 18px 16px; color: #75867e; font-size: 11px; }
+  </style>
+</head>
+<body>
+  <section class="demo" aria-labelledby="title">
+    <header>
+      <h1 id="title">TCP 粘包 / 半包演示</h1>
+      <p>TCP 只保证字节顺序，不保留应用层消息边界。点击按钮观察发送方消息如何进入连续字节流，以及接收方如何用协议重新拆包。</p>
+    </header>
+    <div class="toolbar">
+      <button class="primary" data-action="stick">连续发送两条消息</button>
+      <button data-action="fragment">分片到达（半包）</button>
+      <button data-action="length">长度字段解包</button>
+      <button data-action="delimiter">分隔符解包</button>
+      <button data-action="signal">观察发送信号</button>
+      <button data-action="reset">重置</button>
+    </div>
+    <div class="status" id="status" role="status" aria-live="polite">等待演示。建议先点击“连续发送两条消息”。</div>
+    <canvas id="canvas" width="980" height="330"></canvas>
+    <div class="legend">
+      <span style="--c:#d77a61">应用层消息</span>
+      <span style="--c:#5b8def">TCP 字节流</span>
+      <span style="--c:#e6a93b">接收缓冲区</span>
+      <span style="--c:#4aa889">解析后的完整消息</span>
+    </div>
+    <div class="note">动画仅模拟“读取边界不等于消息边界”，不代表 TCP 每次一定会按这种节奏发送。</div>
+  </section>
+  <script>
+    const canvas = document.querySelector('#canvas');
+    const ctx = canvas.getContext('2d');
+    const status = document.querySelector('#status');
+    const state = { mode: 'idle', t: 0, signal: false, chunks: [], parsed: [], raf: 0 };
+    const messages = ['LIVE:frame-001', 'LIVE:frame-002'];
+
+    function resizeCanvas() {
+      const ratio = window.devicePixelRatio || 1;
+      const width = canvas.clientWidth || 980;
+      canvas.width = Math.round(width * ratio);
+      canvas.height = Math.round(330 * ratio);
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function rounded(x, y, w, h, r, fill, text, textColor = '#233044') {
+      ctx.fillStyle = fill; ctx.beginPath();
+      ctx.roundRect(x, y, w, h, r); ctx.fill();
+      ctx.fillStyle = textColor; ctx.font = '12px Inter, Microsoft YaHei, sans-serif';
+      ctx.fillText(text, x + 10, y + h / 2 + 4);
+    }
+
+    function drawSignal(width, base) {
+      ctx.strokeStyle = '#c8ddd5'; ctx.lineWidth = 1; ctx.beginPath();
+      for (let x = 0; x < width; x += 3) {
+        const y = base + Math.sin(x / 23 + state.t / 18) * 8;
+        x ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+      }
+      ctx.stroke();
+    }
+
+    function render() {
+      const width = canvas.clientWidth || 980; const height = 330;
+      ctx.clearRect(0, 0, width, height); ctx.fillStyle = '#fbfdfc'; ctx.fillRect(0, 0, width, height);
+      ctx.fillStyle = '#607269'; ctx.font = '700 12px Inter, Microsoft YaHei, sans-serif';
+      ctx.fillText('发送方应用层', 18, 27); ctx.fillText('TCP 连接上的连续字节流', 18, 126); ctx.fillText('接收方缓冲区与解码器', 18, 231);
+      const boxW = Math.min(245, (width - 58) / 2);
+      messages.forEach((message, i) => rounded(18 + i * (boxW + 10), 42, boxW, 42, 7, '#f7ddd6', message));
+      const stream = state.mode === 'fragment' ? 'LIVE:frame-001LIVE:' : messages.join('');
+      rounded(18, 140, Math.max(120, width - 36), 42, 7, '#dfe9ff', stream.slice(0, Math.max(12, Math.floor((width - 56) / 7))), '#31558f');
+      if (state.mode === 'fragment') rounded(18, 191, Math.min(180, width - 36), 26, 6, '#fff0c9', '下一段：frame-002', '#8a6417');
+      const chunks = state.chunks.length ? state.chunks : ['等待 read() 返回字节...'];
+      chunks.forEach((chunk, i) => rounded(18 + i * 170, 247, 155, 34, 6, '#fff0c9', chunk, '#8a6417'));
+      state.parsed.forEach((message, i) => rounded(18 + i * (boxW + 10), 288, boxW, 30, 6, '#dcefe7', `完整消息：${message}`, '#276c58'));
+      if (state.signal) drawSignal(width, 112);
+      state.t += 1; state.raf = requestAnimationFrame(render);
+    }
+    render();
+
+    function run(mode, text, chunks, parsed) {
+      state.mode = mode; state.chunks = chunks; state.parsed = parsed; state.signal = false;
+      status.textContent = text;
+    }
+    document.querySelectorAll('[data-action]').forEach((button) => button.addEventListener('click', () => {
+      const action = button.dataset.action;
+      if (action === 'stick') run('stick', '两次 send() 产生的消息在接收方可能一次 read() 读到：这就是常见“粘包”。', [messages.join('')], []);
+      if (action === 'fragment') run('fragment', '一次 send() 的内容也可能被拆成多次 read()：接收方先拿到半条消息。', ['LIVE:frame-001LIVE:'], []);
+      if (action === 'length') run('length', '协议头携带长度：先读固定头，再按 length 累积 payload，完整后交给业务层。', ['len=14 + LIVE:frame-001', 'len=14 + LIVE:frame-002'], messages);
+      if (action === 'delimiter') run('delimiter', '协议约定换行符作为边界：读取缓冲区中的完整行，剩余字节继续等待。', ['LIVE:frame-001\\n', 'LIVE:frame-002\\n'], messages);
+      if (action === 'signal') { state.signal = true; status.textContent = 'TCP 发送的是离散字节序列，底层信号会经过编码、调制和链路传输；这里用 sin 波形作直观示意。'; }
+      if (action === 'reset') run('idle', '等待演示。建议先点击“连续发送两条消息”。', [], []);
+    }));
+  </script>
+</body>
+</html>

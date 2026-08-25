@@ -26,6 +26,7 @@ https://xuelinhu.github.io/blogs/
 - 侧边栏根据 `docs/posts` 目录自动生成。
 - 支持 Mermaid、PlantUML、GraphViz、draw.io 静态图和 MathJax3 数学公式。
 - 自定义主题组件用于首页、侧边栏、文章元信息和 Mermaid 浏览器端渲染。
+- 支持通过 `TeachingDemo` 组件嵌入带按钮和 Canvas 动画的交互式教学页面。
 
 ## 首页设计
 
@@ -115,6 +116,20 @@ updated: 2026-06-03
 - `date`：文章发布时间。
 - `created`：创建日期。
 - `updated`：最近更新日期。
+
+### 嵌入交互式教学页面
+
+交互演示页面放在 `docs/public/demos/`，文章中使用全局注册的 `TeachingDemo`：
+
+```md
+<TeachingDemo
+  src="/demos/tcp-sticky-packet/index.html"
+  title="TCP 粘包与半包交互演示"
+  :height="500"
+/>
+```
+
+组件会自动拼接 GitHub Pages 的站点 base 路径，使用懒加载 iframe 和 `sandbox="allow-scripts"`，演示页不能访问博客父页面或业务存储。每个演示页应保持自包含、无外部 CDN 依赖，并在窄屏下支持响应式布局。
 
 首页最近文章排序优先级：
 
