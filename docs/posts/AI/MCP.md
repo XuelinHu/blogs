@@ -2,7 +2,7 @@
 title: MCP
 date: 2026-05-28
 created: 2025-07-08
-updated: 2026-05-28
+updated: 2026-08-25
 ---
 
 # 1. MCP 的理论
@@ -403,3 +403,202 @@ MCP 方式则更偏向：
 
 MCP 本质上不是替代 Agent，而是给 Agent 和 LLM 提供统一的工具调用方式。  
 如果你的目标是做 AI 视频、AI 音频、素材流水线或多工具协同系统，MCP 会比“零散函数调用”更适合长期维护。
+
+
+# 9. DeepSeek + MCP + 本地文件搜索
+
+下面给出一个可以落地的最小应用：用户向 DeepSeek 提问，DeepSeek 判断是否需要搜索本地文档；宿主程序通过 MCP 调用文件搜索工具，再把搜索结果交还给 DeepSeek 生成最终答案。
+
+这里的 `DS` 指 DeepSeek。DeepSeek 的 Chat Completions 接口兼容 OpenAI SDK 的 `tools`（函数工具）格式，但普通 Chat Completions 请求并不会直接执行 MCP。中间的宿主程序负责完成这次协议转换：
+
+```mermaid
+sequenceDiagram
+    participant U as 用户
+    participant H as 宿主程序
+    participant D as DeepSeek
+    participant M as MCP Server
+    participant F as 本地文件
+    U->>H: 提交问题
+    H->>M: tools/list
+    H->>D: 问题 + MCP 工具 JSON Schema
+    D-->>H: tool_call(search_local_files)
+    H->>M: tools/call
+    M->>F: 在允许目录内搜索
+    F-->>M: 匹配文件和片段
+    M-->>H: 结构化搜索结果
+    H->>D: tool 结果
+    D-->>H: 最终回答
+```
+
+## 9.1. MCP 文件搜索服务
+
+先安装依赖并固定在本文示例使用的 MCP Python SDK 兼容范围：
+
+```bash
+python -m venv .venv
+source .venv/bin/activate       # Windows: .venv\\Scripts\\activate
+pip install "mcp[cli]>=1.28,<2" openai
+```
+
+创建 `local_search_server.py`。搜索根目录通过环境变量指定，默认是当前目录下的 `knowledge`，并且使用 `resolve()` 检查路径，防止 `../` 路径越权。
+
+```python
+from pathlib import Path
+import os
+
+from mcp.server.fastmcp import FastMCP
+
+ROOT = Path(os.getenv("LOCAL_SEARCH_ROOT", "./knowledge")).expanduser().resolve()
+ALLOWED_SUFFIXES = {".md", ".txt", ".rst", ".json", ".yaml", ".yml"}
+mcp = FastMCP("local-file-search")
+
+
+@mcp.tool()
+def search_local_files(query: str, limit: int = 8) -> list[dict[str, str]]:
+    """在允许的本地文档目录中按关键词搜索，并返回文件名和上下文片段。"""
+    query = query.strip()
+    if not query:
+        return []
+    limit = max(1, min(limit, 20))
+    terms = [term.lower() for term in query.split()]
+    matches: list[dict[str, str]] = []
+
+    if not ROOT.exists():
+        return [{"error": f"search root does not exist: {ROOT}"}]
+
+    for path in ROOT.rglob("*"):
+        if len(matches) >= limit or not path.is_file() or path.suffix.lower() not in ALLOWED_SUFFIXES:
+            continue
+        try:
+            text = path.read_text(encoding="utf-8", errors="ignore")
+        except OSError:
+            continue
+        lower = text.lower()
+        if not all(term in lower for term in terms):
+            continue
+        position = min(lower.find(term) for term in terms)
+        start = max(0, position - 180)
+        excerpt = " ".join(text[start : start + 420].split())
+        matches.append({"file": str(path.relative_to(ROOT)), "excerpt": excerpt})
+    return matches
+
+
+if __name__ == "__main__":
+    # stdio 适合由宿主程序启动；不要把调试日志写到 stdout。
+    mcp.run(transport="stdio")
+```
+
+## 9.2. DeepSeek 宿主程序
+
+创建 `deepseek_mcp_search.py`。它先读取 MCP 工具定义，再把定义转换为 DeepSeek 的函数工具；收到 `tool_calls` 后严格校验 JSON 参数，并通过 MCP 客户端执行。API Key 只从环境变量读取，不要写进博客或代码仓库。
+
+```python
+import asyncio
+import json
+import os
+from contextlib import AsyncExitStack
+
+from mcp import ClientSession, StdioServerParameters
+from mcp.client.stdio import stdio_client
+from openai import OpenAI
+
+
+def as_deepseek_tools(mcp_tools) -> list[dict]:
+    return [
+        {
+            "type": "function",
+            "function": {
+                "name": tool.name,
+                "description": tool.description or "",
+                "parameters": tool.inputSchema,
+            },
+        }
+        for tool in mcp_tools
+    ]
+
+
+async def ask(question: str) -> str:
+    server = StdioServerParameters(
+        command="python",
+        args=[os.path.abspath("local_search_server.py")],
+        env={**os.environ, "LOCAL_SEARCH_ROOT": os.getenv("LOCAL_SEARCH_ROOT", "./knowledge")},
+    )
+    llm = OpenAI(
+        api_key=os.environ["DEEPSEEK_API_KEY"],
+        base_url=os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com"),
+    )
+
+    async with AsyncExitStack() as stack:
+        read, write = await stack.enter_async_context(stdio_client(server))
+        mcp = await stack.enter_async_context(ClientSession(read, write))
+        await mcp.initialize()
+        listed = await mcp.list_tools()
+        tools = as_deepseek_tools(listed.tools)
+        messages = [
+            {"role": "system", "content": "你是知识库助手。需要事实时先调用本地搜索工具，并引用返回的文件名。"},
+            {"role": "user", "content": question},
+        ]
+
+        first = llm.chat.completions.create(
+            model=os.getenv("DEEPSEEK_MODEL", "deepseek-chat"),
+            messages=messages,
+            tools=tools,
+            tool_choice="auto",
+        )
+        assistant = first.choices[0].message
+        messages.append(assistant.model_dump(exclude_none=True))
+
+        for call in assistant.tool_calls or []:
+            try:
+                arguments = json.loads(call.function.arguments or "{}")
+                if not isinstance(arguments, dict):
+                    raise ValueError("tool arguments must be a JSON object")
+                result = await mcp.call_tool(call.function.name, arguments)
+                content = "\n".join(
+                    block.text for block in result.content if hasattr(block, "text")
+                ) or json.dumps(result.structuredContent or {}, ensure_ascii=False)
+            except (json.JSONDecodeError, ValueError, TypeError) as exc:
+                content = json.dumps({"error": str(exc)}, ensure_ascii=False)
+            messages.append({
+                "role": "tool",
+                "tool_call_id": call.id,
+                "name": call.function.name,
+                "content": content,
+            })
+
+        final = llm.chat.completions.create(
+            model=os.getenv("DEEPSEEK_MODEL", "deepseek-chat"),
+            messages=messages,
+            tools=tools,
+            tool_choice="none",
+        )
+        return final.choices[0].message.content or "没有找到可回答的内容。"
+
+
+if __name__ == "__main__":
+    print(asyncio.run(ask(input("问题："))))
+```
+
+运行：
+
+```bash
+export DEEPSEEK_API_KEY="sk-..."
+export LOCAL_SEARCH_ROOT="$PWD/knowledge"
+python deepseek_mcp_search.py
+```
+
+例如在 `knowledge/mcp.md` 中包含“工具列表”和“JSON-RPC”，输入“本地文档中 MCP 的工具列表是什么？”时，DeepSeek 会先产生 `search_local_files` 调用，程序执行搜索后再生成答案。若需要启用 DeepSeek 思考模式，必须把返回消息中的 `reasoning_content` 原样保留到下一轮请求；否则会收到参数错误。
+
+## 9.3. 生产环境注意事项
+
+- 只把必要目录挂载给 MCP Server，限制扩展名、单文件大小和搜索耗时。
+- 对工具名和参数做白名单校验；不能让模型拼接任意 shell 命令或路径。
+- 工具结果应限制长度并保留文件名，避免把整个文件内容发送到模型。
+- 为 MCP 调用增加超时、审计日志和错误重试；不要把密钥、隐私文件内容写入日志。
+- DeepSeek 模型名可能随服务更新，部署时通过 `DEEPSEEK_MODEL` 配置，并以官方模型列表为准。
+
+参考：
+
+- DeepSeek API：https://api-docs.deepseek.com/
+- DeepSeek Tool Calls：https://api-docs.deepseek.com/guides/tool_calls
+- MCP Python SDK：https://py.sdk.modelcontextprotocol.io/
