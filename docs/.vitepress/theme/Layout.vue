@@ -145,6 +145,20 @@ onUnmounted(() => {
   height: auto;
 }
 
+:global(.vp-doc mjx-container[jax='SVG'][display='true']) {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 8px 0;
+}
+
+:global(.vp-doc mjx-container[jax='SVG'][display='true'] > svg) {
+  display: block;
+  margin: 0 auto;
+  max-width: none;
+}
+
 .page-outline-toggle {
   position: fixed;
   top: 50%;

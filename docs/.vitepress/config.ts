@@ -62,6 +62,7 @@ export default defineConfig({
       { text: '首页', link: '/' },
       { text: 'AI', link: '/posts/AI/' },
       { text: 'LLM', link: '/posts/LLM/' },
+      { text: 'robot', link: '/posts/robot/' },
       { text: 'Java', link: '/posts/Java/' },
       { text: '数据库', link: '/posts/Database/' },
       { text: 'Solution', link: '/posts/Solution/' }

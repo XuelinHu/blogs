@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>机器人二维位姿变换交互演示</title>
+  <style>
+    :root { color-scheme: light; font-family: Inter, "Microsoft YaHei", sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 16px; color: #25343a; background: #f7faf9; }
+    .demo { max-width: 1080px; margin: auto; overflow: hidden; border: 1px solid #cfe1da; border-radius: 8px; background: #fff; }
+    header { padding: 16px 18px 10px; border-bottom: 1px solid #e3ece8; }
+    h1 { margin: 0; font-size: 18px; color: #245d50; }
+    p { margin: 6px 0 0; font-size: 13px; line-height: 1.6; color: #607269; }
+    .layout { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(280px, .75fr); }
+    .scene { min-width: 0; border-right: 1px solid #e3ece8; }
+    canvas { display: block; width: 100%; height: 390px; background: #fbfdfc; }
+    .toolbar { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 7px; padding: 12px 14px; border-top: 1px solid #e3ece8; }
+    button { min-height: 34px; padding: 7px 8px; border: 1px solid #b9d5ca; border-radius: 6px; color: #245d50; background: #eff8f4; font: inherit; font-size: 12px; cursor: pointer; }
+    button:hover, button:focus-visible { border-color: #33836d; background: #dff1e9; outline: none; }
+    button.primary { color: #fff; border-color: #33836d; background: #33836d; }
+    .panel { padding: 14px 16px; }
+    .panel h2 { margin: 0 0 8px; font-size: 14px; color: #245d50; }
+    .readout { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-bottom: 12px; }
+    .value { padding: 8px; border-radius: 6px; background: #f2f7f5; }
+    .value small { display: block; margin-bottom: 3px; color: #708078; font-size: 11px; }
+    .value strong { color: #2e5147; font: 600 13px ui-monospace, SFMono-Regular, Consolas, monospace; }
+    .formula { margin: 8px 0; padding: 10px; overflow-x: auto; border-left: 3px solid #5b8def; background: #f5f8ff; color: #344b70; font: 12px/1.8 ui-monospace, SFMono-Regular, Consolas, monospace; white-space: pre; }
+    .note { padding: 10px 14px 14px; color: #708078; font-size: 11px; line-height: 1.6; }
+    @media (max-width: 760px) {
+      .layout { display: block; }
+      .scene { border-right: 0; border-bottom: 1px solid #e3ece8; }
+      canvas { height: 300px; }
+    }
+    @media (max-width: 420px) {
+      body { padding: 8px; }
+      .toolbar { grid-template-columns: repeat(3, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <section class="demo" aria-labelledby="title">
+    <header>
+      <h1 id="title">二维位姿变换：移动坐标系，观察公式同步变化</h1>
+      <p>绿色是世界坐标系 W，蓝色是机器人坐标系 B。使用方向按钮移动 B，或用旋转按钮改变朝向；右侧会实时显示正变换矩阵、逆变换矩阵和点坐标。</p>
+    </header>
+    <div class="layout">
+      <div class="scene">
+        <canvas id="canvas" width="720" height="390" aria-label="二维坐标系位姿变换图"></canvas>
+        <div class="toolbar" aria-label="位姿控制按钮">
+          <button data-action="up" title="沿世界坐标系 Y 正方向移动">↑ 上移</button>
+          <button data-action="left" title="沿世界坐标系 X 负方向移动">← 左移</button>
+          <button data-action="reset" class="primary">重置</button>
+          <button data-action="right" title="沿世界坐标系 X 正方向移动">右移 →</button>
+          <button data-action="down" title="沿世界坐标系 Y 负方向移动">↓ 下移</button>
+          <button data-action="rotate-left" title="逆时针旋转机器人坐标系">↺ 左转</button>
+          <button data-action="rotate-right" title="顺时针旋转机器人坐标系">↻ 右转</button>
+          <button data-action="point-left">点左移</button>
+          <button data-action="point-right">点右移</button>
+          <button data-action="point-reset">点重置</button>
+        </div>
+      </div>
+      <aside class="panel">
+        <h2>当前状态</h2>
+        <div class="readout">
+          <div class="value"><small>平移 tx</small><strong id="tx">0.00 m</strong></div>
+          <div class="value"><small>平移 ty</small><strong id="ty">0.00 m</strong></div>
+          <div class="value"><small>旋转 θ</small><strong id="theta">0.0°</strong></div>
+          <div class="value"><small>点在 B 系</small><strong id="pointB">(0.80, 0.40)</strong></div>
+        </div>
+        <h2>正变换：B → W</h2>
+        <div id="forward" class="formula"></div>
+        <h2>逆变换：W → B</h2>
+        <div id="inverse" class="formula"></div>
+        <h2>同一个点的结果</h2>
+        <div id="pointResult" class="formula"></div>
+      </aside>
+    </div>
+    <div class="note">步长为 0.10 m，旋转步长为 10°。这是二维教学模型，三维机器人只需把旋转矩阵扩展为 3×3，并在齐次矩阵中加入 z 坐标。</div>
+  </section>
+  <script>
+    const canvas = document.querySelector('#canvas'); // 获取用于绘图的画布元素
+    const ctx = canvas.getContext('2d'); // 获取二维绘图上下文
+    const state = { x: 0.8, y: 0.55, theta: 20, pointX: 0.8, pointY: 0.4 }; // 保存机器人坐标系和测试点状态
+    const colors = { world: '#33836d', body: '#5b8def', point: '#d77a61', grid: '#e5eee9', text: '#607269' }; // 统一演示配色
+
+    function resizeCanvas() { // 根据容器宽度调整画布像素尺寸
+      const ratio = window.devicePixelRatio || 1; // 获取屏幕像素比以避免文字模糊
+      const width = canvas.clientWidth || 720; // 读取画布 CSS 宽度
+      canvas.width = Math.round(width * ratio); // 设置画布物理宽度
+      canvas.height = Math.round(390 * ratio); // 设置画布物理高度
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0); // 将绘图坐标恢复为 CSS 像素
+      render(); // 尺寸变化后立即重绘
+    }
+    window.addEventListener('resize', resizeCanvas); // 监听窗口变化以保持响应式布局
+
+    function format(value) { // 格式化矩阵中的数字
+      return value.toFixed(3).padStart(7, ' '); // 保留三位小数并对齐文本
+    }
+
+    function matrix() { // 根据当前位姿生成二维齐次变换矩阵
+      const radians = state.theta * Math.PI / 180; // 将角度转换为弧度
+      const c = Math.cos(radians); // 计算旋转矩阵的余弦项
+      const s = Math.sin(radians); // 计算旋转矩阵的正弦项
+      return { c, s, values: [[c, -s, state.x], [s, c, state.y], [0, 0, 1]] }; // 返回旋转项和正变换矩阵
+    }
+
+    function inverseMatrix(transform) { // 根据正变换计算逆变换矩阵
+      const { c, s } = transform; // 读取旋转矩阵的两个核心元素
+      return [[c, s, -c * state.x - s * state.y], [-s, c, s * state.x - c * state.y], [0, 0, 1]]; // 使用 R 转置和 -R 转置 t
+    }
+
+    function transformPoint(transform, x, y) { // 将 B 坐标系中的点变换到 W 坐标系
+      return { x: transform.c * x - transform.s * y + state.x, y: transform.s * x + transform.c * y + state.y }; // 执行 pW=R pB+t
+    }
+
+    function inversePoint(transform, x, y) { // 将 W 坐标系中的点变换回 B 坐标系
+      const dx = x - state.x; // 先减去平移向量
+      const dy = y - state.y; // 得到相对机器人原点的向量
+      return { x: transform.c * dx + transform.s * dy, y: -transform.s * dx + transform.c * dy }; // 执行 pB=R转置(pW-t)
+    }
+
+    function matrixText(values) { // 将矩阵转换成便于阅读的文本
+      return values.map(row => `[ ${row.map(format).join('  ')} ]`).join('\n'); // 逐行格式化矩阵元素
+    }
+
+    function worldToCanvas(x, y, width, height) { // 将米制世界坐标映射到画布坐标
+      const scale = Math.min(width, height) * 0.34; // 根据画布大小计算缩放比例
+      return { x: width / 2 + x * scale, y: height / 2 - y * scale, scale }; // 翻转屏幕 Y 轴以符合数学坐标系
+    }
+
+    function drawArrow(x1, y1, x2, y2, color, label) { // 绘制带箭头的坐标轴
+      ctx.strokeStyle = color; // 设置线条颜色
+      ctx.fillStyle = color; // 设置箭头和文字颜色
+      ctx.lineWidth = 2; // 设置坐标轴线宽
+      ctx.beginPath(); // 开始绘制线段
+      ctx.moveTo(x1, y1); // 移动到线段起点
+      ctx.lineTo(x2, y2); // 绘制到线段终点
+      ctx.stroke(); // 描边显示线段
+      const angle = Math.atan2(y2 - y1, x2 - x1); // 计算箭头方向
+      ctx.beginPath(); // 开始绘制箭头三角形
+      ctx.moveTo(x2, y2); // 移动到箭头尖端
+      ctx.lineTo(x2 - 9 * Math.cos(angle - 0.45), y2 - 9 * Math.sin(angle - 0.45)); // 绘制箭头一侧
+      ctx.lineTo(x2 - 9 * Math.cos(angle + 0.45), y2 - 9 * Math.sin(angle + 0.45)); // 绘制箭头另一侧
+      ctx.closePath(); // 闭合箭头路径
+      ctx.fill(); // 填充箭头
+      ctx.font = '12px Inter, Microsoft YaHei, sans-serif'; // 设置坐标轴标签字体
+      ctx.fillText(label, x2 + 6, y2 + 4); // 绘制坐标轴标签
+    }
+
+    function drawFrame(origin, angle, color, name, scale) { // 绘制一个二维坐标系
+      const length = 0.72 * scale; // 设置坐标轴长度
+      drawArrow(origin.x, origin.y, origin.x + Math.cos(angle) * length, origin.y - Math.sin(angle) * length, color, `${name} x`); // 绘制 x 轴
+      drawArrow(origin.x, origin.y, origin.x + Math.sin(angle) * length, origin.y + Math.cos(angle) * length, color, `${name} y`); // 绘制 y 轴
+      ctx.fillStyle = color; // 设置原点标签颜色
+      ctx.font = '700 12px Inter, Microsoft YaHei, sans-serif'; // 设置原点标签字体
+      ctx.fillText(name, origin.x + 7, origin.y - 8); // 绘制坐标系名称
+    }
+
+    function render() { // 重绘整个演示画面和公式
+      const width = canvas.clientWidth || 720; // 读取画布 CSS 宽度
+      const height = 390; // 使用固定的 CSS 高度
+      ctx.clearRect(0, 0, width, height); // 清空上一帧画面
+      ctx.fillStyle = '#fbfdfc'; // 设置画布背景色
+      ctx.fillRect(0, 0, width, height); // 填充画布背景
+      const origin = worldToCanvas(0, 0, width, height); // 计算世界坐标原点像素位置
+      const transform = matrix(); // 获取当前正变换矩阵
+      const bodyOrigin = worldToCanvas(state.x, state.y, width, height); // 计算机器人坐标系原点像素位置
+      for (let i = -3; i <= 3; i += 1) { // 绘制横向网格线
+        const line = worldToCanvas(i, 0, width, height); // 计算网格线的横坐标
+        ctx.strokeStyle = colors.grid; // 设置网格线颜色
+        ctx.lineWidth = 1; // 设置网格线宽度
+        ctx.beginPath(); // 开始绘制网格线
+        ctx.moveTo(line.x, 0); // 设置网格线起点
+        ctx.lineTo(line.x, height); // 设置网格线终点
+        ctx.stroke(); // 绘制网格线
+      }
+      for (let i = -2; i <= 2; i += 1) { // 绘制纵向网格线
+        const line = worldToCanvas(0, i, width, height); // 计算网格线的纵坐标
+        ctx.strokeStyle = colors.grid; // 设置网格线颜色
+        ctx.beginPath(); // 开始绘制网格线
+        ctx.moveTo(0, line.y); // 设置网格线起点
+        ctx.lineTo(width, line.y); // 设置网格线终点
+        ctx.stroke(); // 绘制网格线
+      }
+      drawFrame(origin, 0, colors.world, 'W', origin.scale); // 绘制世界坐标系
+      drawFrame(bodyOrigin, state.theta * Math.PI / 180, colors.body, 'B', origin.scale); // 绘制机器人坐标系
+      const pointWorld = transformPoint(transform, state.pointX, state.pointY); // 将测试点从 B 系变换到 W 系
+      const point = worldToCanvas(pointWorld.x, pointWorld.y, width, height); // 将测试点转换成画布像素坐标
+      ctx.fillStyle = colors.point; // 设置测试点颜色
+      ctx.beginPath(); // 开始绘制测试点
+      ctx.arc(point.x, point.y, 7, 0, Math.PI * 2); // 绘制测试点圆形
+      ctx.fill(); // 填充测试点
+      ctx.fillStyle = colors.point; // 设置测试点标签颜色
+      ctx.font = '12px Inter, Microsoft YaHei, sans-serif'; // 设置测试点标签字体
+      ctx.fillText('pB', point.x + 10, point.y - 8); // 绘制测试点标签
+      updateReadout(transform, pointWorld); // 更新右侧数值和公式
+    }
+
+    function updateReadout(transform, pointWorld) { // 更新页面上的矩阵、位姿和点坐标
+      document.querySelector('#tx').textContent = `${state.x.toFixed(2)} m`; // 更新 x 平移值
+      document.querySelector('#ty').textContent = `${state.y.toFixed(2)} m`; // 更新 y 平移值
+      document.querySelector('#theta').textContent = `${state.theta.toFixed(1)}°`; // 更新旋转角度
+      document.querySelector('#pointB').textContent = `(${state.pointX.toFixed(2)}, ${state.pointY.toFixed(2)})`; // 更新 B 系测试点
+      document.querySelector('#forward').textContent = `T_W_B =\n${matrixText(transform.values)}\n\npW = R_W_B · pB + t_W_B\n   = (${pointWorld.x.toFixed(3)}, ${pointWorld.y.toFixed(3)})`; // 显示正变换矩阵和计算结果
+      document.querySelector('#inverse').textContent = `T_B_W =\n${matrixText(inverseMatrix(transform))}\n\nR⁻¹ = Rᵀ，t⁻¹ = -Rᵀ · t`; // 显示逆变换矩阵推导结果
+      const recovered = inversePoint(transform, pointWorld.x, pointWorld.y); // 用逆变换还原测试点
+      document.querySelector('#pointResult').textContent = `pB = (${state.pointX.toFixed(3)}, ${state.pointY.toFixed(3)})\npW = (${pointWorld.x.toFixed(3)}, ${pointWorld.y.toFixed(3)})\nT_B_W · pW = (${recovered.x.toFixed(3)}, ${recovered.y.toFixed(3)})`; // 显示正变换和逆变换的闭环结果
+    }
+
+    function change(action) { // 根据按钮动作更新位姿或测试点
+      if (action === 'up') state.y += 0.1; // 沿世界 Y 正方向移动
+      if (action === 'down') state.y -= 0.1; // 沿世界 Y 负方向移动
+      if (action === 'left') state.x -= 0.1; // 沿世界 X 负方向移动
+      if (action === 'right') state.x += 0.1; // 沿世界 X 正方向移动
+      if (action === 'rotate-left') state.theta += 10; // 逆时针旋转十度
+      if (action === 'rotate-right') state.theta -= 10; // 顺时针旋转十度
+      if (action === 'point-left') state.pointX -= 0.1; // 移动 B 系测试点的 x 坐标
+      if (action === 'point-right') state.pointX += 0.1; // 移动 B 系测试点的 x 坐标
+      if (action === 'point-reset') { state.pointX = 0.8; state.pointY = 0.4; } // 将测试点恢复为初始位置
+      if (action === 'reset') { state.x = 0.8; state.y = 0.55; state.theta = 20; } // 将机器人坐标系恢复为初始位姿
+      state.theta = ((state.theta + 180) % 360) - 180; // 将角度规范到负一百八十到一百八十度
+      render(); // 更新画布和所有公式
+    }
+
+    document.querySelectorAll('[data-action]').forEach(button => button.addEventListener('click', () => change(button.dataset.action))); // 为所有按钮绑定动作
+    window.addEventListener('keydown', event => { // 监听键盘方向键和旋转快捷键
+      const keys = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right', q: 'rotate-left', e: 'rotate-right' }; // 建立键盘到动作的映射
+      if (keys[event.key]) { event.preventDefault(); change(keys[event.key]); } // 命中快捷键时更新状态
+    });
+    resizeCanvas(); // 初始化画布尺寸和演示内容
+  </script>
+</body>
+</html>
