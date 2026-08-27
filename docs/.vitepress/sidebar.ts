@@ -33,6 +33,7 @@ const categoryIcons: Record<string, string> = {
   Paper: '✎',
   Python: '🐍',
   Reading: '📖',
+  robot: '⚙',
   Sandbox: '⬢',
   Solution: '💡',
   Spring: '🌱',
