@@ -223,71 +223,88 @@ onUnmounted(() => {
     display: none;
   }
 
-  :global(body.page-outline-hidden .VPDoc .content) {
-    margin: 0 auto;
-    max-width: 1024px;
-  }
-
+  :global(body.page-outline-hidden .VPDoc .content),
   :global(body.page-outline-hidden .VPDoc .content-container) {
-    max-width: 960px !important;
+    max-width: none !important;
   }
 }
 
 @media (min-width: 1440px) {
-  :global(.VPSidebar) {
-    padding-left: 18px;
-    width: calc((100% - var(--vp-layout-max-width)) / 2 + var(--vp-sidebar-width) + 12px);
+  .page-outline-toggle {
+    right: 310px;
   }
 
-  :global(.VPSidebar .curtain) {
-    margin-left: -18px;
-  }
-
-  :global(.VPDoc .container) {
-    max-width: 1320px;
-  }
-
-  :global(.VPDoc .aside) {
-    max-width: 292px;
-    padding-left: 56px;
-  }
-
-  :global(.VPDoc .aside-container),
-  :global(.VPDoc .aside-curtain) {
-    width: 236px;
-  }
-
-  :global(.VPDoc.has-aside .content-container) {
-    max-width: 760px !important;
+  :global(body.page-outline-hidden .page-outline-toggle) {
+    right: 14px;
   }
 }
+</style>
 
-@media (min-width: 1680px) {
-  :global(.VPSidebar) {
-    padding-left: 12px;
-    width: calc((100% - var(--vp-layout-max-width)) / 2 + var(--vp-sidebar-width) + 24px);
+<style>
+@media (min-width: 1440px) {
+  :root {
+    --vp-sidebar-width: 300px;
   }
 
-  :global(.VPSidebar .curtain) {
-    margin-left: -12px;
+  .VPContent.has-sidebar {
+    padding-right: 0 !important;
+    padding-left: 300px !important;
   }
 
-  :global(.VPDoc .container) {
-    max-width: 1380px;
+  .VPSidebar {
+    width: 300px !important;
+    max-width: 300px !important;
+    padding-right: 24px !important;
+    padding-left: 24px !important;
   }
 
-  :global(.VPDoc .aside) {
-    max-width: 312px;
-    padding-left: 72px;
+  .VPSidebar .curtain {
+    margin-right: -24px !important;
+    margin-left: -24px !important;
   }
 
-  :global(.VPDoc .aside-container),
-  :global(.VPDoc .aside-curtain) {
-    width: 240px;
+  .VPNavBar.has-sidebar .title {
+    width: 300px !important;
+    padding-left: 24px !important;
   }
 
-  :global(.VPDoc.has-aside .content-container) {
-    max-width: 760px !important;
+  .VPNavBar.has-sidebar .content {
+    padding-right: 24px !important;
+    padding-left: 300px !important;
+  }
+
+  .VPNavBar.has-sidebar .divider {
+    padding-left: 300px !important;
+  }
+
+  .VPDoc .container {
+    width: 100%;
+    max-width: none !important;
+  }
+
+  .VPDoc .content {
+    flex: 1 1 0;
+    width: auto;
+    min-width: 0;
+    margin: 0;
+  }
+
+  .VPDoc .aside {
+    flex: 0 0 300px;
+    width: 300px;
+    max-width: 300px;
+    padding-left: 32px;
+  }
+
+  .VPDoc .aside-container,
+  .VPDoc .aside-curtain {
+    width: 268px;
+  }
+
+  .VPDoc.has-aside .content-container,
+  .VPDoc .content-container {
+    width: 100%;
+    max-width: none !important;
   }
 }
 </style>
