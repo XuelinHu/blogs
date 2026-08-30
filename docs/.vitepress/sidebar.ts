@@ -22,6 +22,7 @@ const docsRoot = path.resolve(process.cwd(), 'docs')
 const postsRoot = path.join(docsRoot, 'posts')
 const categoryIcons: Record<string, string> = {
   AI: '🤖',
+  'AI基础': '🧠',
   Command: '⌘',
   Database: '▣',
   'Front-end': '◇',

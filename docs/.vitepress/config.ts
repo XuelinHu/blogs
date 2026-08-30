@@ -61,6 +61,7 @@ export default defineConfig({
     nav: [
       { text: '首页', link: '/' },
       { text: 'AI', link: '/posts/AI/' },
+      { text: 'AI基础', link: '/posts/AI基础/' },
       { text: 'LLM', link: '/posts/LLM/' },
       { text: 'robot', link: '/posts/robot/' },
       { text: 'Java', link: '/posts/Java/' },
