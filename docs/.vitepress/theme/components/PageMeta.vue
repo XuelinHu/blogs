@@ -64,6 +64,8 @@ function formatDate(date?: DateValue, includeTime = false): string {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
+    // SSR 构建机和读者浏览器必须使用同一时区，否则精确更新时间会造成 hydration mismatch。
+    timeZone: 'Asia/Shanghai',
     ...(includeTime ? { hour: '2-digit', minute: '2-digit' } : {})
   }).format(parsed)
 }

@@ -196,12 +196,14 @@ watch(
 <template>
   <nav v-if="visible" class="aside-page-outline">
     <div class="aside-page-outline__toolbar">
-      <label class="aside-page-outline__search-wrap">
+      <label class="aside-page-outline__search-wrap" for="aside-page-outline-search">
         <span class="aside-page-outline__search-icon" aria-hidden="true" />
         <input
+          id="aside-page-outline-search"
           v-model="query"
           class="aside-page-outline__search"
           type="search"
+          name="page-outline-query"
           aria-label="搜索本页目录"
           placeholder="搜索本页目录"
         />
