@@ -2,7 +2,7 @@
 title: ROS2 具身智能机器人自学路线与代码
 date: 2026-08-27
 created: 2026-08-27
-updated: 2026-08-27
+updated: 2026-09-01
 ---
 
 # ROS2 具身智能机器人自学路线与代码
@@ -13,7 +13,11 @@ updated: 2026-08-27
 传感器采集 → ROS2 通讯 → 视觉/语音理解 → 坐标与运动学计算 → 控制执行 → 记录、评估和迭代
 ```
 
-文中的代码以 Ubuntu 22.04 + ROS2 Humble + Python 3 为例。示例默认运行在仿真或断电测试台上；连接真实机械臂前，必须确认急停、关节限位、速度限制和机械空间。
+文中的代码以 Ubuntu 22.04 + ROS2 Humble + Python 3 为例。
+
+::: danger 注意：示例默认不连接真机动力
+示例应运行在仿真或断电测试台上。连接真实机械臂前，必须确认独立急停、软硬关节限位、速度/加速度/力矩限制、通信看门狗和机械隔离空间。普通 ROS2 节点退出不等于电机已安全断力。
+:::
 
 ## 1. 课程目录怎样串起来
 
@@ -211,7 +215,20 @@ rqt  # 打开 ROS2 图形化调试工具集合
 
 课程 24-29 的顺序应该固定为“只读观察 → 仿真控制 → 低速真机”。关节状态通常使用 `sensor_msgs/msg/JointState`，控制接口可能是厂商 Topic、Service、Action 或 `ros2_control` 控制器，不能假设所有机械臂的接口名称相同。
 
-下面是一个只读关节状态节点，先用它确认名称、顺序和单位：
+一条 `JointState` 不是“一个矩阵”，而是数个按索引对齐的一维数组。以二关节机械臂为例：
+
+```text
+name     string[2]  = ["shoulder_joint", "elbow_joint"]
+position float64[2] = [0.700, -0.500]  # rad
+velocity float64[2] = [0.120, -0.080]  # rad/s；允许为空
+effort   float64[2] = [1.800, 0.900]    # 常见为 N·m，但必须查驱动定义；允许为空
+```
+
+这里的第 `i` 个 `name`、`position`、`velocity` 和 `effort` 描述同一个关节。不能假设 `position[0]` 永远是肩关节；发布者重启、模型修改或驱动不同，都可能改变数组顺序。下面的只读节点先校验长度，再按名称重新排序：
+
+::: danger 注意：JointState 名称错位会让错误电机执行命令
+`zip` 会静默截断较长数组，而只按下标读取又会把关节顺序写死。控制前必须检查名称是否唯一、所需名称是否齐全、数组长度是否一致，并确认整个系统只有预期的 `/joint_states` 发布者。`effort` 的单位也不一定都是 N·m，未经厂商文档确认不得把它直接当作力矩闭环输入。
+:::
 
 ```python
 import rclpy  # 导入 ROS2 Python 客户端库
@@ -224,8 +241,19 @@ class JointMonitor(Node):  # 定义关节状态监控节点
         self.subscription = self.create_subscription(JointState, '/joint_states', self.on_state, 10)  # 订阅标准关节状态 Topic
 
     def on_state(self, message):  # 定义关节状态回调函数
-        pairs = zip(message.name, message.position)  # 将关节名称和位置按顺序配对
-        values = ', '.join(f'{name}={position:.3f}rad' for name, position in pairs)  # 格式化每个关节的弧度值
+        if len(message.name) != len(message.position):  # 检查名称和位置是否能逐项对应
+            self.get_logger().error('JointState 的 name/position 长度不一致')  # 报告格式错误
+            return  # 丢弃不完整消息，避免错位使用
+        if len(set(message.name)) != len(message.name):  # 检查关节名称是否重复
+            self.get_logger().error('JointState 中存在重复关节名')  # 重名时无法可靠建立映射
+            return  # 拒绝歧义数据
+        position_by_name = dict(zip(message.name, message.position))  # 建立“名称 -> 弧度”的显式映射
+        required = ['shoulder_joint', 'elbow_joint']  # 声明本节点真正需要的关节顺序
+        if any(name not in position_by_name for name in required):  # 检查两个目标关节是否齐全
+            self.get_logger().warning('JointState 缺少 shoulder_joint 或 elbow_joint')  # 输出缺失原因
+            return  # 等待下一条完整消息
+        ordered = [position_by_name[name] for name in required]  # 按控制器约定重排为 shape=[2]
+        values = ', '.join(f'{name}={position:.3f}rad' for name, position in zip(required, ordered))  # 格式化输出
         self.get_logger().info(values)  # 打印关节名称和位置
 
 def main(args=None):  # 定义程序入口函数
@@ -249,6 +277,10 @@ ros2 bag info arm_joint_demo  # 查看录制包的时长、Topic 和消息数量
 ros2 bag play arm_joint_demo --clock  # 按录制时间回放关节状态数据
 ros2 topic echo /joint_states --once  # 只查看一条关节状态消息并确认字段
 ```
+
+::: danger 注意：不要把 rosbag 控制 Topic 直接回放到真机
+bag 会原样重放旧时间戳、旧坐标系和旧控制命令。若其中包含 `/cmd_vel`、轨迹 Action 或厂商电机 Topic，真机可能突然重复历史动作。应先用 `ros2 bag info` 审核 Topic 白名单，在隔离的 ROS Domain 或重映射后的仿真环境回放；生产数据还可能包含图像、语音和位置信息，上传前必须脱敏并限制访问权限。
+:::
 
 课程 35 的 GUI 可以先只实现“开始录制、停止录制、选择文件、开始回放、紧急停止”五个按钮。按钮回调通过 `subprocess` 启动 rosbag，并在窗口上显示进程状态；不要让 GUI 线程直接阻塞等待命令结束。
 
@@ -275,6 +307,8 @@ ros2 launch robot_demo arm_demo.launch.py  # 一次启动机械臂实验所需�
 ### 7.1 图像的本质
 
 数字图像是一个数组。灰度图的每个像素是一个亮度值，彩色图通常有三个通道。OpenCV 默认使用 BGR 顺序，而很多资料使用 RGB；颜色异常时先检查通道顺序，不要马上怀疑相机坏了。
+
+例如一帧 `640 × 480` 的 `bgr8` 图像经 `cv_bridge` 转换后是 `uint8[480,640,3]`：第一维是行 `y`，第二维是列 `x`，第三维依次是 B、G、R。一个像素 `[20, 80, 200]` 表示蓝、绿、红三个 0～255 强度值。HSV 分割后得到 `uint8[480,640]`，每个位置通常只有 `0` 或 `255`；形态学操作改变这个掩膜的连通区域，不改变原图的真实深度。
 
 课程 37-43 的 HSV 实验适合入门颜色分割：先把 BGR 转 HSV，再根据颜色阈值生成掩膜，最后用形态学操作去除噪声。
 
@@ -350,9 +384,27 @@ rqt_image_view /camera/image_raw  # 查看原始图像
 rqt_image_view /camera/object_mask  # 查看 HSV 掩膜结果
 ```
 
+::: danger 注意：一帧识别结果不能直接触发抓取
+检查 `message.encoding`、`height × step == len(data)` 是否成立，并保留原始 `header.stamp`。曝光突变、RGB/BGR 搞反、旧帧堆积或网络延迟都可能产生“置信度很高但位置已经过期”的目标。控制层应要求连续多帧稳定、时间戳未过期、深度有效且目标仍在安全工作区，否则进入停止状态。
+:::
+
 ## 8. 49-50：坐标转换，视觉结果如何到达机器人
 
 像素坐标 `(u, v)` 不能直接当成机械臂坐标。至少需要相机内参、深度或平面假设，以及相机到机器人基座的外参。ROS2 中推荐使用 `tf2` 管理坐标变换，所有消息的 `header.frame_id` 都要填写真实坐标系名称。
+
+假设相机到基座的齐次变换和相机点分别为：
+
+```text
+T_base_camera [4,4] = [[ 0, -1, 0, 0.50],
+                       [ 1,  0, 0, 0.10],
+                       [ 0,  0, 1, 0.20],
+                       [ 0,  0, 0, 1.00]]
+p_camera      [4]   = [0.20, 0.10, 0.30, 1.00]
+p_base = T_base_camera @ p_camera
+       = [0.40, 0.30, 0.50, 1.00]
+```
+
+左上 `3 × 3` 把点的方向旋转 90°，最右列再增加相机原点相对基座的平移。结果仍是**位置**，没有产生速度、力或电机力矩；力与力矩的变换还要考虑作用点和伴随矩阵。
 
 下面代码演示把相机坐标系中的点转换到 `base_link`：
 
@@ -372,7 +424,7 @@ class PointTransformer(Node):  # 定义坐标转换节点
 
     def on_point(self, point):  # 定义物体点回调函数
         try:  # 开始处理 TF 查询异常
-            transform = self.buffer.lookup_transform('base_link', point.header.frame_id, rclpy.time.Time())  # 查询相机到机器人基座的最新变换
+            transform = self.buffer.lookup_transform('base_link', point.header.frame_id, point.header.stamp)  # 查询拍摄该点时刻对应的变换
             result = do_transform_point(point, transform)  # 将物体点变换到机器人基座坐标系
             self.get_logger().info(f'目标点：{result.point.x:.3f}, {result.point.y:.3f}, {result.point.z:.3f}')  # 输出基座坐标系中的目标点
         except Exception as error:  # 捕获 TF 尚未准备好等异常
@@ -390,6 +442,10 @@ if __name__ == '__main__':  # 判断是否直接运行当前文件
 ```
 
 如果没有深度相机，可以先假设目标位于工作台平面，再用相机标定得到的单应关系估计三维位置。真实抓取前还要做手眼标定，并用已知点验证转换误差。
+
+::: danger 注意：不要用“最新 TF”变换历史图像
+机器人运动时，最新位姿和图像曝光时刻的位姿并不相同；几十毫秒偏差就可能变成厘米级抓取误差。必须使用传感器时间戳查询同一时刻的 TF，设置可接受的最大延迟，并在 TF 外推失败时丢弃数据，不能捕获异常后继续沿用上一帧坐标。
+:::
 
 ## 9. 51-55：正解、反解和视觉抓取
 
@@ -411,6 +467,12 @@ position_error = np.linalg.norm(forward[:3, 3] - target[:3, 3])  # 计算末端�
 print(f'位置误差：{position_error:.6f} m')  # 输出位置误差供判断
 print('关节角：', angles)  # 输出逆解得到的全部关节角
 ```
+
+数据在这段代码中依次变化为：`target [4,4]` 表示目标位姿，`guess [N]` 是整条 URDF 链的初始关节变量，求解器输出 `angles [N]`，正解又把它还原为 `forward [4,4]`。`forward[:3,3] - target[:3,3]` 得到位置残差 `[3]`，其二范数才是标量误差。训练神经网络时会通过损失和反向传播更新参数，而 IKPy 在这里做的是数值优化关节角，**没有训练模型，也没有自动计算安全轨迹或力矩**。
+
+::: danger 注意：IK 有解也不能直接下发
+逆解可能越过关节限位、落在奇异点、与环境碰撞，或从当前姿态跳到另一支解。至少要检查 FK 位置/姿态误差、关节软限位、与当前角度的差值、路径连续性和碰撞距离，再由带速度、加速度及力矩限制的轨迹控制器执行。
+:::
 
 ### 9.2 视觉跟随和抓取的安全状态机
 
@@ -470,6 +532,10 @@ print(intent_text)  # 打印结果，正式系统应改为结构化解析和校�
 
 不要把 API 密钥写进代码或提交到 Git。模型只负责高层任务规划，低层节点负责限位、碰撞检查、速度约束和急停。
 
+::: danger 注意：语音和提示词都属于不可信输入
+误识别、环境中的恶意语句、网页检索内容或 MCP 返回文本都可能诱导模型调用高权限工具。生产系统要实行工具白名单、参数 Schema、权限分级、动作二次确认、幂等任务号和完整审计；“删除数据、解锁安全区、运动到未知坐标”等动作不能仅凭 LLM 文本获准。
+:::
+
 ### 10.3 MCP Server、Client 和 ROS2 工具
 
 课程 64-68 可以按三层理解：
@@ -491,6 +557,10 @@ def move_to_safe_pose(request):  # 定义移动到安全姿态的工具函数
 ```
 
 正式实现时，`publish_joint_trajectory` 应该调用具体的 ROS2 Action 客户端，并等待控制器反馈；`emergency_stop_is_active` 也必须连接真实安全回路，不能只用一个普通软件变量模拟。
+
+::: danger 注意：软件“急停变量”不是安全急停
+普通 ROS2 Topic、Service 和 Python 布尔值可能因节点卡死、网络分区或进程崩溃而失效。人员可进入的工作区必须使用符合设备要求的硬接线急停、安全继电器或安全 PLC；MCP 工具只能读取安全状态和请求受限动作，不能绕过硬件安全链。
+:::
 
 ## 11. 数据、仿真和调试习惯
 

@@ -271,6 +271,54 @@ onUnmounted(() => {
 </style>
 
 <style>
+.vp-doc .custom-block.danger {
+  position: relative;
+  margin: 22px 0;
+  border: 1px solid color-mix(in srgb, var(--vp-c-danger-1) 48%, var(--vp-c-divider));
+  border-left: 4px solid var(--vp-c-danger-1);
+  border-radius: 10px;
+  padding: 15px 18px 15px 20px;
+  color: color-mix(in srgb, var(--vp-c-danger-1) 46%, var(--vp-c-text-1));
+  background: color-mix(in srgb, var(--vp-c-bg) 88%, var(--vp-c-danger-soft));
+  box-shadow: 0 8px 22px color-mix(in srgb, var(--vp-c-danger-1) 10%, transparent);
+}
+
+.vp-doc .custom-block.danger .custom-block-title {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0 0 8px;
+  color: var(--vp-c-danger-1);
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.vp-doc .custom-block.danger .custom-block-title::before {
+  display: inline-grid;
+  flex: 0 0 24px;
+  width: 24px;
+  height: 22px;
+  place-items: center;
+  padding-top: 3px;
+  color: #fff;
+  background: var(--vp-c-danger-1);
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  font-size: 14px;
+  font-weight: 900;
+  line-height: 1;
+  content: '!';
+}
+
+.vp-doc .custom-block.danger p:not(.custom-block-title),
+.vp-doc .custom-block.danger li {
+  color: inherit;
+}
+
+.vp-doc .custom-block.danger code {
+  color: color-mix(in srgb, var(--vp-c-danger-1) 72%, var(--vp-c-text-1));
+  background: color-mix(in srgb, var(--vp-c-bg) 76%, var(--vp-c-danger-soft));
+}
+
 @media (min-width: 1440px) {
   :root {
     --vp-sidebar-width: 300px;

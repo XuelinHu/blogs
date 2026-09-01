@@ -2,12 +2,16 @@
 title: MCP
 date: 2026-05-28
 created: 2025-07-08
-updated: 2026-08-25
+updated: 2026-09-01
 ---
 
 # 1. MCP 的理论
 
 MCP 全称是 `Model Context Protocol`，可以理解为一套让大模型安全、标准化调用外部能力的协议。
+
+::: danger 注意：协议标准化不代表调用天然安全
+MCP 工具参数、资源内容和模型选择都可能被恶意输入影响。服务端必须实行最小权限、路径与租户边界校验、超时/限流、危险动作确认和审计；不要向客户端暴露生产密钥，也不要允许模型仅凭提示词执行任意文件、SQL 或终端命令。
+:::
 
 - 官方网站：https://modelcontextprotocol.io/introduction
 - 示例：https://modelcontextprotocol.io/examples

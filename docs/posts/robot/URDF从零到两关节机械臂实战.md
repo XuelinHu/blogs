@@ -2,7 +2,7 @@
 title: URDF 从零到两关节机械臂：建模、RViz、Gazebo 与 ros2_control
 date: 2026-08-30
 created: 2026-08-30
-updated: 2026-08-30
+updated: 2026-09-01
 ---
 
 # URDF 从零到两关节机械臂：建模、RViz、Gazebo 与 ros2_control
@@ -11,7 +11,9 @@ updated: 2026-08-30
 
 本文基线环境是 Ubuntu 22.04 + ROS2 Humble + Gazebo Classic 11。ROS2 Jazzy 等较新发行版通常使用现代 Gazebo 和 `gz_ros2_control`，URDF 主体仍适用，但仿真插件、安装包和启动文件需要按发行版替换。
 
-连接真实机械臂前，必须重新核验关节方向、零位、限位、速度、力矩、急停和驱动接口。本文控制案例只面向仿真。
+::: danger 注意：本文控制命令只面向仿真
+连接真实机械臂前，必须重新核验关节方向、编码器零位、传动比、软硬限位、速度、加速度、力矩、急停和驱动接口。URDF 能显示正确不代表真机参数正确，未经逐关节低速验证不得下发多关节轨迹。
+:::
 
 ## 1. 最终会得到什么
 
@@ -391,6 +393,10 @@ $$
 
 对称物体的交叉项可以为零。不要为了通过解析把惯量全部写成零；物理引擎需要合法的正质量、正惯量。
 
+::: danger 注意：错误惯量可能让 Gazebo 模型飞走
+`visual` 看起来正常不能证明 `inertial` 正确。质量为零、惯量不正定、质心位置错误或 collision 初始重叠，都可能造成数值爆炸。不得把“把惯量写成很小的数”当作通用修复；应按真实质量和几何计算，并检查惯量矩阵特征值均为正。
+:::
+
 ## 8. 展开并校验 Xacro
 
 先把宏展开为纯 URDF：
@@ -433,38 +439,38 @@ urdf_to_graphiz /tmp/urdf_arm.urdf
 创建 `launch/display.launch.py`：
 
 ```python
-from launch import LaunchDescription
-from launch.substitutions import Command
-from launch_ros.actions import Node
-from launch_ros.parameter_descriptions import ParameterValue
-from ament_index_python.packages import get_package_share_directory
-import os
+from launch import LaunchDescription  # 保存本次需要启动的全部动作
+from launch.substitutions import Command  # 在启动阶段执行 xacro 命令
+from launch_ros.actions import Node  # 声明 ROS2 节点
+from launch_ros.parameter_descriptions import ParameterValue  # 明确参数类型
+from ament_index_python.packages import get_package_share_directory  # 查安装路径
+import os  # 安全拼接跨平台路径
 
 
 def generate_launch_description():
-    package_share = get_package_share_directory('urdf_arm_description')
-    xacro_file = os.path.join(package_share, 'urdf', 'urdf_arm.urdf.xacro')
+    package_share = get_package_share_directory('urdf_arm_description')  # Package 安装目录
+    xacro_file = os.path.join(package_share, 'urdf', 'urdf_arm.urdf.xacro')  # 模型路径
 
     robot_description = ParameterValue(
-        Command(['xacro ', xacro_file, ' use_gazebo:=false']),
-        value_type=str,
-    )
+        Command(['xacro ', xacro_file, ' use_gazebo:=false']),  # 展开为完整 URDF XML
+        value_type=str,  # 输出按字符串参数传递，不是文件名
+    )  # robot_description 的内容可能有数万字符
 
     return LaunchDescription([
         Node(
-            package='robot_state_publisher',
-            executable='robot_state_publisher',
-            parameters=[{'robot_description': robot_description}],
-            output='screen',
+            package='robot_state_publisher',  # 读取模型和 JointState
+            executable='robot_state_publisher',  # 计算并发布 /tf 与 /tf_static
+            parameters=[{'robot_description': robot_description}],  # 注入 URDF XML
+            output='screen',  # 日志输出到当前终端，便于定位解析错误
         ),
         Node(
-            package='joint_state_publisher_gui',
-            executable='joint_state_publisher_gui',
-            output='screen',
+            package='joint_state_publisher_gui',  # 教学用滑块节点
+            executable='joint_state_publisher_gui',  # 发布测试 /joint_states
+            output='screen',  # 只能用于仿真显示，不能当真机编码器
         ),
         Node(
-            package='rviz2',
-            executable='rviz2',
+            package='rviz2',  # 三维可视化工具
+            executable='rviz2',  # 读取 RobotModel 和 TF
             output='screen',
         ),
     ])
@@ -524,6 +530,58 @@ $$
 
 例如 $q_1=0,q_2=0$ 时，`tool0` 应在 `(0.7, 0, 0.1)`；$q_1=\pi/2,q_2=0$ 时应接近 `(0, 0.7, 0.1)`。用 `tf2_echo` 与公式比较，是检查坐标和关节轴最直接的方法。
 
+### 11.1 URDF 结构变成矩阵后，物理意义是什么
+
+`/joint_states` 传入的核心数据是关节向量：
+
+```text
+joint_names = [shoulder_joint, elbow_joint]  # 长度 2，名称决定对应关系
+q = [q1, q2]                                 # shape=[2]，单位 rad
+```
+
+对这个平面机械臂，绕 Z 轴旋转和平移可写成 3×3 矩阵：
+
+$$
+R(q)=\begin{bmatrix}\cos q&-\sin q&0\\\sin q&\cos q&0\\0&0&1\end{bmatrix},\quad
+D(L)=\begin{bmatrix}1&0&L\\0&1&0\\0&0&1\end{bmatrix}
+$$
+
+从基座到末端的结构链是：
+
+$$
+T_{base,tool}=R(q_1)D(L_1)R(q_2)D(L_2)
+$$
+
+矩阵从右向左作用：先沿小臂坐标系走 $L_2$，再转肘关节，再沿大臂走 $L_1$，最后转肩关节。乘开后：
+
+$$
+T_{base,tool}=\begin{bmatrix}
+\cos(q_1+q_2)&-\sin(q_1+q_2)&L_1\cos q_1+L_2\cos(q_1+q_2)\\
+\sin(q_1+q_2)&\cos(q_1+q_2)&L_1\sin q_1+L_2\sin(q_1+q_2)\\
+0&0&1
+\end{bmatrix}
+$$
+
+例如轨迹目标 `q=[0.7,-0.5]`：
+
+```text
+输入关节向量 q          [2] = [0.7,-0.5] rad
+末端组合角 q1+q2            = 0.2 rad
+T_base_tool             [3,3]
+末端位置 [x,y,z]             ≈ [0.6000,0.3173,0.1000] m
+```
+
+这里的矩阵乘法给出**几何姿态**，并没有计算电机需要提供的力矩。新关节角也不是由这些矩阵自动产生的：
+
+- 正运动学：输入 $q$，矩阵链输出末端位姿。
+- 逆运动学：输入目标位姿，通过迭代求一个满足约束的 $q$。
+- 轨迹控制：让 $q(t)$ 随时间平滑变化，得到 $\dot q,\ddot q$。
+- 动力学：再由 $M(q),C(q,\dot q),g(q)$ 和外力求需要的 $\tau$。
+
+::: danger 注意：TF 正确不代表力矩和路径安全
+`tf2_echo` 只验证几何链。即使末端位姿完全正确，轨迹仍可能经过自碰撞、奇异点或需要超过电机上限的速度/力矩。真机前必须另做轨迹、碰撞和动力学检查。
+:::
+
 ## 12. `robot_state_publisher` 的源码工作链
 
 ```text
@@ -548,27 +606,27 @@ robot_description XML
 ```yaml
 controller_manager:
   ros__parameters:
-    update_rate: 100
-    use_sim_time: true
+    update_rate: 100  # 控制器管理器按 100 Hz 更新；真机需与硬件周期匹配
+    use_sim_time: true  # Gazebo 使用仿真时钟；真机通常设为 false
 
     joint_state_broadcaster:
-      type: joint_state_broadcaster/JointStateBroadcaster
+      type: joint_state_broadcaster/JointStateBroadcaster  # 发布位置和速度状态
 
     arm_controller:
-      type: joint_trajectory_controller/JointTrajectoryController
+      type: joint_trajectory_controller/JointTrajectoryController  # 接收关节轨迹 Action
 
 arm_controller:
   ros__parameters:
-    joints:
-      - shoulder_joint
-      - elbow_joint
+    joints:  # 顺序必须与命令 positions 的顺序严格对应
+      - shoulder_joint  # positions[0]
+      - elbow_joint  # positions[1]
     command_interfaces:
-      - position
+      - position  # 控制器最终向硬件写期望位置
     state_interfaces:
-      - position
-      - velocity
-    allow_partial_joints_goal: false
-    open_loop_control: false
+      - position  # 编码器位置反馈
+      - velocity  # 编码器或估算速度反馈
+    allow_partial_joints_goal: false  # 命令必须包含全部两个关节
+    open_loop_control: false  # 使用状态反馈，不假设命令一定执行成功
 ```
 
 三层职责不要混淆：
@@ -584,57 +642,57 @@ arm_controller:
 创建 `launch/gazebo.launch.py`：
 
 ```python
-import os
+import os  # 拼接 Package 与 launch 文件路径
 
-from ament_index_python.packages import get_package_share_directory
-from launch import LaunchDescription
-from launch.actions import IncludeLaunchDescription, RegisterEventHandler
-from launch.event_handlers import OnProcessExit
-from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import Command
-from launch_ros.actions import Node
-from launch_ros.parameter_descriptions import ParameterValue
+from ament_index_python.packages import get_package_share_directory  # 查安装目录
+from launch import LaunchDescription  # 汇总启动动作
+from launch.actions import IncludeLaunchDescription, RegisterEventHandler  # 包含子 launch、注册时序事件
+from launch.event_handlers import OnProcessExit  # 等待进程结束后执行下一步
+from launch.launch_description_sources import PythonLaunchDescriptionSource  # 读取 Python launch
+from launch.substitutions import Command  # 运行 xacro
+from launch_ros.actions import Node  # 启动 ROS2 节点
+from launch_ros.parameter_descriptions import ParameterValue  # 指定参数类型
 
 
 def generate_launch_description():
-    description_share = get_package_share_directory('urdf_arm_description')
-    gazebo_share = get_package_share_directory('gazebo_ros')
+    description_share = get_package_share_directory('urdf_arm_description')  # 本模型目录
+    gazebo_share = get_package_share_directory('gazebo_ros')  # Gazebo ROS 集成目录
     xacro_file = os.path.join(
         description_share, 'urdf', 'urdf_arm.urdf.xacro'
     )
 
     robot_description = ParameterValue(
-        Command(['xacro ', xacro_file, ' use_gazebo:=true']),
-        value_type=str,
+        Command(['xacro ', xacro_file, ' use_gazebo:=true']),  # 展开时启用 ros2_control
+        value_type=str,  # 保存展开后的 XML 字符串
     )
 
-    gazebo = IncludeLaunchDescription(
+    gazebo = IncludeLaunchDescription(  # 复用 gazebo_ros 自带的启动文件
         PythonLaunchDescriptionSource(
             os.path.join(gazebo_share, 'launch', 'gazebo.launch.py')
         )
     )
 
-    robot_state_publisher = Node(
+    robot_state_publisher = Node(  # 发布机器人坐标树
         package='robot_state_publisher',
         executable='robot_state_publisher',
         parameters=[{
             'robot_description': robot_description,
-            'use_sim_time': True,
+            'use_sim_time': True,  # TF 时间必须与 Gazebo /clock 一致
         }],
         output='screen',
     )
 
-    spawn_robot = Node(
+    spawn_robot = Node(  # 把 robot_description 中的实体插入 Gazebo
         package='gazebo_ros',
         executable='spawn_entity.py',
         arguments=[
-            '-entity', 'urdf_arm',
-            '-topic', 'robot_description',
+            '-entity', 'urdf_arm',  # Gazebo 内实体名称
+            '-topic', 'robot_description',  # 从该 Topic 读取 URDF
         ],
         output='screen',
     )
 
-    joint_state_broadcaster = Node(
+    joint_state_broadcaster = Node(  # 发布仿真关节位置和速度
         package='controller_manager',
         executable='spawner',
         arguments=['joint_state_broadcaster',
@@ -642,7 +700,7 @@ def generate_launch_description():
         output='screen',
     )
 
-    arm_controller = Node(
+    arm_controller = Node(  # 加载 FollowJointTrajectory 控制器
         package='controller_manager',
         executable='spawner',
         arguments=['arm_controller',
@@ -650,11 +708,11 @@ def generate_launch_description():
         output='screen',
     )
 
-    # 机器人成功插入 Gazebo 后再请求加载控制器。
+    # 机器人成功插入 Gazebo 后再请求加载控制器，避免 controller_manager 尚不存在。
     start_controllers = RegisterEventHandler(
         OnProcessExit(
             target_action=spawn_robot,
-            on_exit=[joint_state_broadcaster, arm_controller],
+            on_exit=[joint_state_broadcaster, arm_controller],  # 按依赖顺序启动
         )
     )
 
@@ -712,6 +770,22 @@ ros2 action send_goal \
   }}"
 ```
 
+这条 Action Goal 的数据契约是：
+
+| 字段 | 格式 | 本例 | 物理含义 |
+| --- | --- | --- | --- |
+| `joint_names` | `string[2]` | 肩、肘 | 定义后续数组每一列属于哪个关节 |
+| `positions` | `float64[2]` | `[0.7,-0.5]` | 目标关节角，单位 rad |
+| `time_from_start` | `{sec,nanosec}` | 3 秒 | 从轨迹起点到该点的期望时间 |
+| `velocities` | 可选 `float64[2]` | 未提供 | 该轨迹点的期望角速度 |
+| `accelerations` | 可选 `float64[2]` | 未提供 | 该轨迹点的期望角加速度 |
+
+若假设从 `[0,0]` 匀速走到 `[0.7,-0.5]`，只看平均速度约为 `[0.233,-0.167] rad/s`。实际控制器会按插值策略生成中间采样点；起停阶段还会有加速度，因此不能只用“角度差除以 3 秒”判断峰值力矩是否安全。
+
+::: danger 注意：关节数组顺序错误会驱动错误电机
+控制器按 `joint_names` 将 `positions` 对齐到关节。名称缺失、重复、拼写错误或上层程序错误复用旧顺序，都可能让肩、肘接收彼此的目标。发送前应检查当前状态、目标差值、轨迹时长、限位和控制器反馈；第一次只发送小角度、低速的仿真命令。
+:::
+
 数据路径为：
 
 ```mermaid
@@ -751,6 +825,10 @@ flowchart LR
 - CAD 导出原点不一定在关节轴，必须用 `origin` 校正，最好从 CAD 装配阶段就统一坐标系。
 - Linux 文件名区分大小写，`Shoulder.STL` 与 `shoulder.stl` 不同。
 
+::: danger 注意：毫米网格误当成米会放大一千倍
+不要只缩放 `visual` 后就认为模型正确；`collision`、惯性参数、关节原点和质心必须保持同一米制坐标。网格异常放大会造成初始碰撞，错误的质量/惯量又会让仿真发散。导入后应在 RViz 量尺寸、在 Gazebo 检查碰撞体，并与真实 CAD 尺寸表逐项核对。
+:::
+
 ## 18. 从 URDF 到真实机器人还缺什么
 
 URDF 不是驱动程序。换成真机至少还需要：
@@ -763,6 +841,10 @@ URDF 不是驱动程序。换成真机至少还需要：
 6. 低速、无负载、单关节逐一验证，再做多关节轨迹。
 
 真机插件不能继续写 `gazebo_ros2_control/GazeboSystem`，而应改为真实硬件插件类名及其串口、CAN、EtherCAT 或网络配置。
+
+::: danger 注意：Hardware Interface 的 write() 直接面对执行器
+调试 `write()` 时先断开动力，仅验证报文、关节名称、方向、零位、传动比和单位；再以单关节、小角度、低电流方式上电。通信丢失时必须由独立看门狗进入安全状态，不能依赖上层 Python 节点来得及发送最后一条停止命令。
+:::
 
 ## 19. 高频错误定位表
 

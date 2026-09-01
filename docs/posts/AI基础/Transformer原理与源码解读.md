@@ -2,12 +2,16 @@
 title: Transformer 原理、QKV 消融、代码与源码解读
 date: 2026-08-30
 created: 2026-08-30
-updated: 2026-08-30
+updated: 2026-09-01
 ---
 
 # Transformer 原理、QKV 消融、代码与源码解读
 
 Transformer 用注意力让任意两个 Token 直接交互，避免 RNN 必须沿时间步逐个传递信息。理解它的关键不是背诵结构图，而是弄清楚 Query、Key、Value（正确顺序通常写作 **Q/K/V**，有时也被口头写成 QKV 或 QVK）分别做什么，以及注意力层究竟在哪个维度混合信息。
+
+::: danger 注意：Mask 语义和序列长度都可能引发线上事故
+PyTorch 不同注意力 API 对布尔 Mask 的 `True` 含义并不完全一致，写反会泄漏未来 Token 或让模型关注 Padding。标准注意力的显存随长度近似平方增长，接口必须限制 Token 数并处理全被遮挡导致的 NaN；不能让任意超长输入直接占满共享 GPU。
+:::
 
 ## 1. Transformer 为什么不再使用循环
 
@@ -303,6 +307,10 @@ print(attention_map.shape)  # [2, 8, 10, 10]
 - `nn.MultiheadAttention` 的二值 `key_padding_mask`：`True` 表示忽略该 Key。
 
 不同接口的语义并不完全一致。传 mask 前必须阅读当前版本文档并用一个 `2 × 2` 小例子验证。
+
+::: danger 注意：因果 Mask 写反会让评测结果虚高
+模型训练时一旦看见未来答案，Loss 可能快速下降且代码不报错，但上线生成会立刻失效。为每种 API 固定一个可人工核对的微型矩阵单测，同时检查“被遮挡位置概率为 0”和“每行概率和为 1”；整行都被遮挡时还要避免 Softmax 产生 NaN。
+:::
 
 ## 7. 完整 Transformer Block
 
@@ -650,6 +658,10 @@ print("打包后的 QKV 权重形状:", packed_qkv_weight.shape)  # [24,8]
 Q/K/V 投影和 FFN 的复杂度大致随 $T D^2$ 增长，attention score/context 随 $T^2D$ 增长。短序列、大维度时线性层可能占主要成本；长序列时二次项逐渐成为瓶颈。
 
 常见优化方向包括局部/滑窗注意力、稀疏注意力、低秩近似、分块计算、Flash Attention 和 KV Cache。KV Cache 不是删掉 K/V，而是在自回归生成时缓存过去 Token 的 K/V，避免每一步重复计算。
+
+::: danger 注意：必须在进入模型前限制序列长度
+不要等 GPU OOM 后再捕获异常；共享推理服务可能因此杀死同卡上的全部请求。接口层应限制 Token 数、batch 和并发，设置显存预算与超时，并对 KV Cache 做会话级配额和释放。截断时还要保留业务必需指令，不能静默裁掉安全规则。
+:::
 
 ## 13. 常见错误
 

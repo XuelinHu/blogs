@@ -2,12 +2,16 @@
 title: ViT 视觉 Transformer 原理、代码与源码解读
 date: 2026-08-30
 created: 2026-08-30
-updated: 2026-08-30
+updated: 2026-09-01
 ---
 
 # ViT 视觉 Transformer 原理、代码与源码解读
 
 Vision Transformer（ViT）的核心思想很直接：把图像切成固定大小的 Patch，把每个 Patch 当成一个 Token，再用 Transformer Encoder 建模所有 Patch 之间的关系。它不是把每个像素都当 Token，否则标准注意力的二次复杂度会迅速失控。
+
+::: danger 注意：Attention 热力图不是安全或因果证明
+注意力还会经过多头混合、残差和后续层，亮区不能直接解释为模型做决定的唯一原因。分辨率改变时 Token 数和显存会快速增长，位置编码也要按预训练实现正确插值；工业质检上线前必须用独立产线数据评估漏检，并为低置信度和分布外图片设置人工复核。
+:::
 
 ## 1. 从图像到 Patch Token
 
@@ -424,6 +428,10 @@ from torchvision.models.vision_transformer import VisionTransformer
 print(inspect.getsource(VisionTransformer._process_input))
 print(inspect.getsource(VisionTransformer.forward))
 ```
+
+::: danger 注意：位置编码不能用简单截断冒充插值
+分辨率或 Patch 网格变化后，错误位置编码可能成功加载部分权重却破坏空间关系。固定输入分辨率时直接拒绝不匹配图片；允许动态分辨率时复用对应版本的二维插值实现，并以固定图片比较迁移前后输出，防止预处理升级造成静默漂移。
+:::
 
 ## 11. 怎样观察注意力图
 
