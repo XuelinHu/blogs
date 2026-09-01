@@ -118,7 +118,7 @@ onUnmounted(() => window.clearTimeout(animationTimer))
                 <ellipse cx="54" cy="30" rx="3.2" ry="4" />
               </g>
               <path class="robot__mouth robot__mouth--neutral" d="M40 38h10" />
-              <path class="robot__mouth robot__mouth--smile" d="M38 36c2 7 12 7 14 0" />
+              <path class="robot__mouth robot__mouth--smile" d="M40 37q5 6 10 0" />
             </g>
             <rect class="robot__neck" x="40" y="49" width="10" height="7" rx="3" />
             <rect class="robot__body" x="25" y="54" width="40" height="34" rx="12" />
@@ -447,21 +447,12 @@ onUnmounted(() => window.clearTimeout(animationTimer))
   animation: limb-back 0.48s ease-in-out infinite alternate;
 }
 
-.hero-trail__robot.is-greeting .robot__head {
-  animation: head-turn 1.35s ease-in-out both;
-}
-
-.hero-trail__robot.is-greeting .robot__eyes {
-  animation: happy-eyes 1.35s ease-in-out both;
-}
-
 .hero-trail__robot.is-greeting .robot__mouth--neutral {
   opacity: 0;
 }
 
 .hero-trail__robot.is-greeting .robot__mouth--smile {
   opacity: 1;
-  animation: smile-pop 1.35s ease-in-out both;
 }
 
 .hero-trail__robot.is-greeting .robot__arm--wave {
@@ -614,22 +605,6 @@ onUnmounted(() => window.clearTimeout(animationTimer))
 @keyframes limb-back {
   from { transform: rotate(16deg); }
   to { transform: rotate(-15deg); }
-}
-
-@keyframes head-turn {
-  0%, 100% { transform: rotate(0) scaleX(1); }
-  28% { transform: rotate(-8deg) scaleX(0.9); }
-  58%, 82% { transform: rotate(7deg) scaleX(1); }
-}
-
-@keyframes happy-eyes {
-  0%, 20%, 100% { transform: scaleY(1); }
-  38%, 72% { transform: scaleY(0.35); }
-}
-
-@keyframes smile-pop {
-  0%, 15%, 100% { transform: scale(0.75); }
-  42%, 82% { transform: scale(1.15); }
 }
 
 @keyframes arm-wave {
