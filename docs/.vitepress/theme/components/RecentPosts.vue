@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useData, withBase } from 'vitepress'
+import PostVisual from './PostVisual.vue'
 
 type RecentPost = {
   category: string
@@ -14,10 +15,15 @@ const { theme } = useData()
 const recentPosts = computed(
   () => (theme.value.recentPosts as RecentPost[] | undefined) ?? []
 )
-const visiblePosts = computed(() => recentPosts.value.slice(0, 6))
+const visiblePosts = computed(() => recentPosts.value.slice(0, 6).map((post) => ({
+  ...post,
+  visual: resolveVisual(post)
+})))
 const categoryThemes: Record<string, { start: string; end: string; rgb: string }> = {
   AI: { start: '#2563eb', end: '#06b6d4', rgb: '37, 99, 235' },
+  'AI基础': { start: '#2563eb', end: '#7c3aed', rgb: '37, 99, 235' },
   LLM: { start: '#7c3aed', end: '#2563eb', rgb: '124, 58, 237' },
+  robot: { start: '#0f766e', end: '#14b8a6', rgb: '15, 118, 110' },
   Java: { start: '#ea580c', end: '#dc2626', rgb: '234, 88, 12' },
   Database: { start: '#16a34a', end: '#0d9488', rgb: '22, 163, 74' },
   Middleware: { start: '#0891b2', end: '#4f46e5', rgb: '8, 145, 178' },
@@ -35,6 +41,49 @@ const categoryThemes: Record<string, { start: string; end: string; rgb: string }
   Web3: { start: '#7c3aed', end: '#14b8a6', rgb: '124, 58, 237' }
 }
 const fallbackTheme = { start: '#2563eb', end: '#0d9488', rgb: '37, 99, 235' }
+const categoryLabels: Record<string, string> = {
+  AI: 'AI 工具与应用',
+  'AI基础': 'AI 模型基础',
+  LLM: '大语言模型',
+  robot: '机器人与具身智能',
+  Java: 'Java',
+  Database: '数据库',
+  Middleware: '中间件',
+  Spring: 'Spring',
+  Solution: '工程方案',
+  Test: '测试',
+  Command: '开发工具',
+  'Front-end': '前端',
+  Python: 'Python',
+  Reading: '阅读',
+  Paper: '论文',
+  Mobile: '移动端',
+  Net: '计算机网络',
+  Sandbox: 'JVM Sandbox',
+  Web3: 'Web3'
+}
+const categoryVisuals: Record<string, { emoji: string; kind: string }> = {
+  AI: { emoji: '🪄', kind: 'attention' },
+  'AI基础': { emoji: '🧠', kind: 'network' },
+  LLM: { emoji: '✨', kind: 'attention' },
+  robot: { emoji: '🤖', kind: 'robot' },
+  Java: { emoji: '☕', kind: 'java' },
+  Database: { emoji: '🗄️', kind: 'database' },
+  Middleware: { emoji: '🔌', kind: 'code' },
+  Spring: { emoji: '🌱', kind: 'code' },
+  Solution: { emoji: '💡', kind: 'code' },
+  Test: { emoji: '✅', kind: 'testing' },
+  Command: { emoji: '⌨️', kind: 'code' },
+  'Front-end': { emoji: '🎨', kind: 'code' },
+  Python: { emoji: '🐍', kind: 'code' },
+  Reading: { emoji: '📚', kind: 'reading' },
+  Paper: { emoji: '📄', kind: 'reading' },
+  Mobile: { emoji: '📱', kind: 'testing' },
+  Net: { emoji: '🌐', kind: 'network' },
+  Sandbox: { emoji: '🧪', kind: 'testing' },
+  Web3: { emoji: '🔗', kind: 'network' }
+}
+const fallbackVisual = { emoji: '🧩', kind: 'code' }
 
 function formatDate(date: string): string {
   const parsed = new Date(date)
@@ -48,10 +97,30 @@ function formatDateEn(date: string): string {
   return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'short', day: '2-digit' }).format(parsed)
 }
 
-function visualLabel(post: RecentPost): string {
-  const trimmed = post.category.trim()
-  if (trimmed.length <= 8) return trimmed
-  return trimmed.slice(0, 8)
+function resolveVisual(post: RecentPost): { emoji: string; kind: string } {
+  const title = post.title
+  const subject = `${post.title} ${post.excerpt}`
+
+  if (/强化学习|DQN|Q-learning|奖励函数/i.test(title)) return { emoji: '🎯', kind: 'reinforcement' }
+  if (/URDF|Gazebo|RViz|ros2_control/i.test(title)) return { emoji: '🦾', kind: 'urdf' }
+  if (/机器人|机械臂|ROS2|位姿|具身/i.test(title)) return { emoji: '🤖', kind: 'robot' }
+  if (/LSTM|长短期记忆/i.test(title)) return { emoji: '🧳', kind: 'memory' }
+  if (/GRU|循环神经|序列|时序/i.test(title)) return { emoji: '🔁', kind: 'sequence' }
+  if (/CNN|ViT|视觉|图像|卷积|CV/i.test(title)) return { emoji: '👁️', kind: 'vision' }
+  if (/神经网络|反向传播|感知机|梯度/i.test(title)) return { emoji: '🧠', kind: 'network' }
+  if (/Transformer|LLM|大语言模型|大模型|Agent|RAG|QLoRA|MCP/i.test(title)) return { emoji: '✨', kind: 'attention' }
+
+  if (/URDF|Gazebo|机器人|机械臂|ROS2|位姿|具身/i.test(subject)) return { emoji: '🤖', kind: 'robot' }
+  if (/Transformer|LLM|大语言模型|大模型|Agent|RAG|QLoRA|MCP/i.test(subject)) return { emoji: '✨', kind: 'attention' }
+  if (/CNN|ViT|视觉|图像|卷积|CV/i.test(subject)) return { emoji: '👁️', kind: 'vision' }
+  if (/LSTM|GRU|循环神经|序列|时序/i.test(subject)) return { emoji: '🔁', kind: 'sequence' }
+  if (/神经网络|反向传播|感知机|梯度/i.test(subject)) return { emoji: '🧠', kind: 'network' }
+
+  return categoryVisuals[post.category] ?? fallbackVisual
+}
+
+function categoryLabel(category: string): string {
+  return categoryLabels[category] ?? category
 }
 
 function categoryStyle(post: RecentPost) {
@@ -71,12 +140,10 @@ function categoryStyle(post: RecentPost) {
       <article v-for="post in visiblePosts" :key="post.link" class="post-card" :style="categoryStyle(post)">
         <a class="post-card__link" :href="withBase(post.link)">
           <div class="post-card__visual" aria-hidden="true">
-            <span class="post-card__visual-label">{{ visualLabel(post) }}</span>
-            <span class="post-card__visual-sub">NOTE</span>
-            <span class="post-card__visual-dot"></span>
+            <PostVisual :emoji="post.visual.emoji" :kind="post.visual.kind" />
           </div>
           <div class="post-card__main">
-            <span class="post-card__category">{{ post.category }}</span>
+            <span class="post-card__category">{{ categoryLabel(post.category) }}</span>
             <h3 class="post-card__title">{{ post.title }}</h3>
             <p class="post-card__excerpt">{{ post.excerpt }}</p>
           </div>
@@ -138,15 +205,11 @@ function categoryStyle(post: RecentPost) {
 
 .post-card__visual {
   position: relative;
-  flex: 0 0 150px;
-  min-height: 128px;
+  flex: 0 0 170px;
+  min-height: 132px;
   align-self: stretch;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
   overflow: hidden;
-  border-radius: 8px;
-  padding: 16px;
+  border-radius: 10px;
   color: #ffffff;
   background:
     linear-gradient(135deg, var(--post-start), var(--post-end)),
@@ -166,47 +229,6 @@ function categoryStyle(post: RecentPost) {
   animation: visual-sweep 1.6s ease-in-out infinite;
 }
 
-.post-card__visual::after {
-  content: '';
-  position: absolute;
-  right: -26px;
-  top: -24px;
-  width: 82px;
-  height: 82px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.18);
-}
-
-.post-card__visual-label {
-  position: relative;
-  z-index: 1;
-  font-size: 22px;
-  font-weight: 900;
-  line-height: 1.1;
-  letter-spacing: 0;
-}
-
-.post-card__visual-sub {
-  position: relative;
-  z-index: 1;
-  margin-top: 7px;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  opacity: 0.8;
-}
-
-.post-card__visual-dot {
-  position: absolute;
-  left: 14px;
-  top: 14px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #ffffff;
-  box-shadow: 16px 0 0 rgba(255, 255, 255, 0.62), 32px 0 0 rgba(255, 255, 255, 0.34);
-}
-
 .post-card__main {
   flex: 1 1 auto;
   min-width: 0;
@@ -216,11 +238,7 @@ function categoryStyle(post: RecentPost) {
 }
 
 .post-card:hover .post-card__main {
-  background: #eff6ff;
-}
-
-:global(.dark) .post-card:hover .post-card__main {
-  background: rgba(var(--post-rgb), 0.18);
+  background: color-mix(in srgb, var(--vp-c-bg) 86%, var(--post-start));
 }
 
 .post-card__category {
@@ -287,7 +305,7 @@ function categoryStyle(post: RecentPost) {
 
   .post-card__visual {
     flex: 0 0 auto;
-    min-height: 96px;
+    min-height: 132px;
   }
 
   .post-card__date {

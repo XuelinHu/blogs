@@ -1,57 +1,164 @@
 <script setup lang="ts">
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { withBase } from 'vitepress'
 
+type RobotPhase = 'greeting' | 'walking'
+
 const milestones = [
-  { label: 'AI', detail: '模型工具', start: '#2563eb', end: '#06b6d4', rgb: '37, 99, 235' },
-  { label: 'LLM', detail: '训练评测', start: '#7c3aed', end: '#2563eb', rgb: '124, 58, 237' },
-  { label: 'Java', detail: '后端基础', start: '#ea580c', end: '#dc2626', rgb: '234, 88, 12' },
-  { label: '数据库', detail: '存储检索', start: '#16a34a', end: '#0d9488', rgb: '22, 163, 74' },
-  { label: '分布式', detail: '系统设计', start: '#0891b2', end: '#4f46e5', rgb: '8, 145, 178' },
-  { label: '测试', detail: '质量效率', start: '#db2777', end: '#f59e0b', rgb: '219, 39, 119' }
+  { label: '机器人', detail: '具身智能', href: '/posts/robot/', emoji: '🤖', start: '#0f766e', end: '#14b8a6', rgb: '15, 118, 110' },
+  { label: 'AI', detail: '模型基础', href: '/posts/AI基础/', emoji: '🧠', start: '#2563eb', end: '#06b6d4', rgb: '37, 99, 235' },
+  { label: 'LLM', detail: '训练评测', href: '/posts/LLM/', emoji: '✨', start: '#7c3aed', end: '#2563eb', rgb: '124, 58, 237' },
+  { label: 'Java', detail: '后端基础', href: '/posts/Java/', emoji: '☕', start: '#ea580c', end: '#dc2626', rgb: '234, 88, 12' },
+  { label: '数据库', detail: '存储检索', href: '/posts/Database/', emoji: '🗄️', start: '#16a34a', end: '#0d9488', rgb: '22, 163, 74' },
+  { label: '测试', detail: '质量效率', href: '/posts/Test/', emoji: '✅', start: '#db2777', end: '#f59e0b', rgb: '219, 39, 119' }
 ]
+
+const robotIndex = ref(0)
+const activeIndex = ref(0)
+const phase = ref<RobotPhase>('greeting')
+let direction = 1
+let animationTimer: ReturnType<typeof setTimeout> | undefined
+
+const currentMilestone = computed(() => milestones[robotIndex.value])
+const robotStyle = computed(() => ({
+  '--robot-position': `${((robotIndex.value + 0.5) / milestones.length) * 100}%`,
+  '--robot-accent': currentMilestone.value.start,
+  '--robot-accent-rgb': currentMilestone.value.rgb
+}))
+
+function schedule(callback: () => void, delay: number) {
+  window.clearTimeout(animationTimer)
+  animationTimer = window.setTimeout(callback, delay)
+}
+
+function arrive() {
+  if (phase.value !== 'walking') return
+
+  activeIndex.value = robotIndex.value
+  phase.value = 'greeting'
+  schedule(walkToNextMilestone, 1450)
+}
+
+function walkToNextMilestone() {
+  if (robotIndex.value === milestones.length - 1) direction = -1
+  if (robotIndex.value === 0) direction = 1
+
+  activeIndex.value = -1
+  phase.value = 'walking'
+  robotIndex.value += direction
+  // transitionend 是正常到站信号；定时器只在浏览器漏发事件时兜底。
+  schedule(arrive, 2000)
+}
+
+function handleRobotTransitionEnd(event: TransitionEvent) {
+  // 子元素的过渡事件也会冒泡，只有机器人定位层自身结束移动才算真正到站。
+  if (
+    event.target !== event.currentTarget ||
+    phase.value !== 'walking' ||
+    !['left', 'top'].includes(event.propertyName)
+  ) return
+  arrive()
+}
+
+onMounted(() => {
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+  if (prefersReducedMotion) {
+    robotIndex.value = 2
+    activeIndex.value = 2
+    phase.value = 'greeting'
+    return
+  }
+
+  schedule(walkToNextMilestone, 1200)
+})
+
+onUnmounted(() => window.clearTimeout(animationTimer))
 </script>
 
 <template>
   <section class="hero-trail" aria-labelledby="hero-trail-title">
     <div class="hero-trail__copy">
-      <p class="hero-trail__eyebrow">TECH NOTES</p>
+      <p class="hero-trail__eyebrow">TECH NOTES · KEEP EXPLORING</p>
       <h1 id="hero-trail-title" class="hero-trail__title">
         <span>技术博客与学习笔记</span>
       </h1>
       <p class="hero-trail__subtitle">
-        记录 AI、Java、数据库、分布式系统等领域的技术积累
+        从机器人与 AI 出发，持续记录模型、后端、数据与工程实践
       </p>
       <div class="hero-trail__actions">
-        <a class="hero-trail__action hero-trail__action--primary" :href="withBase('/posts/AI/')">浏览文章</a>
+        <a class="hero-trail__action hero-trail__action--primary" :href="withBase('/posts/robot/')">开始探索</a>
         <a class="hero-trail__action" href="https://github.com/XuelinHu">GitHub</a>
       </div>
     </div>
 
-    <div class="hero-trail__map" aria-label="文章分类学习路线">
-      <div class="hero-trail__track"></div>
-      <div class="hero-trail__vehicle" aria-hidden="true">
-        <span class="hero-trail__smoke hero-trail__smoke--one"></span>
-        <span class="hero-trail__smoke hero-trail__smoke--two"></span>
-        <span class="hero-trail__smoke hero-trail__smoke--three"></span>
-        <span class="hero-trail__beacon"></span>
-        <span class="hero-trail__flash"></span>
-        <span class="hero-trail__car-top"></span>
-        <span class="hero-trail__car-body"></span>
-        <span class="hero-trail__car-window"></span>
-        <span class="hero-trail__wheel hero-trail__wheel--front"></span>
-        <span class="hero-trail__wheel hero-trail__wheel--back"></span>
+    <div class="hero-trail__map" aria-label="机器人巡游文章分类学习路线">
+      <div class="hero-trail__map-label">
+        <span class="hero-trail__live-dot" aria-hidden="true"></span>
+        ROBOT TOUR
       </div>
-      <div class="hero-trail__milestones">
+      <div class="hero-trail__track" aria-hidden="true"></div>
+
+      <div class="hero-trail__robot-lane" aria-hidden="true">
         <div
-          v-for="item in milestones"
+          class="hero-trail__robot"
+          :class="[`is-${phase}`, { 'is-reversing': direction < 0, 'is-speech-left': robotIndex > 3 }]"
+          :style="robotStyle"
+          @transitionend="handleRobotTransitionEnd"
+        >
+          <span class="hero-trail__speech">嗨，{{ currentMilestone.label }}！</span>
+          <svg class="hero-trail__robot-svg" viewBox="0 0 90 112" role="presentation">
+            <g class="robot__head">
+              <path class="robot__antenna" d="M45 12V5" />
+              <circle class="robot__antenna-tip" cx="45" cy="4" r="3.5" />
+              <rect class="robot__head-shell" x="18" y="12" width="54" height="39" rx="14" />
+              <rect class="robot__face" x="24" y="19" width="42" height="25" rx="10" />
+              <g class="robot__eyes">
+                <ellipse cx="36" cy="30" rx="3.2" ry="4" />
+                <ellipse cx="54" cy="30" rx="3.2" ry="4" />
+              </g>
+              <path class="robot__mouth robot__mouth--neutral" d="M40 38h10" />
+              <path class="robot__mouth robot__mouth--smile" d="M38 36c2 7 12 7 14 0" />
+            </g>
+            <rect class="robot__neck" x="40" y="49" width="10" height="7" rx="3" />
+            <rect class="robot__body" x="25" y="54" width="40" height="34" rx="12" />
+            <rect class="robot__panel" x="34" y="62" width="22" height="14" rx="5" />
+            <circle class="robot__panel-light" cx="40" cy="69" r="2.4" />
+            <path class="robot__panel-line" d="M46 66h6M46 71h6" />
+            <g class="robot__arm robot__arm--left">
+              <rect x="17" y="57" width="10" height="29" rx="5" />
+              <circle cx="22" cy="87" r="5" />
+            </g>
+            <g class="robot__arm robot__arm--wave">
+              <rect x="63" y="57" width="10" height="29" rx="5" />
+              <circle cx="68" cy="87" r="5" />
+            </g>
+            <g class="robot__leg robot__leg--left">
+              <rect x="30" y="84" width="12" height="23" rx="6" />
+              <rect x="25" y="103" width="18" height="7" rx="3.5" />
+            </g>
+            <g class="robot__leg robot__leg--right">
+              <rect x="48" y="84" width="12" height="23" rx="6" />
+              <rect x="47" y="103" width="18" height="7" rx="3.5" />
+            </g>
+          </svg>
+          <span class="hero-trail__robot-shadow"></span>
+        </div>
+      </div>
+
+      <div class="hero-trail__milestones">
+        <a
+          v-for="(item, index) in milestones"
           :key="item.label"
           class="hero-trail__milestone"
+          :class="{ 'is-active': activeIndex === index }"
+          :href="withBase(item.href)"
           :style="{ '--trail-start': item.start, '--trail-end': item.end, '--trail-rgb': item.rgb }"
         >
-          <span class="hero-trail__pin"></span>
+          <span class="hero-trail__pin"><span>{{ item.emoji }}</span></span>
           <strong>{{ item.label }}</strong>
           <small>{{ item.detail }}</small>
-        </div>
+        </a>
       </div>
     </div>
   </section>
@@ -59,13 +166,13 @@ const milestones = [
 
 <style scoped>
 .hero-trail {
-  max-width: 1080px;
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(440px, 1.1fr);
+  gap: 42px;
+  align-items: center;
+  max-width: 1120px;
   margin: 48px auto 0;
   padding: 64px 24px 20px;
-  display: grid;
-  grid-template-columns: minmax(0, 0.92fr) minmax(420px, 1.08fr);
-  gap: 44px;
-  align-items: center;
 }
 
 .hero-trail__copy {
@@ -77,32 +184,32 @@ const milestones = [
   color: var(--vp-c-brand-1);
   font-size: 12px;
   font-weight: 800;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.13em;
 }
 
 .hero-trail__title {
   margin: 0;
+  color: var(--vp-c-text-1);
   font-size: 48px;
   line-height: 1.12;
   letter-spacing: 0;
-  color: var(--vp-c-text-1);
 }
 
 .hero-trail__title span {
   display: inline;
+  color: transparent;
   background: linear-gradient(90deg, var(--vp-c-text-1), var(--vp-c-brand-1), #2563eb, var(--vp-c-text-1));
   background-size: 260% 100%;
-  -webkit-background-clip: text;
   background-clip: text;
-  color: transparent;
+  -webkit-background-clip: text;
   animation: title-flow 6s ease-in-out infinite;
 }
 
 .hero-trail__subtitle {
-  margin: 18px 0 0;
   max-width: 560px;
+  margin: 18px 0 0;
   color: var(--vp-c-text-2);
-  font-size: 18px;
+  font-size: 17px;
   line-height: 1.8;
 }
 
@@ -118,11 +225,11 @@ const milestones = [
   align-items: center;
   justify-content: center;
   min-height: 42px;
-  padding: 0 18px;
   border: 1px solid var(--vp-c-divider);
-  border-radius: 8px;
-  background: var(--vp-c-bg-soft);
+  border-radius: 10px;
+  padding: 0 18px;
   color: var(--vp-c-text-1);
+  background: var(--vp-c-bg-soft);
   font-size: 14px;
   font-weight: 700;
   text-decoration: none;
@@ -131,309 +238,415 @@ const milestones = [
 
 .hero-trail__action:hover {
   border-color: var(--vp-c-brand-1);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
 }
 
 .hero-trail__action--primary {
   border-color: var(--vp-c-brand-1);
-  background: var(--vp-c-brand-1);
   color: var(--vp-c-white);
+  background: var(--vp-c-brand-1);
 }
 
 .hero-trail__map {
   position: relative;
-  min-height: 260px;
-  border: 1px solid rgba(59, 130, 246, 0.18);
-  border-radius: 10px;
+  min-height: 292px;
   overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--vp-c-brand-1) 20%, var(--vp-c-divider));
+  border-radius: 18px;
   background:
-    linear-gradient(135deg, rgba(219, 234, 254, 0.92), rgba(240, 253, 250, 0.96)),
-    repeating-linear-gradient(90deg, rgba(37, 99, 235, 0.08) 0 1px, transparent 1px 48px);
-  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+    radial-gradient(circle at 82% 18%, rgb(124 58 237 / 0.13), transparent 28%),
+    radial-gradient(circle at 12% 85%, rgb(20 184 166 / 0.15), transparent 34%),
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--vp-c-bg) 86%, #dbeafe),
+      color-mix(in srgb, var(--vp-c-bg) 86%, #ccfbf1)
+    );
+  box-shadow: 0 22px 54px rgb(15 23 42 / 0.1);
 }
 
-.hero-trail__map::before {
-  content: '知识路线';
+.hero-trail__map::after {
   position: absolute;
-  top: 22px;
-  left: 24px;
-  color: rgba(15, 23, 42, 0.46);
-  font-size: 13px;
+  inset: 0;
+  background-image:
+    linear-gradient(rgb(37 99 235 / 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(37 99 235 / 0.055) 1px, transparent 1px);
+  background-size: 30px 30px;
+  pointer-events: none;
+  content: '';
+  mask-image: linear-gradient(to bottom, black, transparent 88%);
+}
+
+.hero-trail__map-label {
+  position: absolute;
+  z-index: 4;
+  top: 18px;
+  left: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--vp-c-text-3);
+  font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.12em;
 }
 
+.hero-trail__live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 0 4px rgb(34 197 94 / 0.14);
+  animation: live-pulse 1.8s ease-in-out infinite;
+}
+
 .hero-trail__track {
   position: absolute;
-  left: 34px;
+  z-index: 1;
+  top: 157px;
   right: 34px;
-  top: 128px;
-  height: 4px;
+  left: 34px;
+  height: 5px;
+  overflow: hidden;
   border-radius: 999px;
-  background: linear-gradient(90deg, #2563eb, #7c3aed, #ea580c, #16a34a, #0891b2, #db2777);
+  background: linear-gradient(90deg, #0f766e, #2563eb, #7c3aed, #ea580c, #16a34a, #db2777);
+  box-shadow: 0 4px 12px rgb(37 99 235 / 0.18);
 }
 
 .hero-trail__track::after {
+  position: absolute;
+  inset: -7px 0;
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.9), transparent);
   content: '';
-  position: absolute;
-  inset: -8px 0;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.86), transparent);
   transform: translateX(-100%);
-  animation: track-light 3.8s ease-in-out infinite;
+  animation: track-light 4.2s ease-in-out infinite;
 }
 
-.hero-trail__vehicle {
+.hero-trail__robot-lane {
   position: absolute;
-  top: 90px;
-  left: -76px;
-  width: 74px;
-  height: 44px;
-  animation: vehicle-path 8s linear infinite;
-}
-
-.hero-trail__car-body,
-.hero-trail__car-top,
-.hero-trail__car-window,
-.hero-trail__beacon,
-.hero-trail__flash,
-.hero-trail__smoke,
-.hero-trail__wheel {
-  position: absolute;
-  display: block;
-}
-
-.hero-trail__car-body {
-  left: 12px;
-  bottom: 7px;
-  width: 54px;
-  height: 22px;
-  border-radius: 8px 12px 7px 7px;
-  background: linear-gradient(135deg, #2563eb, #06b6d4);
-  box-shadow: inset 0 -4px 0 rgba(15, 23, 42, 0.18), 0 8px 16px rgba(37, 99, 235, 0.25);
-}
-
-.hero-trail__car-top {
+  z-index: 3;
+  top: 49px;
+  right: 28px;
   left: 28px;
-  bottom: 25px;
-  width: 26px;
-  height: 14px;
-  border-radius: 9px 9px 3px 3px;
-  background: linear-gradient(135deg, #60a5fa, #2563eb);
+  height: 109px;
+  pointer-events: none;
 }
 
-.hero-trail__car-window {
-  left: 34px;
-  bottom: 28px;
-  width: 14px;
-  height: 8px;
-  border-radius: 6px 6px 2px 2px;
-  background: rgba(255, 255, 255, 0.82);
+.hero-trail__robot {
+  position: absolute;
+  bottom: -2px;
+  left: var(--robot-position);
+  width: 68px;
+  height: 92px;
+  color: var(--robot-accent);
+  filter: drop-shadow(0 10px 12px rgb(15 23 42 / 0.18));
+  transform: translateX(-50%);
+  transition: left 1.42s cubic-bezier(0.45, 0, 0.2, 1);
 }
 
-.hero-trail__wheel {
-  bottom: 2px;
-  width: 13px;
-  height: 13px;
-  border: 3px solid #0f172a;
-  border-radius: 50%;
-  background: #f8fafc;
-  animation: wheel-spin 0.52s linear infinite;
+.hero-trail__robot-svg {
+  position: relative;
+  z-index: 2;
+  display: block;
+  width: 68px;
+  height: 88px;
+  overflow: visible;
 }
 
-.hero-trail__wheel--front {
-  left: 50px;
+.robot__antenna,
+.robot__mouth,
+.robot__panel-line {
+  fill: none;
+  stroke-linecap: round;
 }
 
-.hero-trail__wheel--back {
-  left: 18px;
+.robot__antenna {
+  stroke: currentColor;
+  stroke-width: 3;
 }
 
-.hero-trail__beacon {
-  left: 40px;
-  top: 1px;
-  width: 10px;
-  height: 8px;
-  border-radius: 8px 8px 2px 2px;
-  background: #f59e0b;
-  box-shadow: 0 0 0 rgba(245, 158, 11, 0.5);
-  animation: beacon-flash 0.8s ease-in-out infinite;
+.robot__antenna-tip,
+.robot__head-shell,
+.robot__body,
+.robot__arm rect,
+.robot__arm circle,
+.robot__leg rect {
+  fill: currentColor;
 }
 
-.hero-trail__flash {
-  left: 44px;
-  top: -5px;
-  width: 22px;
-  height: 18px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(250, 204, 21, 0.58), transparent 68%);
-  animation: flash-pulse 0.8s ease-in-out infinite;
+.robot__head-shell,
+.robot__body {
+  stroke: rgb(255 255 255 / 0.58);
+  stroke-width: 1.5;
 }
 
-.hero-trail__smoke {
-  left: 0;
-  bottom: 15px;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: rgba(100, 116, 139, 0.28);
-  filter: blur(0.2px);
+.robot__face,
+.robot__panel {
+  fill: #f8fafc;
+}
+
+.robot__neck {
+  fill: #64748b;
+}
+
+.robot__eyes {
+  fill: #0f172a;
+  transform-origin: 45px 30px;
+}
+
+.robot__mouth {
+  stroke: #0f172a;
+  stroke-width: 2.4;
+}
+
+.robot__mouth--neutral {
+  opacity: 1;
+}
+
+.robot__mouth--smile {
   opacity: 0;
-  animation: smoke-tail 1.15s ease-out infinite;
 }
 
-.hero-trail__smoke--two {
-  bottom: 20px;
-  animation-delay: 0.22s;
+.robot__panel-light {
+  fill: #22c55e;
 }
 
-.hero-trail__smoke--three {
-  bottom: 12px;
-  animation-delay: 0.44s;
+.robot__panel-line {
+  stroke: #94a3b8;
+  stroke-width: 2;
+}
+
+.robot__head,
+.robot__arm,
+.robot__leg {
+  transform-box: fill-box;
+}
+
+.robot__head {
+  transform-origin: center bottom;
+}
+
+.robot__arm {
+  transform-origin: center 7px;
+}
+
+.robot__leg {
+  transform-origin: center top;
+}
+
+.hero-trail__robot.is-walking .hero-trail__robot-svg {
+  animation: robot-bob 0.48s ease-in-out infinite alternate;
+}
+
+.hero-trail__robot.is-walking .robot__leg--left,
+.hero-trail__robot.is-walking .robot__arm--wave {
+  animation: limb-forward 0.48s ease-in-out infinite alternate;
+}
+
+.hero-trail__robot.is-walking .robot__leg--right,
+.hero-trail__robot.is-walking .robot__arm--left {
+  animation: limb-back 0.48s ease-in-out infinite alternate;
+}
+
+.hero-trail__robot.is-greeting .robot__head {
+  animation: head-turn 1.35s ease-in-out both;
+}
+
+.hero-trail__robot.is-greeting .robot__eyes {
+  animation: happy-eyes 1.35s ease-in-out both;
+}
+
+.hero-trail__robot.is-greeting .robot__mouth--neutral {
+  opacity: 0;
+}
+
+.hero-trail__robot.is-greeting .robot__mouth--smile {
+  opacity: 1;
+  animation: smile-pop 1.35s ease-in-out both;
+}
+
+.hero-trail__robot.is-greeting .robot__arm--wave {
+  animation: arm-wave 0.42s ease-in-out 0.18s 3 alternate;
+}
+
+.hero-trail__speech {
+  position: absolute;
+  z-index: 5;
+  top: -20px;
+  left: 52px;
+  min-width: max-content;
+  border: 1px solid rgb(var(--robot-accent-rgb) / 0.25);
+  border-radius: 12px 12px 12px 3px;
+  padding: 6px 9px;
+  color: var(--robot-accent);
+  background: color-mix(in srgb, var(--vp-c-bg) 94%, transparent);
+  box-shadow: 0 8px 20px rgb(15 23 42 / 0.12);
+  font-size: 11px;
+  font-weight: 800;
+  opacity: 0;
+  transform: translate(-4px, 5px) scale(0.82);
+  transition: opacity 0.2s ease, transform 0.24s ease;
+}
+
+.hero-trail__robot.is-greeting .hero-trail__speech {
+  opacity: 1;
+  transform: translate(0, 0) scale(1);
+}
+
+.hero-trail__robot.is-speech-left .hero-trail__speech {
+  right: 52px;
+  left: auto;
+  border-radius: 12px 12px 3px 12px;
+}
+
+.hero-trail__robot-shadow {
+  position: absolute;
+  z-index: 1;
+  right: 8px;
+  bottom: 0;
+  left: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgb(15 23 42 / 0.18);
+  filter: blur(3px);
 }
 
 .hero-trail__milestones {
   position: absolute;
-  left: 28px;
+  z-index: 4;
+  top: 154px;
   right: 28px;
-  top: 126px;
+  left: 28px;
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 8px;
+  gap: 4px;
 }
 
 .hero-trail__milestone {
   position: relative;
-  padding-top: 24px;
-  text-align: center;
+  min-width: 0;
+  padding-top: 27px;
   color: #0f172a;
+  text-align: center;
+  text-decoration: none;
 }
 
 .hero-trail__pin {
   position: absolute;
-  top: -9px;
-  left: calc(50% - 9px);
-  width: 18px;
-  height: 18px;
+  top: -10px;
+  left: calc(50% - 11px);
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
   border: 3px solid #ffffff;
   border-radius: 50%;
   background: linear-gradient(135deg, var(--trail-start), var(--trail-end));
-  box-shadow: 0 0 0 4px rgba(var(--trail-rgb), 0.18);
+  box-shadow: 0 0 0 4px rgb(var(--trail-rgb) / 0.15);
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
+}
+
+.hero-trail__pin span {
+  font-size: 10px;
+  line-height: 1;
+  opacity: 0;
+  transform: scale(0.5);
+  transition: opacity 0.2s ease, transform 0.25s ease;
+}
+
+.hero-trail__milestone:hover .hero-trail__pin,
+.hero-trail__milestone.is-active .hero-trail__pin {
+  box-shadow: 0 0 0 7px rgb(var(--trail-rgb) / 0.18), 0 0 22px rgb(var(--trail-rgb) / 0.38);
+  transform: scale(1.12);
+}
+
+.hero-trail__milestone:hover .hero-trail__pin span,
+.hero-trail__milestone.is-active .hero-trail__pin span {
+  opacity: 1;
+  transform: scale(1);
 }
 
 .hero-trail__milestone strong,
 .hero-trail__milestone small {
   display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .hero-trail__milestone strong {
+  color: var(--trail-start);
   font-size: 13px;
   line-height: 1.4;
-  color: var(--trail-start);
 }
 
 .hero-trail__milestone small {
-  margin-top: 4px;
-  color: rgba(15, 23, 42, 0.62);
-  font-size: 11px;
+  margin-top: 3px;
+  color: var(--vp-c-text-3);
+  font-size: 10px;
   line-height: 1.35;
 }
 
 @keyframes title-flow {
-  0%,
-  100% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes live-pulse {
+  0%, 100% { box-shadow: 0 0 0 3px rgb(34 197 94 / 0.12); opacity: 0.72; }
+  50% { box-shadow: 0 0 0 7px rgb(34 197 94 / 0); opacity: 1; }
 }
 
 @keyframes track-light {
-  0% {
-    transform: translateX(-100%);
-  }
-  55%,
-  100% {
-    transform: translateX(100%);
-  }
+  0% { transform: translateX(-100%); }
+  55%, 100% { transform: translateX(100%); }
 }
 
-@keyframes vehicle-path {
-  from {
-    left: -76px;
-  }
-  to {
-    left: 100%;
-  }
+@keyframes robot-bob {
+  from { transform: translateY(0) rotate(-1deg); }
+  to { transform: translateY(-3px) rotate(1deg); }
 }
 
-@keyframes wheel-spin {
-  to {
-    transform: rotate(360deg);
-  }
+@keyframes limb-forward {
+  from { transform: rotate(-15deg); }
+  to { transform: rotate(16deg); }
 }
 
-@keyframes beacon-flash {
-  0%,
-  100% {
-    box-shadow: 0 0 0 rgba(245, 158, 11, 0);
-    opacity: 0.65;
-  }
-
-  50% {
-    box-shadow: 0 0 18px rgba(245, 158, 11, 0.95);
-    opacity: 1;
-  }
+@keyframes limb-back {
+  from { transform: rotate(16deg); }
+  to { transform: rotate(-15deg); }
 }
 
-@keyframes flash-pulse {
-  0%,
-  100% {
-    opacity: 0.2;
-    transform: scale(0.72);
-  }
-
-  50% {
-    opacity: 1;
-    transform: scale(1.12);
-  }
+@keyframes head-turn {
+  0%, 100% { transform: rotate(0) scaleX(1); }
+  28% { transform: rotate(-8deg) scaleX(0.9); }
+  58%, 82% { transform: rotate(7deg) scaleX(1); }
 }
 
-@keyframes smoke-tail {
-  0% {
-    opacity: 0;
-    transform: translate(0, 0) scale(0.4);
-  }
-
-  22% {
-    opacity: 0.8;
-  }
-
-  100% {
-    opacity: 0;
-    transform: translate(-30px, -10px) scale(1.6);
-  }
+@keyframes happy-eyes {
+  0%, 20%, 100% { transform: scaleY(1); }
+  38%, 72% { transform: scaleY(0.35); }
 }
 
-@media (max-width: 960px) {
+@keyframes smile-pop {
+  0%, 15%, 100% { transform: scale(0.75); }
+  42%, 82% { transform: scale(1.15); }
+}
+
+@keyframes arm-wave {
+  from { transform: rotate(0); }
+  to { transform: rotate(-58deg); }
+}
+
+@media (max-width: 980px) {
   .hero-trail {
     grid-template-columns: 1fr;
-    gap: 28px;
+    gap: 30px;
     margin-top: 24px;
     padding-top: 40px;
   }
 
-  .hero-trail__title {
-    font-size: 36px;
-  }
-
-  .hero-trail__subtitle {
-    font-size: 16px;
-  }
-
-  .hero-trail__map {
-    min-height: 240px;
-  }
+  .hero-trail__title { font-size: 38px; }
+  .hero-trail__subtitle { font-size: 16px; }
 }
 
 @media (max-width: 640px) {
@@ -441,60 +654,81 @@ const milestones = [
     padding: 32px 18px 12px;
   }
 
-  .hero-trail__title {
-    font-size: 30px;
-  }
+  .hero-trail__title { font-size: 30px; }
 
   .hero-trail__map {
-    min-height: 382px;
+    min-height: 454px;
   }
 
   .hero-trail__track {
-    left: 44px;
+    top: 60px;
     right: auto;
-    top: 58px;
-    bottom: 32px;
-    width: 4px;
+    bottom: 34px;
+    left: 61px;
+    width: 5px;
     height: auto;
-    background: linear-gradient(180deg, #2563eb, #7c3aed, #ea580c, #16a34a, #0891b2, #db2777);
+    background: linear-gradient(180deg, #0f766e, #2563eb, #7c3aed, #ea580c, #16a34a, #db2777);
   }
 
-  .hero-trail__vehicle {
-    display: block;
-    top: -44px;
-    left: 8px;
-    transform: scale(0.72);
-    transform-origin: top left;
-    animation: vehicle-path-mobile 8s linear infinite;
+  .hero-trail__robot-lane {
+    top: 52px;
+    right: auto;
+    bottom: 35px;
+    left: 10px;
+    width: 78px;
+    height: auto;
+  }
+
+  .hero-trail__robot {
+    top: var(--robot-position);
+    bottom: auto;
+    left: 0;
+    transform: translateY(-50%) scale(0.68);
+    transform-origin: center;
+    transition: top 1.42s cubic-bezier(0.45, 0, 0.2, 1);
+  }
+
+  .hero-trail__speech {
+    top: -11px;
+    left: 62px;
   }
 
   .hero-trail__milestones {
-    left: 30px;
+    top: 50px;
     right: 20px;
-    top: 48px;
+    bottom: 28px;
+    left: 50px;
     display: flex;
     flex-direction: column;
-    gap: 13px;
+    justify-content: space-around;
+    gap: 0;
   }
 
   .hero-trail__milestone {
-    min-height: 28px;
-    padding: 0 0 0 42px;
+    min-height: 48px;
+    padding: 6px 0 0 54px;
     text-align: left;
   }
 
   .hero-trail__pin {
-    left: 5px;
-    top: 2px;
+    top: 8px;
+    left: 0;
   }
 }
 
-@keyframes vehicle-path-mobile {
-  from {
-    top: -44px;
-  }
-  to {
-    top: 100%;
+@media (prefers-reduced-motion: reduce) {
+  .hero-trail__title span,
+  .hero-trail__live-dot,
+  .hero-trail__track::after,
+  .hero-trail__robot,
+  .hero-trail__robot-svg,
+  .robot__head,
+  .robot__eyes,
+  .robot__mouth,
+  .robot__arm,
+  .robot__leg {
+    animation: none !important;
+    transition: none !important;
   }
 }
 </style>
