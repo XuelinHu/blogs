@@ -5,7 +5,7 @@ import AsidePageOutlineTree, { type OutlineTreeItem } from './AsidePageOutlineTr
 
 type OutlineItem = OutlineTreeItem
 
-const { page, title } = useData()
+const { page } = useData()
 
 const query = ref('')
 const collapsedLinks = ref<string[]>([])
@@ -33,23 +33,9 @@ function readTitle(element: Element): string {
 }
 
 function getHeadingElements() {
-  const headingElements = Array.from(
-    document.querySelectorAll('.vp-doc :is(h1, h2, h3)')
+  return Array.from(
+    document.querySelectorAll('.vp-doc :is(h2, h3)')
   ).filter((element) => element.id)
-
-  let skippedPageTitle = false
-
-  return headingElements.filter((element) => {
-    const level = Number(element.tagName.slice(1))
-    const headingTitle = readTitle(element)
-
-    if (!skippedPageTitle && level === 1 && headingTitle === title.value) {
-      skippedPageTitle = true
-      return false
-    }
-
-    return true
-  })
 }
 
 function collectHeaders(): OutlineItem[] {
@@ -172,6 +158,13 @@ function toggleItem(link: string) {
 
 const normalizedQuery = computed(() => query.value.trim().toLowerCase())
 const filteredHeaders = computed(() => filterItems(headers.value, normalizedQuery.value))
+const filteredBranchLinks = computed(() => flattenBranchLinks(filteredHeaders.value))
+const canExpand = computed(() => {
+  return filteredBranchLinks.value.some((link) => collapsedLinks.value.includes(link))
+})
+const canCollapse = computed(() => {
+  return filteredBranchLinks.value.some((link) => !collapsedLinks.value.includes(link))
+})
 const visible = computed(() => {
   return page.value.frontmatter.layout !== 'home' && headers.value.length > 0
 })
@@ -203,18 +196,36 @@ watch(
 <template>
   <nav v-if="visible" class="aside-page-outline">
     <div class="aside-page-outline__toolbar">
-      <input
-        v-model="query"
-        class="aside-page-outline__search"
-        type="text"
-        placeholder="搜索目录"
-      />
-      <div class="aside-page-outline__actions">
-        <button class="aside-page-outline__toggle" type="button" @click="expandAll">
-          展开全部
+      <label class="aside-page-outline__search-wrap">
+        <span class="aside-page-outline__search-icon" aria-hidden="true" />
+        <input
+          v-model="query"
+          class="aside-page-outline__search"
+          type="search"
+          aria-label="搜索本页目录"
+          placeholder="搜索本页目录"
+        />
+      </label>
+      <div class="aside-page-outline__actions" role="group" aria-label="目录展开状态">
+        <button
+          class="aside-page-outline__toggle"
+          type="button"
+          title="展开本页全部目录"
+          :disabled="!canExpand"
+          @click="expandAll"
+        >
+          <span class="aside-page-outline__action-icon is-expand" aria-hidden="true" />
+          展开
         </button>
-        <button class="aside-page-outline__toggle" type="button" @click="collapseAll">
-          折叠全部
+        <button
+          class="aside-page-outline__toggle"
+          type="button"
+          title="收起本页全部目录"
+          :disabled="!canCollapse"
+          @click="collapseAll"
+        >
+          <span class="aside-page-outline__action-icon is-collapse" aria-hidden="true" />
+          收起
         </button>
       </div>
     </div>
@@ -236,11 +247,11 @@ watch(
 <style scoped>
 .aside-page-outline {
   position: relative;
-  margin-top: 12px;
+  margin-top: 4px;
   border: 1px solid color-mix(in srgb, var(--vp-c-divider) 72%, transparent);
-  border-radius: 16px;
+  border-radius: 14px;
   background: linear-gradient(180deg, var(--vp-c-bg-soft) 0%, var(--vp-c-bg) 100%);
-  box-shadow: 0 10px 30px rgb(15 23 42 / 0.05);
+  box-shadow: 0 8px 24px rgb(15 23 42 / 0.045);
   overflow: hidden;
 }
 
@@ -250,18 +261,46 @@ watch(
   z-index: 2;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 12px;
+  gap: 8px;
+  padding: 10px;
   background: color-mix(in srgb, var(--vp-c-bg) 88%, transparent);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid color-mix(in srgb, var(--vp-c-divider) 72%, transparent);
 }
 
+.aside-page-outline__search-wrap {
+  position: relative;
+  display: block;
+}
+
+.aside-page-outline__search-icon {
+  position: absolute;
+  top: 50%;
+  left: 11px;
+  width: 12px;
+  height: 12px;
+  border: 1.5px solid var(--vp-c-text-3);
+  border-radius: 999px;
+  pointer-events: none;
+  transform: translateY(-58%);
+}
+
+.aside-page-outline__search-icon::after {
+  position: absolute;
+  right: -4px;
+  bottom: -3px;
+  width: 5px;
+  border-top: 1.5px solid var(--vp-c-text-3);
+  content: '';
+  transform: rotate(45deg);
+  transform-origin: left center;
+}
+
 .aside-page-outline__search {
   width: 100%;
   border: 1px solid var(--vp-c-divider);
-  border-radius: 10px;
-  padding: 8px 12px;
+  border-radius: 9px;
+  padding: 7px 28px 7px 32px;
   font-size: 12px;
   color: var(--vp-c-text-1);
   background: var(--vp-c-bg);
@@ -277,30 +316,80 @@ watch(
 .aside-page-outline__actions {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
+  gap: 2px;
+  border: 1px solid color-mix(in srgb, var(--vp-c-divider) 78%, transparent);
+  border-radius: 9px;
+  padding: 2px;
+  background: color-mix(in srgb, var(--vp-c-bg-soft) 76%, transparent);
 }
 
 .aside-page-outline__toggle {
-  border: 1px solid var(--vp-c-divider);
-  border-radius: 10px;
-  padding: 7px 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 28px;
+  border: 0;
+  border-radius: 7px;
+  padding: 5px 8px;
   font-size: 12px;
   font-weight: 500;
   color: var(--vp-c-text-2);
-  background: var(--vp-c-bg);
+  background: transparent;
   cursor: pointer;
   transition:
     color 0.2s ease,
-    border-color 0.2s ease,
     background-color 0.2s ease,
-    transform 0.2s ease;
+    opacity 0.2s ease;
 }
 
 .aside-page-outline__toggle:hover {
   color: var(--vp-c-brand-1);
-  border-color: var(--vp-c-brand-1);
-  background: var(--vp-c-bg-soft);
-  transform: translateY(-1px);
+  background: var(--vp-c-bg);
+}
+
+.aside-page-outline__toggle:disabled {
+  opacity: 0.38;
+  cursor: default;
+  color: var(--vp-c-text-3);
+  background: transparent;
+}
+
+.aside-page-outline__action-icon {
+  position: relative;
+  width: 10px;
+  height: 10px;
+}
+
+.aside-page-outline__action-icon::before,
+.aside-page-outline__action-icon::after {
+  position: absolute;
+  left: 2px;
+  width: 6px;
+  height: 6px;
+  border-right: 1.3px solid currentColor;
+  border-bottom: 1.3px solid currentColor;
+  content: '';
+}
+
+.aside-page-outline__action-icon.is-expand::before {
+  top: -2px;
+  transform: rotate(45deg);
+}
+
+.aside-page-outline__action-icon.is-expand::after {
+  top: 2px;
+  transform: rotate(45deg);
+}
+
+.aside-page-outline__action-icon.is-collapse::before {
+  top: 1px;
+  transform: rotate(225deg);
+}
+
+.aside-page-outline__action-icon.is-collapse::after {
+  top: 5px;
+  transform: rotate(225deg);
 }
 
 .aside-page-outline__list {

@@ -75,6 +75,10 @@ export function readHeadingTitle(filePath: string): string | null {
 
 export function toRoute(filePath: string): string {
   const relativePath = path.relative(docsRoot, filePath).replace(/\\/g, '/')
+  if (relativePath.endsWith('/index.md')) {
+    return `/${relativePath.slice(0, -'index.md'.length)}`
+  }
+
   return `/${relativePath.replace(/\.md$/, '')}`
 }
 

@@ -60,13 +60,45 @@ export default defineConfig({
   themeConfig: {
     nav: [
       { text: '首页', link: '/' },
-      { text: 'AI', link: '/posts/AI/' },
-      { text: 'AI基础', link: '/posts/AI基础/' },
-      { text: 'LLM', link: '/posts/LLM/' },
-      { text: 'robot', link: '/posts/robot/' },
-      { text: 'Java', link: '/posts/Java/' },
-      { text: '数据库', link: '/posts/Database/' },
-      { text: 'Solution', link: '/posts/Solution/' }
+      { text: '机器人', link: '/posts/robot/' },
+      {
+        text: 'AI',
+        items: [
+          { text: 'AI 模型基础', link: '/posts/AI基础/' },
+          { text: 'AI 工具与应用', link: '/posts/AI/' }
+        ]
+      },
+      { text: '大语言模型', link: '/posts/LLM/' },
+      {
+        text: '后端与数据',
+        items: [
+          { text: 'Java 基础与并发', link: '/posts/Java/' },
+          { text: 'Spring 生态', link: '/posts/Spring/' },
+          { text: '中间件与可观测性', link: '/posts/Middleware/' },
+          { text: '数据库与存储', link: '/posts/Database/' }
+        ]
+      },
+      {
+        text: '开发与测试',
+        items: [
+          { text: '前端开发', link: '/posts/Front-end/' },
+          { text: 'Python 开发', link: '/posts/Python/' },
+          { text: '移动端开发', link: '/posts/Mobile/' },
+          { text: '测试与质量保障', link: '/posts/Test/' },
+          { text: '计算机网络', link: '/posts/Net/' }
+        ]
+      },
+      {
+        text: '工程知识库',
+        items: [
+          { text: '命令与开发环境', link: '/posts/Command/' },
+          { text: '工程方案与排障', link: '/posts/Solution/' },
+          { text: 'JVM Sandbox', link: '/posts/Sandbox/' },
+          { text: '论文与系统分析', link: '/posts/Paper/' },
+          { text: '阅读与思考', link: '/posts/Reading/' },
+          { text: 'Web3 与区块链', link: '/posts/Web3/' }
+        ]
+      }
     ],
     sidebar: buildSidebar(),
     outline: {
@@ -89,7 +121,11 @@ export default defineConfig({
       next: '下一篇'
     },
     lastUpdated: {
-      text: '最后更新于'
+      text: '最后更新',
+      formatOptions: {
+        dateStyle: 'medium',
+        timeStyle: 'short'
+      }
     }
   }
 })

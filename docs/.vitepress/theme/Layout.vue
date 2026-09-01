@@ -3,9 +3,7 @@ import DefaultTheme from 'vitepress/theme'
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useData, useRoute } from 'vitepress'
 import SidebarToggler from './components/SidebarToggler.vue'
-import SidebarIcons from './components/SidebarIcons.vue'
 import PageMeta from './components/PageMeta.vue'
-import AsideDocTitle from './components/AsideDocTitle.vue'
 import AsidePageOutline from './components/AsidePageOutline.vue'
 
 const { Layout } = DefaultTheme
@@ -87,12 +85,10 @@ onUnmounted(() => {
       <PageMeta />
     </template>
     <template #aside-outline-before>
-      <AsideDocTitle />
       <AsidePageOutline />
     </template>
     <template #sidebar-nav-before>
       <SidebarToggler />
-      <SidebarIcons />
     </template>
     <template #doc-bottom>
       <button
@@ -102,13 +98,11 @@ onUnmounted(() => {
         :aria-label="outlineVisible ? '隐藏本页目录' : '显示本页目录'"
         :aria-pressed="outlineVisible"
         :title="outlineVisible ? '隐藏本页目录' : '显示本页目录'"
+        :class="{ 'is-outline-hidden': !outlineVisible }"
         @click="toggleOutline"
       >
-        <span
-          class="page-outline-toggle__icon"
-          :class="{ 'is-hidden': !outlineVisible }"
-          aria-hidden="true"
-        />
+        <span class="page-outline-toggle__emoji" aria-hidden="true">😉</span>
+        <span class="page-outline-toggle__tooltip" role="tooltip">本页目录</span>
       </button>
     </template>
   </Layout>
@@ -167,52 +161,88 @@ onUnmounted(() => {
   display: none;
   align-items: center;
   justify-content: center;
-  width: 38px;
-  height: 38px;
-  border: 1px solid var(--vp-c-divider);
-  border-radius: 8px;
+  width: 40px;
+  height: 40px;
+  border: 1px solid color-mix(in srgb, var(--vp-c-divider) 78%, transparent);
+  border-radius: 999px;
   padding: 0;
   color: var(--vp-c-text-2);
-  background: color-mix(in srgb, var(--vp-c-bg) 92%, transparent);
-  box-shadow: 0 8px 24px rgb(15 23 42 / 0.1);
+  background: color-mix(in srgb, var(--vp-c-bg) 90%, var(--vp-c-bg-soft));
+  box-shadow: 0 8px 22px rgb(15 23 42 / 0.09);
   backdrop-filter: blur(10px);
   cursor: pointer;
   transform: translateY(-50%);
-  transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
 }
 
 .page-outline-toggle:hover {
-  color: var(--vp-c-brand-1);
-  border-color: var(--vp-c-brand-1);
+  border-color: color-mix(in srgb, var(--vp-c-brand-1) 58%, var(--vp-c-divider));
   background: var(--vp-c-bg);
+  box-shadow: 0 10px 28px rgb(15 23 42 / 0.14);
+  transform: translateY(-50%) scale(1.04);
 }
 
-.page-outline-toggle__icon {
-  position: relative;
+.page-outline-toggle:focus-visible {
+  outline: 2px solid var(--vp-c-brand-1);
+  outline-offset: 3px;
+}
+
+.page-outline-toggle__emoji {
   display: block;
-  width: 20px;
-  height: 16px;
-  border: 1.5px solid currentColor;
-  border-radius: 3px;
+  font-size: 21px;
+  line-height: 1;
+  filter: saturate(0.9);
+  transition: filter 0.2s ease, transform 0.2s ease;
 }
 
-.page-outline-toggle__icon::after {
+.page-outline-toggle:hover .page-outline-toggle__emoji {
+  filter: saturate(1.08);
+  transform: rotate(-7deg) scale(1.08);
+}
+
+.page-outline-toggle.is-outline-hidden .page-outline-toggle__emoji {
+  opacity: 0.82;
+  filter: grayscale(0.25) saturate(0.75);
+}
+
+.page-outline-toggle__tooltip {
   position: absolute;
-  top: 0;
-  right: 4px;
-  bottom: 0;
-  border-left: 1.5px solid currentColor;
-  content: '';
-  transition: right 0.2s ease;
+  top: 50%;
+  right: calc(100% + 10px);
+  border: 1px solid color-mix(in srgb, var(--vp-c-divider) 76%, transparent);
+  border-radius: 8px;
+  padding: 6px 9px;
+  color: var(--vp-c-text-1);
+  background: color-mix(in srgb, var(--vp-c-bg) 94%, transparent);
+  box-shadow: 0 6px 18px rgb(15 23 42 / 0.1);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(4px, -50%);
+  transition: opacity 0.16s ease, transform 0.16s ease;
 }
 
-.page-outline-toggle__icon.is-hidden::after {
-  right: 0;
+.page-outline-toggle:hover .page-outline-toggle__tooltip,
+.page-outline-toggle:focus-visible .page-outline-toggle__tooltip {
+  opacity: 1;
+  transform: translate(0, -50%);
 }
 
 @media (min-width: 1280px) {
   .page-outline-toggle {
     display: inline-flex;
+    right: 270px;
+  }
+
+  :global(body.page-outline-hidden .page-outline-toggle) {
+    right: 14px;
   }
 
   :global(.VPDoc.has-aside .content-container) {

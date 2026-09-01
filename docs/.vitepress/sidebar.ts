@@ -2,6 +2,8 @@ import path from 'node:path'
 import fs from 'node:fs'
 import {
   getMarkdownFiles,
+  readFrontmatterDate,
+  readFrontmatterUpdated,
   resolveTitle,
   toRoute,
   toTitle
@@ -42,6 +44,54 @@ const categoryIcons: Record<string, string> = {
   Web3: '◆'
 }
 
+const categoryLabels: Record<string, string> = {
+  AI: 'AI 工具与应用',
+  'AI基础': 'AI 模型基础',
+  Command: '命令与开发环境',
+  Database: '数据库与存储',
+  'Front-end': '前端开发',
+  Java: 'Java 基础与并发',
+  LLM: '大语言模型',
+  Middleware: '中间件与可观测性',
+  Mobile: '移动端开发',
+  Net: '计算机网络',
+  Paper: '论文与系统分析',
+  Python: 'Python 开发',
+  Reading: '阅读与思考',
+  robot: '机器人与具身智能',
+  Sandbox: 'JVM Sandbox',
+  Solution: '工程方案与排障',
+  Spring: 'Spring 生态',
+  Test: '测试与质量保障',
+  Web3: 'Web3 与区块链'
+}
+
+const categoryOrder = [
+  'robot',
+  'AI基础',
+  'AI',
+  'LLM',
+  'Java',
+  'Spring',
+  'Middleware',
+  'Database',
+  'Front-end',
+  'Python',
+  'Mobile',
+  'Test',
+  'Net',
+  'Command',
+  'Solution',
+  'Sandbox',
+  'Paper',
+  'Reading',
+  'Web3'
+]
+
+function resolveSortDate(filePath: string): string {
+  return readFrontmatterUpdated(filePath) ?? readFrontmatterDate(filePath) ?? ''
+}
+
 function buildCategoryGroup(dirPath: string): SidebarGroup {
   const folderName = path.basename(dirPath)
   const files = getMarkdownFiles(dirPath).sort((a, b) => {
@@ -52,20 +102,27 @@ function buildCategoryGroup(dirPath: string): SidebarGroup {
       return aIsIndex - bIsIndex
     }
 
-    return a.localeCompare(b, 'zh-CN')
+    const dateCompare = resolveSortDate(b).localeCompare(resolveSortDate(a))
+    if (dateCompare !== 0) {
+      return dateCompare
+    }
+
+    return resolveTitle(a).localeCompare(resolveTitle(b), 'zh-CN')
   })
 
   const groupTitleFile = path.join(dirPath, 'index.md')
-  const groupTitle = fs.existsSync(groupTitleFile)
-    ? resolveTitle(groupTitleFile)
-    : toTitle(folderName)
+  const groupTitle = categoryLabels[folderName] ?? (
+    fs.existsSync(groupTitleFile)
+      ? resolveTitle(groupTitleFile)
+      : toTitle(folderName)
+  )
   const icon = categoryIcons[folderName]
 
   return {
     text: icon ? `${icon} ${groupTitle}` : groupTitle,
-    collapsed: false,
+    collapsed: true,
     items: files.map((filePath) => ({
-      text: resolveTitle(filePath),
+      text: path.basename(filePath) === 'index.md' ? '分类概览' : resolveTitle(filePath),
       link: toRoute(filePath)
     }))
   }
@@ -75,7 +132,14 @@ export function buildSidebar(): Record<string, SidebarGroup[]> {
   const sidebarGroups = fs
     .readdirSync(postsRoot, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
-    .sort((a, b) => a.name.localeCompare(b.name, 'zh-CN'))
+    .sort((a, b) => {
+      const aIndex = categoryOrder.indexOf(a.name)
+      const bIndex = categoryOrder.indexOf(b.name)
+      const aOrder = aIndex === -1 ? Number.MAX_SAFE_INTEGER : aIndex
+      const bOrder = bIndex === -1 ? Number.MAX_SAFE_INTEGER : bIndex
+
+      return aOrder - bOrder || a.name.localeCompare(b.name, 'zh-CN')
+    })
     .map((entry) => buildCategoryGroup(path.join(postsRoot, entry.name)))
 
   const rootMarkdownFiles = fs
