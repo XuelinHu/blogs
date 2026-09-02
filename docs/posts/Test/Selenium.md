@@ -2,7 +2,7 @@
 title: Selenium面试题
 date: 2025-05-25
 created: 2025-05-25
-updated: 2025-05-25
+updated: 2026-09-02
 ---
 
 ## 1. 什么是Selenium，以及它在自动化测试中的作用是什么？
@@ -48,7 +48,7 @@ Selenium Grid
 通过Grid，你可以轻松地对多种浏览器/操作系统组合运行测试，并从一个中心点管理多个测试环境。
 ```
 
-![selenium-components.png](img%2Fselenium-components.png)
+![selenium-components.png](./img/selenium-components.png)
 
 ## 3. 你如何理解Selenium WebDriver的工作原理？
 
@@ -515,4 +515,3 @@ Grid可以在不同的计算机上分发多个测试用例以并发执行，大�
 * **反馈循环**：建立与开发团队的紧密反馈循环，确保测试中发现的问题能够及时得到修复。
 
 通过遵循这些策略和最佳实践，可以显著提高自动化测试的稳定性和可靠性，从而提高软件的质量和用户满意度。
- 

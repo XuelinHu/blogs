@@ -2,7 +2,7 @@
 title: mysql
 date: 2025-05-25
 created: 2025-05-25
-updated: 2025-05-25
+updated: 2026-09-02
 ---
 
 # 1. 索引
@@ -42,7 +42,7 @@ updated: 2025-05-25
 
 - https://zhuanlan.zhihu.com/p/346849749
 
-![combine_index.png](img%2Fcombine_index.png)
+![combine_index.png](./img/combine_index.png)
 
 ### 1.2.1. 等值最左前缀匹配
 

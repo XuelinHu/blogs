@@ -2,7 +2,7 @@
 title: Redis
 date: 2025-05-25
 created: 2025-05-25
-updated: 2025-05-25
+updated: 2026-09-02
 ---
 
 # 1. 主从复制
@@ -42,7 +42,7 @@ redis会单独创建（fork）一个子进程来进行持久化(fork时会影响
 整个过程中，主进程不进行任何IO操作，这就确保了Redis整体性能。
 其配置在【SNAPSHOTTING】一栏中
 
-![redis_rdb.png](img%2Fredis_rdb.png)
+![redis_rdb.png](./img/redis_rdb.png)
 
 - save 60 100 可以在停机时保存一次，也可以指定60秒达到1000次可以触发RDB
 
@@ -52,7 +52,7 @@ redis会单独创建（fork）一个子进程来进行持久化(fork时会影响
 redis启动时会加载这个.aof文件重新构建数据。为避免.aof文件累加过大，redis会以重写的形式来更新.aof文件的版本，保持数据的
 其配置中【APPEND ONLY MODE】一栏中
 
-![redis_rdb_aof.png](img%2Fredis_rdb_aof.png)
+![redis_rdb_aof.png](./img/redis_rdb_aof.png)
 
 ### 2.2.1. fork
 
@@ -280,7 +280,7 @@ synchronized(userId.toString().intern)
 - 悲观锁的释放应该在事务的提交后，不然事务未提交锁已释放，第2个线程读取的未提交事务前的数据，即第1个线程读取的数据
 - 注意事务失效的情况
 
-![transaction.png](img%2Ftransaction.png)
+![transaction.png](./img/transaction.png)
 
 ## 6.7. 一人单（集群）
 
@@ -291,6 +291,3 @@ NX是互斥，EX是超时
 - 自己释放锁时，判断UUID是自己的，释放锁前，阻塞了（JVM FGC），此时锁超时自动释放，他人获取了锁，还是会导致误删
 
 > 判断锁和释放锁需要是原子性的，可以通过LUA脚本来处理
-
- 
- 

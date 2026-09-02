@@ -2,12 +2,12 @@
 title: rocketmq
 date: 2025-05-25
 created: 2025-05-25
-updated: 2025-05-25
+updated: 2026-09-02
 ---
 
 # 1. rocket mq 各类角色
 
-![rocketmq_role.png](img%2Frocketmq_role.png)
+![rocketmq_role.png](./img/rocketmq_role.png)
 
 # 2. 消息消费模式
 

@@ -1,7 +1,7 @@
 ---
 title: JVM虚拟机
 created: 2026-05-04
-updated: 2026-05-04
+updated: 2026-09-02
 ---
 
 # 1. jvm作用
@@ -35,7 +35,7 @@ javap -c java.lang.Object #compile
 
 使用类加载器，根据类的全限定名，通过不同渠道以二进制方式，加载到内存（方法区和堆区都会创建一个类信息，静态属性是在堆中，方法区，不同的虚拟机，方法区放在不同的位置）。
 - 不同的渠道包括本地文件，网络传输的类，动态代理生成（Spring）的类。
-![class-loading.png](img%2Fclass-loading.png)
+![class-loading.png](./img/class-loading.png)
 
 jdk8之后，静态字段保存在堆区，不在方法区
 
@@ -76,5 +76,3 @@ hsdb工具查询jvm内存信息：java -cp sa-jdi.jar sun.jvm.hotspot.HSDB
 ### 3.3.3. 以下几种情况不会进行初始化指令（clinit）的执行
 - 无静态代码块且无静态变量赋值语句。- 有静态变量的声明，但是没有赋值。- 静态变量定义成final
 - 数组的初始化是不会引发初始化
-
-

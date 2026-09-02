@@ -2,7 +2,7 @@
 title: Redis实践
 date: 2025-05-25
 created: 2025-05-25
-updated: 2025-05-25
+updated: 2026-09-02
 ---
 
 - 图片来源：https://www.bilibili.com/video/BV1cr4y1671t?p=160&vd_source=f52d9488d7d3c21ed33580e4dce1a022
@@ -29,7 +29,7 @@ updated: 2025-05-25
 
 ## 2.2. 合适的数据结构
 
-![redis_hash.png](img%2Fredis_hash.png)'
+![redis_hash.png](./img/redis_hash.png)
 
 - 一种应对方式：分片，可以把ID%100，就可以拆分
 

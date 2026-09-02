@@ -2,7 +2,7 @@
 title: mac os
 date: 2025-06-21
 created: 2025-06-21
-updated: 2025-06-21
+updated: 2026-09-02
 ---
 
 # 1. homebrew
@@ -152,7 +152,7 @@ M系列的第三代产品，亦是Mac向苹果芯片迁移计划中的一部分�
 
 ## 3.1. Mac 的文件目录结构
 
-![mac_file.png](img%2Fmac_file.png)
+![mac_file.png](./img/mac_file.png)
 
 右侧的就是非root的权限的文件夹，其他的就是需要root权限才可以访问,资源库就是Library文件夹
 

@@ -2,7 +2,7 @@
 title: Redis网络模型
 date: 2025-05-25
 created: 2025-05-25
-updated: 2025-05-25
+updated: 2026-09-02
 ---
 
 - 图片来源：https://www.bilibili.com/video/BV1cr4y1671t?p=160&vd_source=f52d9488d7d3c21ed33580e4dce1a022
@@ -17,11 +17,11 @@ updated: 2025-05-25
 
 ## 2.1. 阻塞IO
 
-![block-io.png](img%2Fblock-io.png)
+![block-io.png](./img/block-io.png)
 
 ## 2.2. 非阻塞IO
 
-![non-block-io.png](img%2Fnon-block-io.png)
+![non-block-io.png](./img/non-block-io.png)
 
 ## 2.3. IO多路复用
 
@@ -49,7 +49,7 @@ updated: 2025-05-25
 
 **epoll LT ET**
 
-![io-epoll-LT.png](img%2Fio-epoll-LT.png)
+![io-epoll-LT.png](./img/io-epoll-LT.png)
 
 **epoll web server**
 
@@ -65,7 +65,7 @@ updated: 2025-05-25
 
 # 3. 零COPY
 
-![io-zero-copy.png](img%2Fio-zero-copy.png)
+![io-zero-copy.png](./img/io-zero-copy.png)
 
 因为使用mmap技术实现零拷贝，受到一定的内存大小限制，一般在1-2个G。
 所以使用零拷贝技术的文件，大小一般在1G左右，

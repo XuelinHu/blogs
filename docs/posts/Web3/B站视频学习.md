@@ -2,7 +2,7 @@
 title: B站视频学习
 date: 2025-06-25
 created: 2025-06-25
-updated: 2025-06-25
+updated: 2026-09-02
 ---
 
 # 1. 学习记录
@@ -11,7 +11,7 @@ updated: 2025-06-25
 
 ## 1.1. Web3 学习路线
 
-![we2 web3.png](img/we2%20web3.png)
+![we2 web3.png](<./img/we2 web3.png>)
 
 ## 1.2. 海外生态资料
 

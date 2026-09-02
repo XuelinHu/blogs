@@ -2,7 +2,7 @@
 title: Redission
 date: 2025-05-25
 created: 2025-05-25
-updated: 2025-05-25
+updated: 2026-09-02
 ---
 
 - 图片来源：https://www.bilibili.com/video/BV1cr4y1671t?p=160&vd_source=f52d9488d7d3c21ed33580e4dce1a022
@@ -14,7 +14,7 @@ updated: 2025-05-25
 - 超时释放：业务执行时间长，导致锁释放，存在安全隐患
 - 主从一致性：主从集群，数据同步存在时延，主机宕机，从机还没有完成同步锁数据
 
-![lock.png](img%2Flock.png)
+![lock.png](./img/lock.png)
 
 # 2. 可重入锁
 
@@ -209,11 +209,11 @@ private void scheduleExpirationRenewal(long threadId) {
 
 如下图所示：主节点宕机后，数据同步没有完成，导致新的主节点没有同步原主节点的数据，来上锁时，别的JVM上锁成功了。
 
-![distribute2.png](img%2Fdistribute2.png)
+![distribute2.png](./img/distribute2.png)
 
 所以不使用主从的形式来管理集群，使用同等节点的方式 **redissonClient.getMultiLock()**
 
-![distribute.png](img%2Fdistribute.png)
+![distribute.png](./img/distribute.png)
 
 - 所有节点要全部上锁
 - 一个失败，其他要全部释放

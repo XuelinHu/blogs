@@ -2,27 +2,27 @@
 title: mvn
 date: 2025-05-25
 created: 2025-05-25
-updated: 2025-05-25
+updated: 2026-09-02
 ---
 
 - 图片来源=https://www.bilibili.com/video/BV1Ah411S7ZE?p=13&vd_source=f52d9488d7d3c21ed33580e4dce1a022
 
 # 1. maven简介
 
-![maven_1.png](img%2Fmaven_1.png)
+![maven_1.png](./img/maven_1.png)
 
 - maven程序有自己的类加载器
 
 # 2. 依赖冲突
 
-![maven_conflict.png](img%2Fmaven_conflict.png)
+![maven_conflict.png](./img/maven_conflict.png)
 
 - 可以使用`<optional>true</optional>`取消依赖的传递
 - `<exclusion>` 来排除某个依赖，不用写版本号
 
 # 3. 依赖范围
 
-![maven_scope.png](img%2Fmaven_scope.png)
+![maven_scope.png](./img/maven_scope.png)
 
 # 4. 指令
 

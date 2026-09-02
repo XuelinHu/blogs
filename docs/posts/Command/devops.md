@@ -2,12 +2,12 @@
 title: devOps
 date: 2025-05-25
 created: 2025-05-25
-updated: 2025-05-25
+updated: 2026-09-02
 ---
 
 # 1. devops
 
-![devops.png](img%2Fdevops.png)
+![devops.png](./img/devops.png)
 
 - 用户使用git作为代码版本管理工具
 - 使用maven作为包管理库
@@ -29,7 +29,7 @@ updated: 2025-05-25
 
 # 2. k8s
 
-![k8s.png](img%2Fk8s.png)
+![k8s.png](./img/k8s.png)
 
 - namespace 
 - pod 部署的节点
