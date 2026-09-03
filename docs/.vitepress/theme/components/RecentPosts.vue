@@ -23,6 +23,7 @@ const categoryThemes: Record<string, { start: string; end: string; rgb: string }
   AI: { start: '#2563eb', end: '#06b6d4', rgb: '37, 99, 235' },
   'AI基础': { start: '#2563eb', end: '#7c3aed', rgb: '37, 99, 235' },
   LLM: { start: '#7c3aed', end: '#2563eb', rgb: '124, 58, 237' },
+  '电工基础': { start: '#d97706', end: '#f59e0b', rgb: '217, 119, 6' },
   robot: { start: '#0f766e', end: '#14b8a6', rgb: '15, 118, 110' },
   Java: { start: '#ea580c', end: '#dc2626', rgb: '234, 88, 12' },
   Database: { start: '#16a34a', end: '#0d9488', rgb: '22, 163, 74' },
@@ -45,6 +46,7 @@ const categoryLabels: Record<string, string> = {
   AI: 'AI 工具与应用',
   'AI基础': 'AI 模型基础',
   LLM: '大语言模型',
+  '电工基础': '电工基础',
   robot: '机器人与具身智能',
   Java: 'Java',
   Database: '数据库',
@@ -66,6 +68,7 @@ const categoryVisuals: Record<string, { emoji: string; kind: string }> = {
   AI: { emoji: '🪄', kind: 'attention' },
   'AI基础': { emoji: '🧠', kind: 'network' },
   LLM: { emoji: '✨', kind: 'attention' },
+  '电工基础': { emoji: '⚡', kind: 'circuit' },
   robot: { emoji: '🤖', kind: 'robot' },
   Java: { emoji: '☕', kind: 'java' },
   Database: { emoji: '🗄️', kind: 'database' },
@@ -109,12 +112,14 @@ function resolveVisual(post: RecentPost): { emoji: string; kind: string } {
   if (/CNN|ViT|视觉|图像|卷积|CV/i.test(title)) return { emoji: '👁️', kind: 'vision' }
   if (/神经网络|反向传播|感知机|梯度/i.test(title)) return { emoji: '🧠', kind: 'network' }
   if (/Transformer|LLM|大语言模型|大模型|Agent|RAG|QLoRA|MCP/i.test(title)) return { emoji: '✨', kind: 'attention' }
+  if (/电阻|电容|电感|电路|欧姆定律|色环/i.test(title)) return { emoji: '⚡', kind: 'circuit' }
 
   if (/URDF|Gazebo|机器人|机械臂|ROS2|位姿|具身/i.test(subject)) return { emoji: '🤖', kind: 'robot' }
   if (/Transformer|LLM|大语言模型|大模型|Agent|RAG|QLoRA|MCP/i.test(subject)) return { emoji: '✨', kind: 'attention' }
   if (/CNN|ViT|视觉|图像|卷积|CV/i.test(subject)) return { emoji: '👁️', kind: 'vision' }
   if (/LSTM|GRU|循环神经|序列|时序/i.test(subject)) return { emoji: '🔁', kind: 'sequence' }
   if (/神经网络|反向传播|感知机|梯度/i.test(subject)) return { emoji: '🧠', kind: 'network' }
+  if (/电阻|电容|电感|电路|欧姆定律|色环/i.test(subject)) return { emoji: '⚡', kind: 'circuit' }
 
   return categoryVisuals[post.category] ?? fallbackVisual
 }

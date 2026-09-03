@@ -1,0 +1,807 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>电阻、电容、电感交互实验</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f5f7f6;
+      --panel: #ffffff;
+      --panel-soft: #f0f5f3;
+      --text: #17211d;
+      --muted: #62706a;
+      --line: #d8e1dd;
+      --brand: #16745c;
+      --brand-soft: #dff4ec;
+      --amber: #b86b08;
+      --amber-soft: #fff4d6;
+      --danger: #b8272c;
+      --danger-soft: #fff0f1;
+      --blue: #2368a2;
+      --shadow: 0 10px 28px rgb(30 64 50 / 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 10% 0%, rgb(22 116 92 / 0.08), transparent 28%),
+        radial-gradient(circle at 90% 2%, rgb(184 107 8 / 0.08), transparent 26%),
+        var(--bg);
+      font-family: Inter, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+      line-height: 1.55;
+    }
+
+    button, input, select { font: inherit; }
+
+    .app {
+      width: min(1120px, calc(100% - 24px));
+      margin: 0 auto;
+      padding: 22px 0 34px;
+    }
+
+    .hero {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 16px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 20px 22px;
+      background: rgb(255 255 255 / 0.86);
+      box-shadow: var(--shadow);
+    }
+
+    .hero h1 { margin: 0; font-size: clamp(22px, 4vw, 34px); line-height: 1.2; }
+    .hero p { margin: 7px 0 0; color: var(--muted); font-size: 14px; }
+
+    .hero__icons {
+      display: flex;
+      flex: 0 0 auto;
+      align-items: center;
+      gap: 8px;
+      font-size: 28px;
+    }
+
+    .hero__icons span {
+      display: grid;
+      width: 48px;
+      height: 48px;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--panel-soft);
+    }
+
+    .tabs {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 16px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 7px;
+      background: rgb(245 247 246 / 0.94);
+      backdrop-filter: blur(12px);
+    }
+
+    .tab {
+      min-height: 42px;
+      border: 0;
+      border-radius: 9px;
+      color: var(--muted);
+      background: transparent;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .tab:hover { color: var(--brand); background: var(--brand-soft); }
+    .tab[aria-selected="true"] { color: #fff; background: var(--brand); box-shadow: 0 6px 14px rgb(22 116 92 / 0.2); }
+    .tab:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid rgb(35 104 162 / 0.24); outline-offset: 2px; }
+
+    .panel[hidden] { display: none; }
+    .panel { animation: panel-in 0.24s ease; }
+
+    .section-title { margin: 4px 0 12px; font-size: 21px; }
+    .section-copy { margin: -5px 0 16px; color: var(--muted); font-size: 14px; }
+
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+
+    .card {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 17px;
+      background: var(--panel);
+      box-shadow: 0 6px 18px rgb(30 64 50 / 0.055);
+    }
+
+    .card--wide { grid-column: 1 / -1; }
+    .card h2, .card h3 { margin: 0 0 5px; line-height: 1.3; }
+    .card h2 { font-size: 19px; }
+    .card h3 { font-size: 15px; }
+    .card__hint { margin: 0 0 14px; color: var(--muted); font-size: 13px; }
+
+    .component-gallery {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 9px;
+    }
+
+    .component {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px 7px 8px;
+      background: linear-gradient(180deg, #fff, var(--panel-soft));
+      text-align: center;
+    }
+
+    .component svg { display: block; width: 100%; height: 58px; margin: 0 auto 4px; }
+    .component strong { display: block; overflow: hidden; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+    .component small { display: block; color: var(--muted); font-size: 10px; }
+
+    .resistor-stage {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: linear-gradient(180deg, #edf6f2, #fff);
+    }
+
+    .resistor-stage svg { display: block; width: 100%; min-height: 190px; }
+
+    .controls { display: grid; gap: 12px; }
+    .control { display: grid; gap: 5px; }
+
+    .control__label {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 650;
+    }
+
+    .control__value { color: var(--text); font-variant-numeric: tabular-nums; font-weight: 800; }
+
+    input[type="range"] {
+      width: 100%;
+      height: 7px;
+      border-radius: 999px;
+      appearance: none;
+      background: linear-gradient(90deg, var(--brand), #80c8b6);
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      width: 20px;
+      height: 20px;
+      border: 3px solid #fff;
+      border-radius: 50%;
+      appearance: none;
+      background: var(--brand);
+      box-shadow: 0 2px 7px rgb(0 0 0 / 0.2);
+    }
+
+    select {
+      width: 100%;
+      min-height: 38px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      padding: 0 9px;
+      color: var(--text);
+      background: #fff;
+    }
+
+    .mode-switch { display: flex; gap: 8px; margin-bottom: 12px; }
+    .mode-switch button {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 7px 12px;
+      color: var(--muted);
+      background: #fff;
+      cursor: pointer;
+    }
+    .mode-switch button.is-active { border-color: var(--brand); color: var(--brand); background: var(--brand-soft); font-weight: 800; }
+
+    .band-controls { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+    .band-control label { display: block; margin-bottom: 4px; color: var(--muted); font-size: 11px; }
+    .band-control[hidden] { display: none; }
+
+    .result {
+      margin-top: 12px;
+      border: 1px solid rgb(22 116 92 / 0.24);
+      border-radius: 12px;
+      padding: 12px;
+      background: var(--brand-soft);
+    }
+    .result__main { color: var(--brand); font-size: clamp(22px, 5vw, 32px); font-weight: 900; font-variant-numeric: tabular-nums; }
+    .result__sub { color: var(--muted); font-size: 12px; }
+
+    .metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; margin-top: 12px; }
+    .metric { min-width: 0; border: 1px solid var(--line); border-radius: 11px; padding: 9px; background: var(--panel-soft); }
+    .metric small { display: block; color: var(--muted); font-size: 10px; }
+    .metric strong { display: block; overflow-wrap: anywhere; font-size: 15px; font-variant-numeric: tabular-nums; }
+
+    .status {
+      margin-top: 12px;
+      border-left: 4px solid var(--brand);
+      border-radius: 9px;
+      padding: 10px 12px;
+      color: #155c4b;
+      background: var(--brand-soft);
+      font-size: 12px;
+    }
+    .status.is-warning { border-left-color: var(--amber); color: #7d4b09; background: var(--amber-soft); }
+    .status.is-danger { border-left-color: var(--danger); color: #8f2227; background: var(--danger-soft); }
+
+    .circuit-svg, .chart-svg { display: block; width: 100%; height: auto; }
+    .circuit-wire { fill: none; stroke: #35564b; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+    .circuit-flow { fill: none; stroke: #e58a11; stroke-width: 4; stroke-linecap: round; stroke-dasharray: 2 12; animation: flow var(--flow-speed, 1.4s) linear infinite; }
+    .circuit-label { fill: #33473f; font-size: 13px; font-weight: 800; }
+    .chart-grid { stroke: #dfe7e3; stroke-width: 1; }
+    .chart-axis { stroke: #6f8179; stroke-width: 1.8; }
+    .chart-curve { fill: none; stroke: var(--brand); stroke-width: 4; stroke-linecap: round; }
+    .chart-marker { fill: #fff; stroke: var(--amber); stroke-width: 4; }
+    .chart-text { fill: #65766e; font-size: 11px; }
+
+    .formula {
+      margin: 10px 0 0;
+      border-radius: 10px;
+      padding: 9px 11px;
+      color: #24473c;
+      background: #edf4f1;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      overflow-wrap: anywhere;
+    }
+
+    .quick-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .quick-table th, .quick-table td { border-bottom: 1px solid var(--line); padding: 8px 6px; text-align: left; }
+    .quick-table th { color: var(--muted); font-weight: 700; }
+
+    .safety {
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+      border: 1px solid rgb(184 39 44 / 0.28);
+      border-left: 4px solid var(--danger);
+      border-radius: 11px;
+      padding: 11px 13px;
+      color: #87262a;
+      background: var(--danger-soft);
+      font-size: 12px;
+    }
+    .safety__icon { flex: 0 0 auto; font-size: 18px; }
+
+    @keyframes panel-in { from { opacity: 0; transform: translateY(4px); } }
+    @keyframes flow { to { stroke-dashoffset: -28; } }
+
+    @media (max-width: 800px) {
+      .grid { grid-template-columns: 1fr; }
+      .card--wide { grid-column: auto; }
+      .component-gallery { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .band-controls { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 520px) {
+      .app { width: min(100% - 14px, 1120px); padding-top: 8px; }
+      .hero { align-items: flex-start; padding: 15px; }
+      .hero__icons { gap: 3px; font-size: 19px; }
+      .hero__icons span { width: 34px; height: 34px; border-radius: 10px; }
+      .tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .component-gallery { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .metrics { grid-template-columns: 1fr; }
+      .card { padding: 13px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; scroll-behavior: auto !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="hero">
+      <div>
+        <h1>电阻 · 电容 · 电感实验台</h1>
+        <p>拖动参数，看数值、曲线和元件图形怎样一起变化。</p>
+      </div>
+      <div class="hero__icons" aria-hidden="true"><span>〽</span><span>▥</span><span>∿</span></div>
+    </header>
+
+    <nav class="tabs" role="tablist" aria-label="选择实验">
+      <button class="tab" id="tab-resistor" role="tab" aria-selected="true" aria-controls="panel-resistor" data-panel="resistor">电阻与色环</button>
+      <button class="tab" id="tab-capacitor" role="tab" aria-selected="false" aria-controls="panel-capacitor" data-panel="capacitor">RC 电容</button>
+      <button class="tab" id="tab-inductor" role="tab" aria-selected="false" aria-controls="panel-inductor" data-panel="inductor">RL 电感</button>
+      <button class="tab" id="tab-reference" role="tab" aria-selected="false" aria-controls="panel-reference" data-panel="reference">读数速查</button>
+    </nav>
+
+    <section class="panel" id="panel-resistor" role="tabpanel" aria-labelledby="tab-resistor">
+      <h2 class="section-title">电阻：先会看，再会算</h2>
+      <p class="section-copy">选择色环会改变 SVG 电阻外观；拖动电压或阻值，会实时重算电流和发热功率。</p>
+
+      <div class="card card--wide">
+        <h2>常见电阻图鉴</h2>
+        <p class="card__hint">这些是原创示意图，重点表现外形差异，不代表真实尺寸比例。</p>
+        <div class="component-gallery">
+          <div class="component">
+            <svg viewBox="0 0 120 58" aria-label="碳膜电阻示意图"><path d="M3 29h24m66 0h24" stroke="#7a8790" stroke-width="3"/><rect x="26" y="16" width="68" height="26" rx="12" fill="#d6b47a" stroke="#9c7a45"/><rect x="39" y="16" width="6" height="26" fill="#7b3f16"/><rect x="52" y="16" width="6" height="26" fill="#111"/><rect x="66" y="16" width="6" height="26" fill="#c62828"/><rect x="83" y="16" width="5" height="26" fill="#d4a017"/></svg>
+            <strong>碳膜电阻</strong><small>四色环常见</small>
+          </div>
+          <div class="component">
+            <svg viewBox="0 0 120 58" aria-label="金属膜电阻示意图"><path d="M3 29h24m66 0h24" stroke="#7a8790" stroke-width="3"/><rect x="26" y="16" width="68" height="26" rx="12" fill="#9bc5dc" stroke="#5585a0"/><rect x="36" y="16" width="5" height="26" fill="#7b3f16"/><rect x="48" y="16" width="5" height="26" fill="#111"/><rect x="60" y="16" width="5" height="26" fill="#111"/><rect x="72" y="16" width="5" height="26" fill="#7b3f16"/><rect x="84" y="16" width="5" height="26" fill="#7b3f16"/></svg>
+            <strong>金属膜电阻</strong><small>五色环常见</small>
+          </div>
+          <div class="component">
+            <svg viewBox="0 0 120 58" aria-label="水泥电阻示意图"><path d="M3 29h20m74 0h20" stroke="#7a8790" stroke-width="3"/><rect x="22" y="12" width="76" height="34" rx="4" fill="#f7f6ee" stroke="#a9a69b"/><text x="60" y="27" text-anchor="middle" font-size="9" font-weight="700" fill="#555">5W 10ΩJ</text><path d="M37 35h46" stroke="#aaa"/></svg>
+            <strong>水泥电阻</strong><small>注意表面温度</small>
+          </div>
+          <div class="component">
+            <svg viewBox="0 0 120 58" aria-label="绕线电阻示意图"><path d="M3 29h19m76 0h19" stroke="#7a8790" stroke-width="3"/><rect x="21" y="13" width="78" height="32" rx="12" fill="#8ca36a" stroke="#5f7640"/><path d="M31 17l8 24m2-24 8 24m2-24 8 24m2-24 8 24m2-24 8 24m2-24 8 24" stroke="#e4d8bd" stroke-width="2"/></svg>
+            <strong>绕线电阻</strong><small>功率大、有寄生电感</small>
+          </div>
+          <div class="component">
+            <svg viewBox="0 0 120 58" aria-label="贴片电阻示意图"><rect x="20" y="17" width="80" height="27" rx="4" fill="#222"/><rect x="15" y="17" width="18" height="27" rx="3" fill="#b8b8b8"/><rect x="87" y="17" width="18" height="27" rx="3" fill="#b8b8b8"/><text x="60" y="35" text-anchor="middle" font-size="15" font-weight="800" fill="#f2f2f2">472</text></svg>
+            <strong>贴片电阻</strong><small>472 = 4.7 kΩ</small>
+          </div>
+          <div class="component">
+            <svg viewBox="0 0 120 58" aria-label="可调电阻示意图"><circle cx="60" cy="29" r="21" fill="#3b78a5" stroke="#255672" stroke-width="3"/><circle cx="60" cy="29" r="7" fill="#d4d9dc"/><path d="M60 10v16m0 7v15M36 49v7m48-7v7" stroke="#66757c" stroke-width="4"/><path d="M53 29h14" stroke="#545f64" stroke-width="2"/></svg>
+            <strong>可调电阻</strong><small>分压与校准</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid" style="margin-top:14px">
+        <article class="card">
+          <h2>色环读数器</h2>
+          <p class="card__hint">容差环在右侧。切换五色环时会增加第三位有效数字。</p>
+          <div class="mode-switch" aria-label="色环数量">
+            <button type="button" class="is-active" data-band-mode="4">4 色环</button>
+            <button type="button" data-band-mode="5">5 色环</button>
+          </div>
+          <div class="resistor-stage">
+            <svg viewBox="0 0 520 190" role="img" aria-label="会随选择变化的轴向电阻">
+              <defs><linearGradient id="bodyGradient" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ecd39e"/><stop offset="0.5" stop-color="#d9b875"/><stop offset="1" stop-color="#c8a464"/></linearGradient></defs>
+              <path d="M18 95h113M389 95h113" stroke="#75828a" stroke-width="8" stroke-linecap="round"/>
+              <path d="M132 69c20-4 25-25 52-25h152c27 0 32 21 52 25v52c-20 4-25 25-52 25H184c-27 0-32-21-52-25Z" fill="url(#bodyGradient)" stroke="#9e7f47" stroke-width="3"/>
+              <rect id="resBand1" x="184" y="45" width="15" height="100" fill="#7b3f16"/>
+              <rect id="resBand2" x="220" y="44" width="15" height="102" fill="#111111"/>
+              <rect id="resBand3" x="250" y="44" width="15" height="102" fill="#111111" hidden/>
+              <rect id="resBand4" x="270" y="44" width="15" height="102" fill="#c62828"/>
+              <rect id="resBand5" x="337" y="49" width="13" height="92" fill="#d4a017"/>
+              <text x="260" y="174" text-anchor="middle" fill="#64736c" font-size="12">从左向右读取 · 右侧为容差环</text>
+            </svg>
+          </div>
+          <div class="band-controls" style="margin-top:12px">
+            <div class="band-control"><label for="band1">第 1 位</label><select id="band1"></select></div>
+            <div class="band-control"><label for="band2">第 2 位</label><select id="band2"></select></div>
+            <div class="band-control" id="band3Wrap" hidden><label for="band3">第 3 位</label><select id="band3"></select></div>
+            <div class="band-control"><label for="bandMultiplier">倍率</label><select id="bandMultiplier"></select></div>
+            <div class="band-control"><label for="bandTolerance">容差</label><select id="bandTolerance"></select></div>
+          </div>
+          <div class="result" aria-live="polite">
+            <div class="result__main" id="resistorResult">1 kΩ ±5%</div>
+            <div class="result__sub" id="resistorRange">实际允许范围：950 Ω ～ 1.05 kΩ</div>
+          </div>
+        </article>
+
+        <article class="card">
+          <h2>欧姆定律与功率</h2>
+          <p class="card__hint">电阻滑块使用对数刻度，因此可以覆盖 `1 Ω～1 MΩ`。</p>
+          <svg class="circuit-svg" viewBox="0 0 520 220" role="img" aria-label="电源和电阻组成的闭合电路">
+            <path class="circuit-wire" d="M75 55h155m80 0h135v115H75V55"/>
+            <path class="circuit-flow" id="currentFlow" d="M75 55h155m80 0h135v115H75V55"/>
+            <path d="M230 55l10-18 18 36 18-36 18 36 16-18" fill="none" stroke="#b86b08" stroke-width="5" stroke-linejoin="round"/>
+            <path d="M68 95h14m-22 18h30" stroke="#2368a2" stroke-width="5"/><path d="M75 95v-18m0 36v39" stroke="#35564b" stroke-width="4"/>
+            <text class="circuit-label" x="270" y="29" text-anchor="middle" id="circuitRLabel">R = 1 kΩ</text>
+            <text class="circuit-label" x="105" y="105" id="circuitVLabel">5 V</text>
+            <text class="circuit-label" x="300" y="199" text-anchor="middle" id="circuitILabel">I = 5 mA</text>
+          </svg>
+          <div class="controls">
+            <div class="control">
+              <div class="control__label"><label for="ohmVoltage">电源电压 U</label><output class="control__value" id="ohmVoltageValue">5 V</output></div>
+              <input id="ohmVoltage" type="range" min="0.1" max="24" value="5" step="0.1">
+            </div>
+            <div class="control">
+              <div class="control__label"><label for="ohmResistance">电阻 R</label><output class="control__value" id="ohmResistanceValue">1 kΩ</output></div>
+              <input id="ohmResistance" type="range" min="0" max="600" value="300" step="1">
+            </div>
+          </div>
+          <div class="metrics">
+            <div class="metric"><small>电流 I = U/R</small><strong id="ohmCurrent">5 mA</strong></div>
+            <div class="metric"><small>功率 P = U²/R</small><strong id="ohmPower">25 mW</strong></div>
+            <div class="metric"><small>建议额定功率</small><strong id="ohmRating">≥ 0.125 W</strong></div>
+          </div>
+          <div class="status" id="ohmStatus">当前是低功率示例，仍需核对电阻耐压与环境温度。</div>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-capacitor" role="tabpanel" aria-labelledby="tab-capacitor" hidden>
+      <h2 class="section-title">电容：电压不能瞬间改变</h2>
+      <p class="section-copy">RC 曲线用理想模型计算。把时间拖到 `1τ` 和 `5τ`，观察 63.2% 与 99.3% 两个关键点。</p>
+      <div class="card card--wide">
+        <h2>常见电容图鉴</h2>
+        <div class="component-gallery" style="grid-template-columns:repeat(5,minmax(0,1fr))">
+          <div class="component"><svg viewBox="0 0 120 58"><circle cx="60" cy="25" r="18" fill="#c98b37" stroke="#865c22"/><path d="M53 44v13m14-13v13" stroke="#78858d" stroke-width="3"/><text x="60" y="29" text-anchor="middle" font-size="10" fill="#fff">104</text></svg><strong>陶瓷圆片</strong><small>常见无极性</small></div>
+          <div class="component"><svg viewBox="0 0 120 58"><rect x="38" y="7" width="44" height="41" rx="7" fill="#273c80"/><path d="M49 48v10m22-10v10" stroke="#78858d" stroke-width="3"/><path d="M70 11v33" stroke="#e7e7e7" stroke-width="5"/><text x="52" y="29" text-anchor="middle" font-size="9" fill="#fff">100µF</text></svg><strong>铝电解</strong><small>有极性</small></div>
+          <div class="component"><svg viewBox="0 0 120 58"><rect x="30" y="11" width="60" height="36" rx="4" fill="#d9b728" stroke="#8b7419"/><path d="M43 47v11m34-11v11" stroke="#78858d" stroke-width="3"/><text x="60" y="33" text-anchor="middle" font-size="9" fill="#433">0.1µF 250V</text></svg><strong>薄膜电容</strong><small>稳定、损耗低</small></div>
+          <div class="component"><svg viewBox="0 0 120 58"><rect x="34" y="15" width="52" height="30" rx="5" fill="#d99220"/><rect x="30" y="15" width="10" height="30" fill="#bababa"/><rect x="80" y="15" width="10" height="30" fill="#bababa"/><path d="M41 21h8m-4-4v8" stroke="#fff" stroke-width="2"/></svg><strong>贴片钽电容</strong><small>注意正极标记</small></div>
+          <div class="component"><svg viewBox="0 0 120 58"><rect x="32" y="17" width="56" height="27" rx="3" fill="#b69b72"/><rect x="25" y="17" width="14" height="27" fill="#bcbcbc"/><rect x="81" y="17" width="14" height="27" fill="#bcbcbc"/></svg><strong>贴片陶瓷</strong><small>通常无丝印</small></div>
+        </div>
+      </div>
+
+      <div class="grid" style="margin-top:14px">
+        <article class="card">
+          <h2>RC 参数</h2>
+          <div class="mode-switch" aria-label="电容模式">
+            <button type="button" class="is-active" data-cap-mode="charge">充电</button>
+            <button type="button" data-cap-mode="discharge">放电</button>
+          </div>
+          <div class="controls">
+            <div class="control"><div class="control__label"><label for="capVoltage">电源/初始电压</label><output class="control__value" id="capVoltageValue">5 V</output></div><input id="capVoltage" type="range" min="1" max="24" value="5" step="0.5"></div>
+            <div class="control"><div class="control__label"><label for="capResistance">电阻 R</label><output class="control__value" id="capResistanceValue">10 kΩ</output></div><input id="capResistance" type="range" min="2" max="6" value="4" step="0.05"></div>
+            <div class="control"><div class="control__label"><label for="capValue">电容 C</label><output class="control__value" id="capValueValue">100 µF</output></div><input id="capValue" type="range" min="-9" max="-2" value="-4" step="0.05"></div>
+            <div class="control"><div class="control__label"><label for="capTime">观察时间 t</label><output class="control__value" id="capTimeValue">1 τ</output></div><input id="capTime" type="range" min="0" max="5" value="1" step="0.05"></div>
+          </div>
+          <div class="metrics">
+            <div class="metric"><small>时间常数 τ=RC</small><strong id="capTau">1 s</strong></div>
+            <div class="metric"><small>当前电容电压</small><strong id="capNowVoltage">3.16 V</strong></div>
+            <div class="metric"><small>当前电流</small><strong id="capNowCurrent">184 µA</strong></div>
+          </div>
+          <div class="formula" id="capFormula">uC(t) = US × (1 − e^(−t/RC))</div>
+        </article>
+
+        <article class="card">
+          <h2 id="capChartTitle">电容充电曲线</h2>
+          <p class="card__hint">横轴按时间常数归一化，所以改变 R 或 C 会改变真实秒数，但曲线形状不变。</p>
+          <svg class="chart-svg" viewBox="0 0 560 270" role="img" aria-label="RC 电容电压随时间变化曲线">
+            <path class="chart-grid" d="M45 50h480M45 91h480M45 132h480M45 173h480M45 214h480M141 40v184M237 40v184M333 40v184M429 40v184M525 40v184"/>
+            <path class="chart-axis" d="M45 35v189h490"/>
+            <path class="chart-curve" id="capCurve"/>
+            <circle class="chart-marker" id="capMarker" r="7" cx="141" cy="110"/>
+            <text class="chart-text" x="45" y="242">0</text><text class="chart-text" x="132" y="242">1τ</text><text class="chart-text" x="228" y="242">2τ</text><text class="chart-text" x="324" y="242">3τ</text><text class="chart-text" x="420" y="242">4τ</text><text class="chart-text" x="515" y="242">5τ</text>
+            <text class="chart-text" x="13" y="52">100%</text><text class="chart-text" x="20" y="217">0%</text>
+          </svg>
+          <div class="status" id="capStatus">1τ 时达到最终电压的 63.2%；约 5τ 后可视为基本稳定。</div>
+          <div class="safety"><span class="safety__icon">⚠</span><span>大容量或高压电容会储存危险能量。断电不等于已经放电，必须使用合适的放电电阻并实测确认。</span></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-inductor" role="tabpanel" aria-labelledby="tab-inductor" hidden>
+      <h2 class="section-title">电感：电流不能瞬间改变</h2>
+      <p class="section-copy">RL 演示同时显示线圈电流与电感两端电压。实际电感还受直流电阻、饱和与磁芯损耗限制。</p>
+      <div class="card card--wide">
+        <h2>常见电感图鉴</h2>
+        <div class="component-gallery" style="grid-template-columns:repeat(5,minmax(0,1fr))">
+          <div class="component"><svg viewBox="0 0 120 58"><path d="M4 31h20c0-18 18-18 18 0s18 18 18 0 18-18 18 0 18 18 18 0h20" fill="none" stroke="#b67522" stroke-width="5"/></svg><strong>空心线圈</strong><small>高频与谐振</small></div>
+          <div class="component"><svg viewBox="0 0 120 58"><circle cx="60" cy="29" r="23" fill="none" stroke="#344f58" stroke-width="13"/><path d="M39 16c17 5 26 21 38 34M33 29c19 0 35 8 53 15M43 49c8-17 21-29 37-37" fill="none" stroke="#d08c30" stroke-width="3"/></svg><strong>环形电感</strong><small>电源储能/滤波</small></div>
+          <div class="component"><svg viewBox="0 0 120 58"><rect x="29" y="11" width="62" height="38" rx="8" fill="#343a3c"/><path d="M40 15c9 0 9 30 18 30s9-30 18-30 9 30 18 30" fill="none" stroke="#d28b2d" stroke-width="4"/></svg><strong>磁芯功率电感</strong><small>关注饱和电流</small></div>
+          <div class="component"><svg viewBox="0 0 120 58"><rect x="25" y="13" width="70" height="36" rx="6" fill="#4c4b46"/><circle cx="48" cy="31" r="13" fill="none" stroke="#cb8732" stroke-width="5"/><circle cx="73" cy="31" r="13" fill="none" stroke="#cb8732" stroke-width="5"/></svg><strong>共模扼流圈</strong><small>双绕组抑制干扰</small></div>
+          <div class="component"><svg viewBox="0 0 120 58"><rect x="28" y="16" width="64" height="29" rx="5" fill="#2f3436"/><rect x="22" y="16" width="14" height="29" fill="#aaa"/><rect x="84" y="16" width="14" height="29" fill="#aaa"/><text x="60" y="35" text-anchor="middle" font-size="12" fill="#eee">4R7</text></svg><strong>贴片电感</strong><small>4R7 常为 4.7 µH</small></div>
+        </div>
+      </div>
+
+      <div class="grid" style="margin-top:14px">
+        <article class="card">
+          <h2>RL 参数</h2>
+          <div class="controls">
+            <div class="control"><div class="control__label"><label for="indVoltage">电源电压 U</label><output class="control__value" id="indVoltageValue">12 V</output></div><input id="indVoltage" type="range" min="1" max="24" value="12" step="0.5"></div>
+            <div class="control"><div class="control__label"><label for="indResistance">总串联电阻 R</label><output class="control__value" id="indResistanceValue">10 Ω</output></div><input id="indResistance" type="range" min="-0.3" max="2" value="1" step="0.05"></div>
+            <div class="control"><div class="control__label"><label for="indValue">电感 L</label><output class="control__value" id="indValueValue">10 mH</output></div><input id="indValue" type="range" min="-6" max="0" value="-2" step="0.05"></div>
+            <div class="control"><div class="control__label"><label for="indTime">观察时间 t</label><output class="control__value" id="indTimeValue">1 τ</output></div><input id="indTime" type="range" min="0" max="5" value="1" step="0.05"></div>
+          </div>
+          <div class="metrics">
+            <div class="metric"><small>时间常数 τ=L/R</small><strong id="indTau">1 ms</strong></div>
+            <div class="metric"><small>当前线圈电流</small><strong id="indCurrent">758 mA</strong></div>
+            <div class="metric"><small>当前电感电压</small><strong id="indNowVoltage">4.41 V</strong></div>
+          </div>
+          <div class="formula">i(t) = (U/R) × (1 − e^(−tR/L))</div>
+          <div class="status is-warning" id="indStatus">理想稳态电流为 1.2 A；必须再核对线圈 DCR、饱和电流和温升。</div>
+        </article>
+
+        <article class="card">
+          <h2>电感电流上升曲线</h2>
+          <p class="card__hint">曲线按最终电流 U/R 归一化；橙色点对应当前时间。</p>
+          <svg class="chart-svg" viewBox="0 0 560 270" role="img" aria-label="RL 电感电流随时间变化曲线">
+            <path class="chart-grid" d="M45 50h480M45 91h480M45 132h480M45 173h480M45 214h480M141 40v184M237 40v184M333 40v184M429 40v184M525 40v184"/>
+            <path class="chart-axis" d="M45 35v189h490"/>
+            <path class="chart-curve" id="indCurve"/>
+            <circle class="chart-marker" id="indMarker" r="7" cx="141" cy="110"/>
+            <text class="chart-text" x="45" y="242">0</text><text class="chart-text" x="132" y="242">1τ</text><text class="chart-text" x="228" y="242">2τ</text><text class="chart-text" x="324" y="242">3τ</text><text class="chart-text" x="420" y="242">4τ</text><text class="chart-text" x="515" y="242">5τ</text>
+            <text class="chart-text" x="13" y="52">100%</text><text class="chart-text" x="20" y="217">0%</text>
+          </svg>
+          <div class="metrics">
+            <div class="metric"><small>最终电流 U/R</small><strong id="indFinalCurrent">1.2 A</strong></div>
+            <div class="metric"><small>初始 di/dt=U/L</small><strong id="indSlope">1.2 kA/s</strong></div>
+            <div class="metric"><small>当前磁场能量</small><strong id="indEnergy">2.87 mJ</strong></div>
+          </div>
+          <div class="safety"><span class="safety__icon">⚠</span><span>断开继电器、电磁阀或电机绕组时要给电流留下续流路径，否则反向尖峰可能击穿开关器件。</span></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-reference" role="tabpanel" aria-labelledby="tab-reference" hidden>
+      <h2 class="section-title">读数与单位速查</h2>
+      <p class="section-copy">先看单位前缀，再看元件本体的数字；无法确认时以原理图、BOM、数据手册和断电实测为准。</p>
+      <div class="grid">
+        <article class="card">
+          <h2>SI 前缀</h2>
+          <table class="quick-table"><thead><tr><th>前缀</th><th>符号</th><th>倍率</th><th>例子</th></tr></thead><tbody>
+            <tr><td>吉</td><td>G</td><td>10⁹</td><td>1 GΩ</td></tr><tr><td>兆</td><td>M</td><td>10⁶</td><td>1 MΩ</td></tr><tr><td>千</td><td>k</td><td>10³</td><td>4.7 kΩ</td></tr><tr><td>毫</td><td>m</td><td>10⁻³</td><td>10 mA</td></tr><tr><td>微</td><td>µ</td><td>10⁻⁶</td><td>100 µF</td></tr><tr><td>纳</td><td>n</td><td>10⁻⁹</td><td>100 nF</td></tr><tr><td>皮</td><td>p</td><td>10⁻¹²</td><td>22 pF</td></tr>
+          </tbody></table>
+          <div class="status is-warning">大写 `M` 是兆，小写 `m` 是毫，相差 10⁹ 倍；`µF`、`nF`、`pF` 也不能省略前缀。</div>
+        </article>
+        <article class="card">
+          <h2>常见数字码</h2>
+          <table class="quick-table"><thead><tr><th>标记</th><th>常见含义</th><th>说明</th></tr></thead><tbody>
+            <tr><td>472 电阻</td><td>4.7 kΩ</td><td>47 后补 2 个零</td></tr><tr><td>1001 电阻</td><td>1 kΩ</td><td>100 后补 1 个零</td></tr><tr><td>4R7 电阻</td><td>4.7 Ω</td><td>R 是小数点</td></tr><tr><td>104 电容</td><td>100 nF</td><td>单位通常从 pF 算起</td></tr><tr><td>472 电容</td><td>4.7 nF</td><td>同样数字，单位规则不同</td></tr><tr><td>4R7 电感</td><td>常见为 4.7 µH</td><td>最终查数据手册</td></tr>
+          </tbody></table>
+          <div class="status">同一个 `472` 写在电阻和电容上，含义并不相同。先辨认元件类型，再应用对应规则。</div>
+        </article>
+        <article class="card card--wide">
+          <h2>断电测量顺序</h2>
+          <div class="component-gallery" style="grid-template-columns:repeat(4,minmax(0,1fr))">
+            <div class="component"><div style="font-size:30px">①</div><strong>切断电源</strong><small>拔掉电源并等待</small></div>
+            <div class="component"><div style="font-size:30px">②</div><strong>确认放电</strong><small>用合适方法释放储能</small></div>
+            <div class="component"><div style="font-size:30px">③</div><strong>检查表笔</strong><small>插孔、档位、量程正确</small></div>
+            <div class="component"><div style="font-size:30px">④</div><strong>测量与复核</strong><small>结合原理图和 BOM</small></div>
+          </div>
+          <div class="safety"><span class="safety__icon">⚠</span><span>通断档发出蜂鸣不等于“绝对零欧姆”，在线测量还会受到并联支路影响。对未知高压设备不要自行测量。</span></div>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const tabs = Array.from(document.querySelectorAll('.tab'));
+    const panels = Array.from(document.querySelectorAll('.panel'));
+
+    tabs.forEach((tab) => tab.addEventListener('click', () => {
+      tabs.forEach((item) => item.setAttribute('aria-selected', String(item === tab)));
+      panels.forEach((panel) => { panel.hidden = panel.id !== `panel-${tab.dataset.panel}`; });
+    }));
+
+    const colorData = [
+      { name: '黑', hex: '#151515', digit: 0, multiplier: 1 },
+      { name: '棕', hex: '#7b3f16', digit: 1, multiplier: 10, tolerance: 1 },
+      { name: '红', hex: '#c62828', digit: 2, multiplier: 100, tolerance: 2 },
+      { name: '橙', hex: '#ed7d16', digit: 3, multiplier: 1e3 },
+      { name: '黄', hex: '#e2bf18', digit: 4, multiplier: 1e4 },
+      { name: '绿', hex: '#168447', digit: 5, multiplier: 1e5, tolerance: 0.5 },
+      { name: '蓝', hex: '#2563b8', digit: 6, multiplier: 1e6, tolerance: 0.25 },
+      { name: '紫', hex: '#7e3aa8', digit: 7, multiplier: 1e7, tolerance: 0.1 },
+      { name: '灰', hex: '#777777', digit: 8, multiplier: 1e8, tolerance: 0.05 },
+      { name: '白', hex: '#f3f3ee', digit: 9, multiplier: 1e9 },
+      { name: '金', hex: '#d4a017', multiplier: 0.1, tolerance: 5 },
+      { name: '银', hex: '#a9afb3', multiplier: 0.01, tolerance: 10 }
+    ];
+
+    const digitColors = colorData.filter((item) => Number.isInteger(item.digit));
+    const multiplierColors = colorData;
+    const toleranceColors = colorData.filter((item) => item.tolerance !== undefined);
+    const bandSelects = {
+      digit1: document.getElementById('band1'),
+      digit2: document.getElementById('band2'),
+      digit3: document.getElementById('band3'),
+      multiplier: document.getElementById('bandMultiplier'),
+      tolerance: document.getElementById('bandTolerance')
+    };
+    let bandMode = 4;
+
+    function populateSelect(select, choices) {
+      choices.forEach((color) => {
+        const option = document.createElement('option');
+        option.value = color.name;
+        option.textContent = color.name;
+        select.appendChild(option);
+      });
+    }
+
+    populateSelect(bandSelects.digit1, digitColors);
+    populateSelect(bandSelects.digit2, digitColors);
+    populateSelect(bandSelects.digit3, digitColors);
+    populateSelect(bandSelects.multiplier, multiplierColors);
+    populateSelect(bandSelects.tolerance, toleranceColors);
+    bandSelects.digit1.value = '棕';
+    bandSelects.digit2.value = '黑';
+    bandSelects.digit3.value = '黑';
+    bandSelects.multiplier.value = '红';
+    bandSelects.tolerance.value = '金';
+
+    function colorByName(name) { return colorData.find((item) => item.name === name); }
+
+    function compactNumber(value, digits = 3) {
+      if (!Number.isFinite(value)) return '—';
+      return Number(value.toPrecision(digits)).toString();
+    }
+
+    function engineering(value, unit) {
+      const absolute = Math.abs(value);
+      const prefixes = [
+        [1e9, 'G'], [1e6, 'M'], [1e3, 'k'], [1, ''], [1e-3, 'm'], [1e-6, 'µ'], [1e-9, 'n'], [1e-12, 'p']
+      ];
+      const selected = prefixes.find(([factor]) => absolute >= factor) || [1e-12, 'p'];
+      return `${compactNumber(value / selected[0])} ${selected[1]}${unit}`;
+    }
+
+    function updateResistorBands() {
+      const d1 = colorByName(bandSelects.digit1.value);
+      const d2 = colorByName(bandSelects.digit2.value);
+      const d3 = colorByName(bandSelects.digit3.value);
+      const multiplier = colorByName(bandSelects.multiplier.value);
+      const tolerance = colorByName(bandSelects.tolerance.value);
+      const significant = bandMode === 4 ? d1.digit * 10 + d2.digit : d1.digit * 100 + d2.digit * 10 + d3.digit;
+      const resistance = significant * multiplier.multiplier;
+      const min = resistance * (1 - tolerance.tolerance / 100);
+      const max = resistance * (1 + tolerance.tolerance / 100);
+
+      const bands = [d1, d2, d3, multiplier, tolerance];
+      bands.forEach((color, index) => { document.getElementById(`resBand${index + 1}`).setAttribute('fill', color.hex); });
+      const thirdBand = document.getElementById('resBand3');
+      const multiplierBand = document.getElementById('resBand4');
+      if (bandMode === 4) {
+        thirdBand.hidden = true;
+        document.getElementById('band3Wrap').hidden = true;
+        document.getElementById('resBand1').setAttribute('x', '184');
+        document.getElementById('resBand2').setAttribute('x', '224');
+        multiplierBand.setAttribute('x', '270');
+      } else {
+        thirdBand.hidden = false;
+        document.getElementById('band3Wrap').hidden = false;
+        document.getElementById('resBand1').setAttribute('x', '174');
+        document.getElementById('resBand2').setAttribute('x', '207');
+        thirdBand.setAttribute('x', '240');
+        multiplierBand.setAttribute('x', '282');
+      }
+      document.getElementById('resistorResult').textContent = `${engineering(resistance, 'Ω')} ±${tolerance.tolerance}%`;
+      document.getElementById('resistorRange').textContent = `实际允许范围：${engineering(min, 'Ω')} ～ ${engineering(max, 'Ω')}`;
+    }
+
+    document.querySelectorAll('[data-band-mode]').forEach((button) => button.addEventListener('click', () => {
+      bandMode = Number(button.dataset.bandMode);
+      document.querySelectorAll('[data-band-mode]').forEach((item) => item.classList.toggle('is-active', item === button));
+      updateResistorBands();
+    }));
+    Object.values(bandSelects).forEach((select) => select.addEventListener('change', updateResistorBands));
+
+    const ohmVoltage = document.getElementById('ohmVoltage');
+    const ohmResistance = document.getElementById('ohmResistance');
+    function updateOhm() {
+      const voltage = Number(ohmVoltage.value);
+      const resistance = 10 ** (Number(ohmResistance.value) / 100);
+      const current = voltage / resistance;
+      const power = voltage * current;
+      const ratings = [0.125, 0.25, 0.5, 1, 2, 3, 5, 10, 25, 50];
+      const rating = ratings.find((item) => item >= power * 2);
+      document.getElementById('ohmVoltageValue').textContent = engineering(voltage, 'V');
+      document.getElementById('ohmResistanceValue').textContent = engineering(resistance, 'Ω');
+      document.getElementById('ohmCurrent').textContent = engineering(current, 'A');
+      document.getElementById('ohmPower').textContent = engineering(power, 'W');
+      document.getElementById('ohmRating').textContent = rating ? `≥ ${rating} W` : '> 50 W，需专门设计';
+      document.getElementById('circuitRLabel').textContent = `R = ${engineering(resistance, 'Ω')}`;
+      document.getElementById('circuitVLabel').textContent = engineering(voltage, 'V');
+      document.getElementById('circuitILabel').textContent = `I = ${engineering(current, 'A')}`;
+      document.getElementById('currentFlow').style.setProperty('--flow-speed', `${Math.max(0.35, Math.min(2.8, 0.35 / Math.sqrt(Math.max(current, 1e-8)) * 0.08))}s`);
+      const status = document.getElementById('ohmStatus');
+      status.className = 'status';
+      if (power > 2) {
+        status.classList.add('is-danger');
+        status.textContent = '功率很高：普通小电阻会快速过热，请降低电压或增大阻值，并按功率电阻规范设计。';
+      } else if (power > 0.1) {
+        status.classList.add('is-warning');
+        status.textContent = '已经进入明显发热区间，应按最坏温度降额并留出散热与安全间距。';
+      } else {
+        status.textContent = '当前是低功率示例，仍需核对电阻耐压、容差与环境温度。';
+      }
+    }
+    [ohmVoltage, ohmResistance].forEach((input) => input.addEventListener('input', updateOhm));
+
+    function curvePath(fn) {
+      const points = [];
+      for (let step = 0; step <= 100; step += 1) {
+        const ratio = step / 20;
+        const x = 45 + ratio / 5 * 480;
+        const y = 214 - fn(ratio) * 164;
+        points.push(`${step === 0 ? 'M' : 'L'}${x.toFixed(2)} ${y.toFixed(2)}`);
+      }
+      return points.join(' ');
+    }
+
+    const capInputs = {
+      voltage: document.getElementById('capVoltage'), resistance: document.getElementById('capResistance'),
+      capacitance: document.getElementById('capValue'), time: document.getElementById('capTime')
+    };
+    let capMode = 'charge';
+
+    function updateCapacitor() {
+      const voltage = Number(capInputs.voltage.value);
+      const resistance = 10 ** Number(capInputs.resistance.value);
+      const capacitance = 10 ** Number(capInputs.capacitance.value);
+      const ratio = Number(capInputs.time.value);
+      const tau = resistance * capacitance;
+      const normalizedVoltage = capMode === 'charge' ? 1 - Math.exp(-ratio) : Math.exp(-ratio);
+      const nowVoltage = voltage * normalizedVoltage;
+      const current = voltage / resistance * Math.exp(-ratio);
+      const energy = 0.5 * capacitance * nowVoltage ** 2;
+      document.getElementById('capVoltageValue').textContent = engineering(voltage, 'V');
+      document.getElementById('capResistanceValue').textContent = engineering(resistance, 'Ω');
+      document.getElementById('capValueValue').textContent = engineering(capacitance, 'F');
+      document.getElementById('capTimeValue').textContent = `${compactNumber(ratio)} τ = ${engineering(ratio * tau, 's')}`;
+      document.getElementById('capTau').textContent = engineering(tau, 's');
+      document.getElementById('capNowVoltage').textContent = engineering(nowVoltage, 'V');
+      document.getElementById('capNowCurrent').textContent = engineering(current, 'A');
+      document.getElementById('capFormula').textContent = capMode === 'charge' ? 'uC(t) = US × (1 − e^(−t/RC))' : 'uC(t) = U0 × e^(−t/RC)';
+      document.getElementById('capChartTitle').textContent = capMode === 'charge' ? '电容充电曲线' : '电容放电曲线';
+      document.getElementById('capCurve').setAttribute('d', curvePath((x) => capMode === 'charge' ? 1 - Math.exp(-x) : Math.exp(-x)));
+      const markerX = 45 + ratio / 5 * 480;
+      const markerY = 214 - normalizedVoltage * 164;
+      document.getElementById('capMarker').setAttribute('cx', markerX);
+      document.getElementById('capMarker').setAttribute('cy', markerY);
+      const percentage = normalizedVoltage * 100;
+      document.getElementById('capStatus').textContent = `${compactNumber(ratio)}τ 时电压为 ${compactNumber(percentage)}%；当前储能约 ${engineering(energy, 'J')}。`;
+    }
+
+    document.querySelectorAll('[data-cap-mode]').forEach((button) => button.addEventListener('click', () => {
+      capMode = button.dataset.capMode;
+      document.querySelectorAll('[data-cap-mode]').forEach((item) => item.classList.toggle('is-active', item === button));
+      updateCapacitor();
+    }));
+    Object.values(capInputs).forEach((input) => input.addEventListener('input', updateCapacitor));
+
+    const indInputs = {
+      voltage: document.getElementById('indVoltage'), resistance: document.getElementById('indResistance'),
+      inductance: document.getElementById('indValue'), time: document.getElementById('indTime')
+    };
+
+    function updateInductor() {
+      const voltage = Number(indInputs.voltage.value);
+      const resistance = 10 ** Number(indInputs.resistance.value);
+      const inductance = 10 ** Number(indInputs.inductance.value);
+      const ratio = Number(indInputs.time.value);
+      const tau = inductance / resistance;
+      const normalizedCurrent = 1 - Math.exp(-ratio);
+      const finalCurrent = voltage / resistance;
+      const current = finalCurrent * normalizedCurrent;
+      const inductorVoltage = voltage * Math.exp(-ratio);
+      const initialSlope = voltage / inductance;
+      const energy = 0.5 * inductance * current ** 2;
+      document.getElementById('indVoltageValue').textContent = engineering(voltage, 'V');
+      document.getElementById('indResistanceValue').textContent = engineering(resistance, 'Ω');
+      document.getElementById('indValueValue').textContent = engineering(inductance, 'H');
+      document.getElementById('indTimeValue').textContent = `${compactNumber(ratio)} τ = ${engineering(ratio * tau, 's')}`;
+      document.getElementById('indTau').textContent = engineering(tau, 's');
+      document.getElementById('indCurrent').textContent = engineering(current, 'A');
+      document.getElementById('indNowVoltage').textContent = engineering(inductorVoltage, 'V');
+      document.getElementById('indFinalCurrent').textContent = engineering(finalCurrent, 'A');
+      document.getElementById('indSlope').textContent = engineering(initialSlope, 'A/s');
+      document.getElementById('indEnergy').textContent = engineering(energy, 'J');
+      document.getElementById('indCurve').setAttribute('d', curvePath((x) => 1 - Math.exp(-x)));
+      document.getElementById('indMarker').setAttribute('cx', 45 + ratio / 5 * 480);
+      document.getElementById('indMarker').setAttribute('cy', 214 - normalizedCurrent * 164);
+      const status = document.getElementById('indStatus');
+      status.className = finalCurrent > 2 ? 'status is-danger' : 'status is-warning';
+      status.textContent = `理想稳态电流为 ${engineering(finalCurrent, 'A')}；必须再核对线圈 DCR、饱和电流和温升。`;
+    }
+
+    Object.values(indInputs).forEach((input) => input.addEventListener('input', updateInductor));
+
+    updateResistorBands();
+    updateOhm();
+    updateCapacitor();
+    updateInductor();
+  </script>
+</body>
+</html>

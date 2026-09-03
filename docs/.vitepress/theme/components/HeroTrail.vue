@@ -8,6 +8,7 @@ const milestones = [
   { label: '机器人', detail: '具身智能', href: '/posts/robot/', emoji: '🤖', start: '#0f766e', end: '#14b8a6', rgb: '15, 118, 110' },
   { label: 'AI', detail: '模型基础', href: '/posts/AI基础/', emoji: '🧠', start: '#2563eb', end: '#06b6d4', rgb: '37, 99, 235' },
   { label: 'LLM', detail: '训练评测', href: '/posts/LLM/', emoji: '✨', start: '#7c3aed', end: '#2563eb', rgb: '124, 58, 237' },
+  { label: '电工', detail: '电路元件', href: '/posts/电工基础/', emoji: '⚡', start: '#d97706', end: '#f59e0b', rgb: '217, 119, 6' },
   { label: 'Java', detail: '后端基础', href: '/posts/Java/', emoji: '☕', start: '#ea580c', end: '#dc2626', rgb: '234, 88, 12' },
   { label: '数据库', detail: '存储检索', href: '/posts/Database/', emoji: '🗄️', start: '#16a34a', end: '#0d9488', rgb: '22, 163, 74' },
   { label: '测试', detail: '质量效率', href: '/posts/Test/', emoji: '✅', start: '#db2777', end: '#f59e0b', rgb: '219, 39, 119' }
@@ -508,7 +509,7 @@ onUnmounted(() => window.clearTimeout(animationTimer))
   right: 28px;
   left: 28px;
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 4px;
 }
 
@@ -642,7 +643,7 @@ onUnmounted(() => window.clearTimeout(animationTimer))
     left: 61px;
     width: 5px;
     height: auto;
-    background: linear-gradient(180deg, #0f766e, #2563eb, #7c3aed, #ea580c, #16a34a, #db2777);
+    background: linear-gradient(180deg, #0f766e, #2563eb, #7c3aed, #d97706, #ea580c, #16a34a, #db2777);
   }
 
   .hero-trail__robot-lane {

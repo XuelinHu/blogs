@@ -69,6 +69,7 @@ export default defineConfig({
         ]
       },
       { text: '大语言模型', link: '/posts/LLM/' },
+      { text: '电工基础', link: '/posts/电工基础/' },
       {
         text: '后端与数据',
         items: [

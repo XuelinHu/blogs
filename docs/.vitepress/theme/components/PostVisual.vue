@@ -149,6 +149,17 @@ defineProps<{
         <circle class="scene__particle scene__particle--two" cx="61" cy="40" r="2" />
       </g>
 
+      <g v-else-if="kind === 'circuit'" class="scene scene--circuit">
+        <path class="scene__circuit-wire" d="M16 58h20m34 0h17m24 0h33M36 58l5-10 8 20 8-20 8 20 5-10M87 40v36m13-36v36" />
+        <path class="scene__coil" d="M112 58c0-13 11-13 11 0s11 13 11 0 10-13 10 0" />
+        <circle class="scene__terminal" cx="16" cy="58" r="4" />
+        <circle class="scene__terminal" cx="144" cy="58" r="4" />
+        <path class="scene__spark" d="M29 25v13m-6-6h12M126 20l-5 10h7l-5 11" />
+        <text class="scene__circuit-label" x="50" y="88">R</text>
+        <text class="scene__circuit-label" x="93" y="88">C</text>
+        <text class="scene__circuit-label" x="128" y="88">L</text>
+      </g>
+
       <g v-else-if="kind === 'testing'" class="scene scene--testing">
         <rect class="scene__window" x="24" y="22" width="112" height="72" rx="10" />
         <path class="scene__window-bar" d="M24 38h112" />
@@ -270,6 +281,8 @@ defineProps<{
 .scene__coffee,
 .scene__db-body,
 .scene__db-glow,
+.scene__circuit-wire,
+.scene__coil,
 .scene__window-bar,
 .scene__check,
 .scene__test-line,
@@ -334,6 +347,10 @@ defineProps<{
 .scene__db-top { fill: rgb(255 255 255 / 0.24); stroke: currentColor; stroke-width: 2.5; }
 .scene__db-body { stroke-width: 2.5; }
 .scene__db-glow { stroke-width: 2; opacity: 0.65; }
+.scene__circuit-wire { stroke-width: 3; }
+.scene__coil { fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; }
+.scene__terminal { fill: rgb(255 255 255 / 0.3); stroke: currentColor; stroke-width: 2.5; }
+.scene__circuit-label { fill: currentColor; font-size: 11px; font-weight: 800; text-anchor: middle; }
 .scene__window-bar { stroke-width: 2; opacity: 0.75; }
 .scene__check { stroke-width: 4; }
 .scene__test-line { stroke-width: 3; opacity: 0.7; }
@@ -363,6 +380,8 @@ defineProps<{
 .post-visual:hover .scene__node { animation: node-pulse 0.9s ease-in-out infinite alternate; }
 .post-visual:hover .scene__steam { animation: steam-rise 1.2s ease-in-out infinite; }
 .post-visual:hover .scene__db-top { animation: db-lift 0.9s ease-in-out infinite alternate; }
+.post-visual:hover .scene__circuit-wire,
+.post-visual:hover .scene__coil { animation: circuit-glow 0.9s ease-in-out infinite alternate; }
 .post-visual:hover .scene__cursor { animation: cursor-blink 0.7s steps(1) infinite; }
 
 @keyframes dash-run { to { stroke-dashoffset: -22; } }
@@ -375,6 +394,7 @@ defineProps<{
 @keyframes node-pulse { to { filter: drop-shadow(0 0 7px white); } }
 @keyframes steam-rise { 50% { transform: translateY(-5px); opacity: 0.45; } }
 @keyframes db-lift { to { transform: translateY(-3px); } }
+@keyframes circuit-glow { to { filter: drop-shadow(0 0 6px white); } }
 @keyframes cursor-blink { 50% { opacity: 0; } }
 
 @media (prefers-reduced-motion: reduce) {
