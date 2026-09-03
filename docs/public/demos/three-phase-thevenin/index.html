@@ -1,0 +1,705 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>三相交流电与戴维南定理交互实验</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f5f7f8;
+      --panel: #fff;
+      --soft: #f0f4f6;
+      --text: #182126;
+      --muted: #63727a;
+      --line: #d9e1e5;
+      --brand: #176f82;
+      --brand-soft: #dff3f6;
+      --a: #d63a3a;
+      --b: #2671c6;
+      --c: #d39310;
+      --neutral: #59656b;
+      --danger: #b4232c;
+      --danger-soft: #fff0f1;
+      --warning: #a65b00;
+      --warning-soft: #fff5df;
+      --ok: #14705b;
+      --ok-soft: #e1f5ee;
+      --shadow: 0 10px 26px rgb(35 57 67 / 0.07);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 5% 0%, rgb(23 111 130 / 0.09), transparent 28%),
+        radial-gradient(circle at 95% 0%, rgb(211 147 16 / 0.09), transparent 26%),
+        var(--bg);
+      font-family: Inter, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+      line-height: 1.55;
+    }
+    button, input, select { font: inherit; }
+    .app { width: min(1160px, calc(100% - 24px)); margin: 0 auto; padding: 22px 0 36px; }
+    .hero {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 16px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 20px 22px;
+      background: rgb(255 255 255 / 0.88);
+      box-shadow: var(--shadow);
+    }
+    .hero h1 { margin: 0; font-size: clamp(22px, 4vw, 34px); line-height: 1.2; }
+    .hero p { margin: 7px 0 0; color: var(--muted); font-size: 14px; }
+    .hero__badge { flex: 0 0 auto; border-radius: 14px; padding: 12px 15px; color: #fff; background: linear-gradient(135deg, var(--brand), #2b82c7); font-weight: 900; }
+
+    .tabs {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 7px;
+      margin-bottom: 17px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 7px;
+      background: rgb(245 247 248 / 0.94);
+      backdrop-filter: blur(12px);
+    }
+    .tab { min-height: 43px; border: 0; border-radius: 9px; color: var(--muted); background: transparent; font-weight: 800; cursor: pointer; }
+    .tab:hover { color: var(--brand); background: var(--brand-soft); }
+    .tab[aria-selected="true"] { color: #fff; background: var(--brand); box-shadow: 0 6px 14px rgb(23 111 130 / 0.2); }
+    .tab:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid rgb(38 113 198 / 0.24); outline-offset: 2px; }
+    .panel[hidden] { display: none; }
+    .panel { animation: panel-in 0.22s ease; }
+    .section-title { margin: 4px 0 4px; font-size: 22px; }
+    .section-copy { margin: 0 0 16px; color: var(--muted); font-size: 14px; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .card { min-width: 0; border: 1px solid var(--line); border-radius: 16px; padding: 17px; background: var(--panel); box-shadow: 0 6px 18px rgb(35 57 67 / 0.05); }
+    .card--wide { grid-column: 1 / -1; }
+    .card h2, .card h3 { margin: 0 0 5px; line-height: 1.3; }
+    .card h2 { font-size: 18px; }
+    .card h3 { font-size: 15px; }
+    .hint { margin: 0 0 13px; color: var(--muted); font-size: 13px; }
+    .controls { display: grid; gap: 12px; }
+    .control { display: grid; gap: 5px; }
+    .control__label { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; color: var(--muted); font-size: 13px; font-weight: 700; }
+    .control__value { color: var(--text); font-variant-numeric: tabular-nums; font-weight: 900; }
+    input[type="range"] { width: 100%; height: 7px; border-radius: 999px; appearance: none; background: linear-gradient(90deg, var(--brand), #82c8d2); cursor: pointer; }
+    input[type="range"]::-webkit-slider-thumb { width: 20px; height: 20px; border: 3px solid #fff; border-radius: 50%; appearance: none; background: var(--brand); box-shadow: 0 2px 7px rgb(0 0 0 / 0.2); }
+    select { min-height: 38px; border: 1px solid var(--line); border-radius: 9px; padding: 0 9px; color: var(--text); background: #fff; }
+    .button-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+    .pill { border: 1px solid var(--line); border-radius: 999px; padding: 7px 13px; color: var(--muted); background: #fff; cursor: pointer; }
+    .pill.is-active { border-color: var(--brand); color: var(--brand); background: var(--brand-soft); font-weight: 900; }
+    .pill.is-danger { border-color: #efb5ba; color: var(--danger); background: var(--danger-soft); }
+    .metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; margin-top: 12px; }
+    .metrics--four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .metric { min-width: 0; border: 1px solid var(--line); border-radius: 11px; padding: 9px; background: var(--soft); }
+    .metric small { display: block; color: var(--muted); font-size: 10px; }
+    .metric strong { display: block; overflow-wrap: anywhere; font-size: 15px; font-variant-numeric: tabular-nums; }
+    .metric--a { border-top: 3px solid var(--a); }
+    .metric--b { border-top: 3px solid var(--b); }
+    .metric--c { border-top: 3px solid var(--c); }
+    .formula { margin-top: 12px; border-radius: 10px; padding: 10px 12px; color: #315560; background: var(--brand-soft); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 12px; overflow-wrap: anywhere; }
+    .status { margin-top: 12px; border-left: 4px solid var(--ok); border-radius: 9px; padding: 10px 12px; color: #135e4e; background: var(--ok-soft); font-size: 12px; }
+    .status.is-warning { border-left-color: var(--warning); color: #794500; background: var(--warning-soft); }
+    .status.is-danger { border-left-color: var(--danger); color: #8f2228; background: var(--danger-soft); }
+    .safety { display: flex; gap: 10px; margin-top: 13px; border: 1px solid #efb5ba; border-radius: 11px; padding: 11px 12px; color: #8f2228; background: var(--danger-soft); font-size: 12px; }
+    .safety__icon { flex: 0 0 auto; font-size: 20px; line-height: 1; }
+    .chart, .diagram { display: block; width: 100%; height: auto; }
+    .grid-line { stroke: #e2e8eb; stroke-width: 1; }
+    .axis { fill: none; stroke: #74838a; stroke-width: 1.6; }
+    .wave-a, .wave-b, .wave-c { fill: none; stroke-width: 3; stroke-linecap: round; }
+    .wave-a, .vector-a { stroke: var(--a); }
+    .wave-b, .vector-b { stroke: var(--b); }
+    .wave-c, .vector-c { stroke: var(--c); }
+    .marker-line { stroke: #45565e; stroke-width: 1.5; stroke-dasharray: 4 4; }
+    .dot-a { fill: var(--a); }
+    .dot-b { fill: var(--b); }
+    .dot-c { fill: var(--c); }
+    .vector-a, .vector-b, .vector-c, .vector-n { stroke-width: 4; stroke-linecap: round; }
+    .vector-n { stroke: var(--neutral); stroke-dasharray: 5 4; }
+    .svg-text { fill: #596970; font-size: 11px; }
+    .svg-text--strong { fill: #26383f; font-size: 12px; font-weight: 900; }
+    .wire { fill: none; stroke: #60727a; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+    .wire-a { stroke: var(--a); }
+    .wire-b { stroke: var(--b); }
+    .wire-c { stroke: var(--c); }
+    .resistor { fill: #fff8df; stroke: #b37b0d; stroke-width: 2; }
+    .source { fill: #eef8fa; stroke: var(--brand); stroke-width: 2.5; }
+    .load-table { width: 100%; margin-top: 12px; border-collapse: collapse; font-size: 12px; }
+    .load-table th, .load-table td { border-bottom: 1px solid var(--line); padding: 8px 5px; text-align: right; }
+    .load-table th:first-child, .load-table td:first-child { text-align: left; }
+    .load-table th { color: var(--muted); font-weight: 750; }
+    .phase-a { color: var(--a); }
+    .phase-b { color: var(--b); }
+    .phase-c { color: var(--c); }
+    .compare { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; margin-top: 12px; }
+    .compare__item { border: 1px solid var(--line); border-radius: 11px; padding: 10px; background: var(--soft); text-align: center; }
+    .compare__item strong { display: block; font-size: 15px; }
+    .compare__item small { color: var(--muted); }
+    .legend { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px; color: var(--muted); font-size: 11px; }
+    .legend span::before { display: inline-block; width: 10px; height: 3px; margin-right: 5px; border-radius: 2px; content: ""; vertical-align: middle; background: currentColor; }
+    .legend .phase-a::before { background: var(--a); }
+    .legend .phase-b::before { background: var(--b); }
+    .legend .phase-c::before { background: var(--c); }
+    @keyframes panel-in { from { opacity: 0; transform: translateY(4px); } }
+
+    @media (max-width: 760px) {
+      .app { width: min(100% - 14px, 1160px); padding-top: 8px; }
+      .hero { align-items: flex-start; padding: 16px; }
+      .hero__badge { padding: 8px 10px; font-size: 12px; }
+      .tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .grid { grid-template-columns: 1fr; }
+      .card--wide { grid-column: auto; }
+      .metrics, .metrics--four { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .compare { grid-template-columns: 1fr; }
+      .card { padding: 14px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .panel { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="hero">
+      <div>
+        <h1>三相交流电与等效电路实验台</h1>
+        <p>拖动参数，观察波形、相量、中性线电流与负载端口怎样一起变化。</p>
+      </div>
+      <div class="hero__badge">3Φ · Y/Δ · Vth</div>
+    </header>
+
+    <nav class="tabs" role="tablist" aria-label="实验选择">
+      <button class="tab" id="tab-wave" role="tab" aria-selected="true" data-panel="wave">三相波形</button>
+      <button class="tab" id="tab-connect" role="tab" aria-selected="false" data-panel="connect">Y / Δ 接法</button>
+      <button class="tab" id="tab-neutral" role="tab" aria-selected="false" data-panel="neutral">不平衡与断零线</button>
+      <button class="tab" id="tab-thevenin" role="tab" aria-selected="false" data-panel="thevenin">戴维南 / 诺顿</button>
+    </nav>
+
+    <section class="panel" id="panel-wave" role="tabpanel" aria-labelledby="tab-wave">
+      <h2 class="section-title">三条波相差 120°，不是轮流通电</h2>
+      <p class="section-copy">横轴是电角度。拖动观察线会同步更新波形交点和右侧三个旋转相量。</p>
+      <div class="grid">
+        <article class="card card--wide">
+          <div class="controls">
+            <div class="control"><div class="control__label"><label for="waveAngle">观察角度 θ</label><output class="control__value" id="waveAngleValue">30°</output></div><input id="waveAngle" type="range" min="0" max="360" value="30" step="1"></div>
+          </div>
+          <div class="button-row" style="margin-top:12px">
+            <button class="pill" id="wavePlay" type="button">▶ 自动播放</button>
+            <label class="control__label" style="margin-left:auto"><span>相序</span><select id="waveSequence"><option value="abc">ABC 正序</option><option value="acb">ACB 逆序</option></select></label>
+          </div>
+        </article>
+
+        <article class="card">
+          <h2>瞬时电压波形</h2>
+          <p class="hint">纵轴按峰值归一化，`+1` 对应相电压峰值。</p>
+          <svg class="chart" viewBox="0 0 680 300" role="img" aria-label="三相正弦电压波形">
+            <path class="grid-line" d="M45 45h600M45 95h600M45 145h600M45 195h600M45 245h600M45 35v220M195 35v220M345 35v220M495 35v220M645 35v220"/>
+            <path class="axis" d="M45 145h600M45 35v220"/>
+            <path class="wave-a" id="wavePathA"/><path class="wave-b" id="wavePathB"/><path class="wave-c" id="wavePathC"/>
+            <path class="marker-line" id="waveMarker" d="M95 35v220"/>
+            <circle class="dot-a" id="waveDotA" r="5"/><circle class="dot-b" id="waveDotB" r="5"/><circle class="dot-c" id="waveDotC" r="5"/>
+            <text class="svg-text" x="39" y="49" text-anchor="end">+1</text><text class="svg-text" x="39" y="149" text-anchor="end">0</text><text class="svg-text" x="39" y="249" text-anchor="end">−1</text>
+            <text class="svg-text" x="45" y="272">0°</text><text class="svg-text" x="185" y="272">90°</text><text class="svg-text" x="332" y="272">180°</text><text class="svg-text" x="480" y="272">270°</text><text class="svg-text" x="628" y="272">360°</text>
+          </svg>
+          <div class="legend"><span class="phase-a">A 相</span><span class="phase-b">B 相</span><span class="phase-c">C 相</span></div>
+        </article>
+
+        <article class="card">
+          <h2>相量图</h2>
+          <p class="hint">三个箭头等长，相邻夹角始终为 `120°`。</p>
+          <svg class="diagram" viewBox="0 0 360 300" role="img" aria-label="三相电压相量图">
+            <circle cx="180" cy="145" r="100" fill="#f7fafb" stroke="#d9e1e5"/>
+            <path class="grid-line" d="M65 145h230M180 30v230"/>
+            <line class="vector-a" id="vectorA" x1="180" y1="145" x2="270" y2="145"/>
+            <line class="vector-b" id="vectorB" x1="180" y1="145" x2="135" y2="223"/>
+            <line class="vector-c" id="vectorC" x1="180" y1="145" x2="135" y2="67"/>
+            <circle cx="180" cy="145" r="5" fill="#25373e"/>
+            <text class="svg-text--strong phase-a" id="vectorLabelA">A</text><text class="svg-text--strong phase-b" id="vectorLabelB">B</text><text class="svg-text--strong phase-c" id="vectorLabelC">C</text>
+          </svg>
+          <div class="metrics">
+            <div class="metric metric--a"><small>uA / 峰值</small><strong id="waveValueA">0.500</strong></div>
+            <div class="metric metric--b"><small>uB / 峰值</small><strong id="waveValueB">−1.000</strong></div>
+            <div class="metric metric--c"><small>uC / 峰值</small><strong id="waveValueC">0.500</strong></div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-connect" role="tabpanel" aria-labelledby="tab-connect" hidden>
+      <h2 class="section-title">Y 和 Δ：同一个 √3 出现在不同位置</h2>
+      <p class="section-copy">以下为平衡、正弦、线性阻抗模型。阻抗表示每一相支路的阻抗大小。</p>
+      <div class="grid">
+        <article class="card">
+          <h2>连接和负载参数</h2>
+          <div class="button-row"><button class="pill is-active" data-connection="y">Y 星形</button><button class="pill" data-connection="delta">Δ 三角形</button></div>
+          <div class="controls">
+            <div class="control"><div class="control__label"><label for="lineVoltage">线电压 UL</label><output class="control__value" id="lineVoltageValue">380 V</output></div><input id="lineVoltage" type="range" min="24" max="690" value="380" step="1"></div>
+            <div class="control"><div class="control__label"><label for="phaseImpedance">每相阻抗 |Z|</label><output class="control__value" id="phaseImpedanceValue">38 Ω</output></div><input id="phaseImpedance" type="range" min="1" max="200" value="38" step="1"></div>
+            <div class="control"><div class="control__label"><label for="powerFactor">功率因数 cosφ</label><output class="control__value" id="powerFactorValue">0.85</output></div><input id="powerFactor" type="range" min="0.5" max="1" value="0.85" step="0.01"></div>
+          </div>
+          <div class="formula" id="connectionFormula">Y：UP = UL / √3，IL = IP = UP / |Z|</div>
+        </article>
+
+        <article class="card">
+          <h2 id="connectionDiagramTitle">Y 形连接</h2>
+          <svg class="diagram" viewBox="0 0 520 300" role="img" aria-label="Y形或三角形三相负载连接图">
+            <g id="diagramY">
+              <path class="wire wire-a" d="M42 60h116l94 90"/><path class="wire wire-b" d="M42 150h210"/><path class="wire wire-c" d="M42 240h116l94-90"/>
+              <rect class="resistor" x="151" y="87" width="86" height="25" rx="6" transform="rotate(43 194 100)"/><rect class="resistor" x="160" y="137" width="86" height="25" rx="6"/><rect class="resistor" x="151" y="188" width="86" height="25" rx="6" transform="rotate(-43 194 200)"/>
+              <circle cx="252" cy="150" r="7" fill="#59656b"/><path class="wire" d="M252 150h100" stroke-dasharray="6 5"/><text class="svg-text--strong" x="365" y="155">N</text>
+            </g>
+            <g id="diagramDelta" hidden>
+              <path class="wire wire-a" d="M42 50h135"/><path class="wire wire-b" d="M42 150h85"/><path class="wire wire-c" d="M42 250h135"/>
+              <path class="wire" d="M177 50L127 150l50 100 126-200Z"/>
+              <rect class="resistor" x="126" y="88" width="75" height="24" rx="6" transform="rotate(-63 164 100)"/><rect class="resistor" x="126" y="188" width="75" height="24" rx="6" transform="rotate(63 164 200)"/><rect class="resistor" x="203" y="38" width="75" height="24" rx="6"/>
+            </g>
+            <text class="svg-text--strong phase-a" x="20" y="64">A</text><text class="svg-text--strong phase-b" x="20" y="154">B</text><text class="svg-text--strong phase-c" x="20" y="244">C</text>
+            <text class="svg-text" x="310" y="80" id="diagramVoltageText">每相承受 UL/√3</text><text class="svg-text" x="310" y="105" id="diagramCurrentText">线电流 = 相电流</text>
+          </svg>
+        </article>
+
+        <article class="card card--wide">
+          <h2>线量、相量与功率</h2>
+          <div class="metrics metrics--four">
+            <div class="metric"><small>相电压 UP</small><strong id="phaseVoltageResult">219 V</strong></div>
+            <div class="metric"><small>相电流 IP</small><strong id="phaseCurrentResult">5.77 A</strong></div>
+            <div class="metric"><small>线电流 IL</small><strong id="lineCurrentResult">5.77 A</strong></div>
+            <div class="metric"><small>电流滞后角 φ</small><strong id="phaseAngleResult">31.8°</strong></div>
+            <div class="metric"><small>视在功率 S</small><strong id="apparentPower">3.80 kVA</strong></div>
+            <div class="metric"><small>有功功率 P</small><strong id="activePower">3.23 kW</strong></div>
+            <div class="metric"><small>无功功率 Q</small><strong id="reactivePower">2.00 kvar</strong></div>
+            <div class="metric"><small>三相关系</small><strong id="connectionRelation">UL=√3UP</strong></div>
+          </div>
+          <div class="status is-warning" id="connectionStatus">相同线电压和每相阻抗下，Δ 接的总功率会是 Y 接的 3 倍。</div>
+          <div class="safety"><span class="safety__icon">⚠</span><span>这些数值只展示理想稳态关系。电机是否允许 Y/Δ 切换必须看绕组额定电压、铭牌、保护和接触器互锁。</span></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-neutral" role="tabpanel" aria-labelledby="tab-neutral" hidden>
+      <h2 class="section-title">Y 形负载不平衡：零线连接与断开是两种电路</h2>
+      <p class="section-copy">模型使用三相理想电源和三个纯电阻。连接零线时星点固定；断开时依据 KCL 自动计算星点漂移。</p>
+      <div class="grid">
+        <article class="card">
+          <h2>三相负载</h2>
+          <div class="button-row"><button class="pill is-active" id="neutralToggle" type="button">中性线：已连接</button><button class="pill" id="neutralBalance" type="button">恢复平衡</button></div>
+          <div class="controls">
+            <div class="control"><div class="control__label"><label for="neutralVoltage">电源相电压 UP</label><output class="control__value" id="neutralVoltageValue">230 V</output></div><input id="neutralVoltage" type="range" min="12" max="240" value="230" step="1"></div>
+            <div class="control"><div class="control__label phase-a"><label for="loadA">A 相负载 RA</label><output class="control__value" id="loadAValue">46 Ω</output></div><input id="loadA" type="range" min="10" max="200" value="46" step="1"></div>
+            <div class="control"><div class="control__label phase-b"><label for="loadB">B 相负载 RB</label><output class="control__value" id="loadBValue">92 Ω</output></div><input id="loadB" type="range" min="10" max="200" value="92" step="1"></div>
+            <div class="control"><div class="control__label phase-c"><label for="loadC">C 相负载 RC</label><output class="control__value" id="loadCValue">23 Ω</output></div><input id="loadC" type="range" min="10" max="200" value="23" step="1"></div>
+          </div>
+          <div class="formula" id="neutralFormula">IN = −(IA + IB + IC)，相量必须带角度相加</div>
+        </article>
+
+        <article class="card">
+          <h2>电流相量与中性线合成</h2>
+          <svg class="diagram" viewBox="0 0 400 320" role="img" aria-label="三相负载电流和中性线电流相量图">
+            <circle cx="200" cy="155" r="112" fill="#f8fafb" stroke="#d9e1e5"/><path class="grid-line" d="M68 155h264M200 23v264"/>
+            <line class="vector-a" id="neutralVectorA" x1="200" y1="155"/><line class="vector-b" id="neutralVectorB" x1="200" y1="155"/><line class="vector-c" id="neutralVectorC" x1="200" y1="155"/><line class="vector-n" id="neutralVectorN" x1="200" y1="155"/>
+            <circle cx="200" cy="155" r="5" fill="#26383f"/>
+            <text class="svg-text--strong phase-a" id="neutralLabelA">IA</text><text class="svg-text--strong phase-b" id="neutralLabelB">IB</text><text class="svg-text--strong phase-c" id="neutralLabelC">IC</text><text class="svg-text--strong" id="neutralLabelN">IN</text>
+          </svg>
+          <div class="metrics">
+            <div class="metric metric--a"><small>A 相电流</small><strong id="neutralCurrentA">5 A</strong></div>
+            <div class="metric metric--b"><small>B 相电流</small><strong id="neutralCurrentB">2.5 A</strong></div>
+            <div class="metric metric--c"><small>C 相电流</small><strong id="neutralCurrentC">10 A</strong></div>
+            <div class="metric"><small>中性线电流</small><strong id="neutralCurrentN">6.61 A</strong></div>
+            <div class="metric"><small>星点偏移</small><strong id="neutralShift">0 V</strong></div>
+            <div class="metric"><small>状态</small><strong id="neutralState">四线制</strong></div>
+          </div>
+        </article>
+
+        <article class="card card--wide">
+          <h2>各相负载实际承受值</h2>
+          <table class="load-table">
+            <thead><tr><th>支路</th><th>电阻</th><th>负载电压 RMS</th><th>支路电流 RMS</th><th>相对额定电压</th></tr></thead>
+            <tbody>
+              <tr><td class="phase-a">A 相</td><td id="tableRA">46 Ω</td><td id="tableVA">230 V</td><td id="tableIA">5 A</td><td id="tablePA">100%</td></tr>
+              <tr><td class="phase-b">B 相</td><td id="tableRB">92 Ω</td><td id="tableVB">230 V</td><td id="tableIB">2.5 A</td><td id="tablePB">100%</td></tr>
+              <tr><td class="phase-c">C 相</td><td id="tableRC">23 Ω</td><td id="tableVC">230 V</td><td id="tableIC">10 A</td><td id="tablePC">100%</td></tr>
+            </tbody>
+          </table>
+          <div class="status" id="neutralStatus">中性线把负载星点固定在电源中性点，各相负载电压均为 230 V。</div>
+          <div class="safety"><span class="safety__icon">⚠</span><span>“断零线”只是仿真按钮。真实不平衡三相四线系统断零线会造成危险过欠压，禁止通过实际断线来验证。</span></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-thevenin" role="tabpanel" aria-labelledby="tab-thevenin" hidden>
+      <h2 class="section-title">戴维南与诺顿：换一种内部画法，端口结果不变</h2>
+      <p class="section-copy">原网络为带负载的分压器。三个视图只改变左侧网络表示，右侧负载电压和电流完全相同。</p>
+      <div class="grid">
+        <article class="card">
+          <h2>原网络参数</h2>
+          <div class="button-row"><button class="pill is-active" data-source-view="original">原网络</button><button class="pill" data-source-view="thevenin">戴维南</button><button class="pill" data-source-view="norton">诺顿</button></div>
+          <div class="controls">
+            <div class="control"><div class="control__label"><label for="sourceVoltage">电源 VS</label><output class="control__value" id="sourceVoltageValue">12 V</output></div><input id="sourceVoltage" type="range" min="1" max="48" value="12" step="0.5"></div>
+            <div class="control"><div class="control__label"><label for="dividerR1">上臂 R1</label><output class="control__value" id="dividerR1Value">2 kΩ</output></div><input id="dividerR1" type="range" min="2" max="5" value="3.30103" step="0.01"></div>
+            <div class="control"><div class="control__label"><label for="dividerR2">下臂 R2</label><output class="control__value" id="dividerR2Value">4 kΩ</output></div><input id="dividerR2" type="range" min="2" max="5" value="3.60206" step="0.01"></div>
+            <div class="control"><div class="control__label"><label for="loadResistance">负载 RL</label><output class="control__value" id="loadResistanceValue">2 kΩ</output></div><input id="loadResistance" type="range" min="2" max="5" value="3.30103" step="0.01"></div>
+          </div>
+        </article>
+
+        <article class="card">
+          <h2 id="sourceViewTitle">原始分压网络</h2>
+          <svg class="diagram" viewBox="0 0 560 330" role="img" aria-label="原网络、戴维南或诺顿等效电路">
+            <g id="sourceOriginal">
+              <circle class="source" cx="80" cy="172" r="36"/><text class="svg-text--strong" x="80" y="168" text-anchor="middle">VS</text><text class="svg-text" id="svgVs" x="80" y="187" text-anchor="middle">12 V</text>
+              <path class="wire" d="M80 136V70h86M80 208v55h360"/><rect class="resistor" x="166" y="57" width="96" height="26" rx="6"/><text class="svg-text--strong" id="svgR1" x="214" y="50" text-anchor="middle">R1 2 kΩ</text>
+              <path class="wire" d="M262 70h92v54M354 124v15M354 205v58"/><rect class="resistor" x="341" y="139" width="26" height="66" rx="6"/><text class="svg-text--strong" id="svgR2" x="325" y="176" text-anchor="end">R2 4 kΩ</text>
+            </g>
+            <g id="sourceThevenin" hidden>
+              <circle class="source" cx="110" cy="172" r="36"/><text class="svg-text--strong" x="110" y="168" text-anchor="middle">Vth</text><text class="svg-text" id="svgVth" x="110" y="187" text-anchor="middle">8 V</text>
+              <path class="wire" d="M110 136V90h75M110 208v55h330"/><rect class="resistor" x="185" y="77" width="105" height="26" rx="6"/><text class="svg-text--strong" id="svgRth" x="237" y="70" text-anchor="middle">Rth 1.33 kΩ</text><path class="wire" d="M290 90h150v48"/>
+            </g>
+            <g id="sourceNorton" hidden>
+              <circle class="source" cx="110" cy="172" r="36"/><path class="wire" d="M110 192v-40m0 0-8 13m8-13 8 13"/><text class="svg-text" id="svgIn" x="110" y="222" text-anchor="middle">IN 6 mA</text>
+              <path class="wire" d="M110 136V90h330M110 208v55h330M275 90v48M275 205v58"/><rect class="resistor" x="262" y="138" width="26" height="67" rx="6"/><text class="svg-text--strong" id="svgRn" x="250" y="175" text-anchor="end">RN 1.33 kΩ</text>
+            </g>
+            <g>
+              <path class="wire" d="M440 90v48M440 205v58"/><rect class="resistor" x="427" y="138" width="26" height="67" rx="6"/><text class="svg-text--strong" id="svgRl" x="475" y="169">RL 2 kΩ</text><text class="svg-text" id="svgLoadOutput" x="475" y="190">4.8 V / 2.4 mA</text>
+              <circle cx="440" cy="90" r="5" fill="#176f82"/><circle cx="440" cy="263" r="5" fill="#176f82"/>
+            </g>
+          </svg>
+        </article>
+
+        <article class="card">
+          <h2>两个等效参数</h2>
+          <div class="metrics">
+            <div class="metric"><small>开路电压 Vth</small><strong id="theveninVoltage">8 V</strong></div>
+            <div class="metric"><small>等效电阻 Rth</small><strong id="theveninResistance">1.33 kΩ</strong></div>
+            <div class="metric"><small>诺顿电流 IN</small><strong id="nortonCurrent">6 mA</strong></div>
+          </div>
+          <div class="formula">Vth = VS × R2/(R1+R2)<br>Rth = R1 ∥ R2<br>IN = Vth/Rth</div>
+          <div class="status">关闭独立电压源时用短路替代；关闭独立电流源时用开路替代。受控源不能直接关闭。</div>
+        </article>
+
+        <article class="card">
+          <h2>负载结果与最大功率</h2>
+          <div class="metrics metrics--four">
+            <div class="metric"><small>负载电压 VL</small><strong id="loadVoltageResult">4.8 V</strong></div>
+            <div class="metric"><small>负载电流 IL</small><strong id="loadCurrentResult">2.4 mA</strong></div>
+            <div class="metric"><small>负载功率 PL</small><strong id="loadPowerResult">11.5 mW</strong></div>
+            <div class="metric"><small>端口传输效率</small><strong id="loadEfficiency">60%</strong></div>
+          </div>
+          <svg class="chart" viewBox="0 0 560 235" role="img" aria-label="负载功率随负载电阻与戴维南电阻之比变化曲线">
+            <path class="grid-line" d="M45 35h480M45 80h480M45 125h480M45 170h480M45 35v150M165 35v150M285 35v150M405 35v150M525 35v150"/><path class="axis" d="M45 25v160h490"/><path class="wave-a" id="powerCurve"/>
+            <circle id="powerMarker" r="7" fill="#fff" stroke="#176f82" stroke-width="4"/>
+            <text class="svg-text" x="45" y="207">0.01×</text><text class="svg-text" x="155" y="207">0.1×</text><text class="svg-text" x="278" y="207">1×</text><text class="svg-text" x="397" y="207">10×</text><text class="svg-text" x="510" y="207">100× Rth</text>
+          </svg>
+          <div class="status is-warning" id="powerStatus">RL=Rth 时功率最大，但传输效率只有 50%；供电系统通常不以此为设计目标。</div>
+        </article>
+
+        <article class="card card--wide">
+          <h2>等效一致性检查</h2>
+          <div class="compare">
+            <div class="compare__item"><small>原始网络 VL / IL</small><strong id="compareOriginal">4.8 V / 2.4 mA</strong></div>
+            <div class="compare__item"><small>戴维南 VL / IL</small><strong id="compareThevenin">4.8 V / 2.4 mA</strong></div>
+            <div class="compare__item"><small>诺顿 VL / IL</small><strong id="compareNorton">4.8 V / 2.4 mA</strong></div>
+          </div>
+          <div class="safety"><span class="safety__icon">⚠</span><span>诺顿短路电流是端口模型参数，不代表可以在真实电池、市电或未知电源上直接做短路实验。</span></div>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const q = (selector) => document.querySelector(selector);
+    const qa = (selector) => Array.from(document.querySelectorAll(selector));
+    const radians = (degrees) => degrees * Math.PI / 180;
+    const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+
+    function compact(value, digits = 3) {
+      if (!Number.isFinite(value)) return '—';
+      const normalized = Math.abs(value) < 1e-12 ? 0 : value;
+      return Number(normalized.toPrecision(digits)).toString();
+    }
+
+    function engineering(value, unit) {
+      const absolute = Math.abs(value);
+      if (absolute < 1e-10) return `0 ${unit}`;
+      const prefixes = [[1e9, 'G'], [1e6, 'M'], [1e3, 'k'], [1, ''], [1e-3, 'm'], [1e-6, 'µ'], [1e-9, 'n']];
+      const selected = prefixes.find(([factor]) => absolute >= factor) || [1e-9, 'n'];
+      return `${compact(value / selected[0])} ${selected[1]}${unit}`;
+    }
+
+    function complex(real, imaginary = 0) { return { real, imaginary }; }
+    function cAdd(...values) { return values.reduce((sum, value) => complex(sum.real + value.real, sum.imaginary + value.imaginary), complex(0)); }
+    function cScale(value, scalar) { return complex(value.real * scalar, value.imaginary * scalar); }
+    function cSubtract(left, right) { return complex(left.real - right.real, left.imaginary - right.imaginary); }
+    function cAbs(value) { return Math.hypot(value.real, value.imaginary); }
+    function polar(magnitude, angleDegrees) { return complex(magnitude * Math.cos(radians(angleDegrees)), magnitude * Math.sin(radians(angleDegrees))); }
+
+    qa('.tab').forEach((tab) => tab.addEventListener('click', () => {
+      qa('.tab').forEach((item) => item.setAttribute('aria-selected', String(item === tab)));
+      qa('.panel').forEach((panel) => { panel.hidden = panel.id !== `panel-${tab.dataset.panel}`; });
+    }));
+
+    const waveAngle = q('#waveAngle');
+    const waveSequence = q('#waveSequence');
+    const wavePlay = q('#wavePlay');
+    let wavePlaying = false;
+    let waveFrame;
+    let lastFrameTime = 0;
+
+    function phaseOffsets() {
+      return waveSequence.value === 'abc' ? [0, -120, 120] : [0, 120, -120];
+    }
+
+    function sinePath(offset) {
+      const points = [];
+      for (let step = 0; step <= 180; step += 1) {
+        const degree = step * 2;
+        const x = 45 + degree / 360 * 600;
+        const y = 145 - Math.sin(radians(degree + offset)) * 100;
+        points.push(`${step === 0 ? 'M' : 'L'}${x.toFixed(2)} ${y.toFixed(2)}`);
+      }
+      return points.join(' ');
+    }
+
+    function setVector(id, labelId, angle, magnitude = 90) {
+      const endX = 180 + Math.cos(radians(angle)) * magnitude;
+      const endY = 145 - Math.sin(radians(angle)) * magnitude;
+      const vector = q(id);
+      vector.setAttribute('x2', endX);
+      vector.setAttribute('y2', endY);
+      const label = q(labelId);
+      label.setAttribute('x', 180 + Math.cos(radians(angle)) * (magnitude + 16));
+      label.setAttribute('y', 149 - Math.sin(radians(angle)) * (magnitude + 16));
+    }
+
+    function updateWave() {
+      const angle = Number(waveAngle.value);
+      const offsets = phaseOffsets();
+      const values = offsets.map((offset) => Math.sin(radians(angle + offset)));
+      ['A', 'B', 'C'].forEach((phase, index) => {
+        q(`#wavePath${phase}`).setAttribute('d', sinePath(offsets[index]));
+        q(`#waveDot${phase}`).setAttribute('cx', 45 + angle / 360 * 600);
+        q(`#waveDot${phase}`).setAttribute('cy', 145 - values[index] * 100);
+        q(`#waveValue${phase}`).textContent = compact(values[index]);
+        setVector(`#vector${phase}`, `#vectorLabel${phase}`, angle + offsets[index]);
+      });
+      const markerX = 45 + angle / 360 * 600;
+      q('#waveMarker').setAttribute('d', `M${markerX} 35v220`);
+      q('#waveAngleValue').textContent = `${angle}°`;
+    }
+
+    function animateWave(time) {
+      if (!wavePlaying) return;
+      if (time - lastFrameTime > 28) {
+        waveAngle.value = (Number(waveAngle.value) + 1) % 361;
+        updateWave();
+        lastFrameTime = time;
+      }
+      waveFrame = requestAnimationFrame(animateWave);
+    }
+
+    wavePlay.addEventListener('click', () => {
+      wavePlaying = !wavePlaying;
+      wavePlay.classList.toggle('is-active', wavePlaying);
+      wavePlay.textContent = wavePlaying ? '⏸ 暂停' : '▶ 自动播放';
+      if (wavePlaying) waveFrame = requestAnimationFrame(animateWave); else cancelAnimationFrame(waveFrame);
+    });
+    waveAngle.addEventListener('input', updateWave);
+    waveSequence.addEventListener('change', updateWave);
+
+    let connection = 'y';
+    const connectionInputs = [q('#lineVoltage'), q('#phaseImpedance'), q('#powerFactor')];
+    function updateConnection() {
+      const lineVoltage = Number(q('#lineVoltage').value);
+      const impedance = Number(q('#phaseImpedance').value);
+      const powerFactor = Number(q('#powerFactor').value);
+      const phaseVoltage = connection === 'y' ? lineVoltage / Math.sqrt(3) : lineVoltage;
+      const phaseCurrent = phaseVoltage / impedance;
+      const lineCurrent = connection === 'y' ? phaseCurrent : phaseCurrent * Math.sqrt(3);
+      const apparent = Math.sqrt(3) * lineVoltage * lineCurrent;
+      const active = apparent * powerFactor;
+      const reactive = apparent * Math.sqrt(1 - powerFactor ** 2);
+      q('#lineVoltageValue').textContent = engineering(lineVoltage, 'V');
+      q('#phaseImpedanceValue').textContent = engineering(impedance, 'Ω');
+      q('#powerFactorValue').textContent = compact(powerFactor);
+      q('#phaseVoltageResult').textContent = engineering(phaseVoltage, 'V');
+      q('#phaseCurrentResult').textContent = engineering(phaseCurrent, 'A');
+      q('#lineCurrentResult').textContent = engineering(lineCurrent, 'A');
+      q('#phaseAngleResult').textContent = `${compact(Math.acos(powerFactor) * 180 / Math.PI)}°`;
+      q('#apparentPower').textContent = engineering(apparent, 'VA');
+      q('#activePower').textContent = engineering(active, 'W');
+      q('#reactivePower').textContent = engineering(reactive, 'var');
+      q('#connectionRelation').textContent = connection === 'y' ? 'UL=√3UP' : 'IL=√3IP';
+      q('#connectionFormula').textContent = connection === 'y' ? 'Y：UP = UL / √3，IL = IP = UP / |Z|' : 'Δ：UP = UL，IL = √3 × IP，IP = UP / |Z|';
+      q('#connectionDiagramTitle').textContent = connection === 'y' ? 'Y 形连接' : 'Δ 形连接';
+      q('#diagramY').hidden = connection !== 'y';
+      q('#diagramDelta').hidden = connection !== 'delta';
+      q('#diagramVoltageText').textContent = connection === 'y' ? '每相承受 UL/√3' : '每相承受 UL';
+      q('#diagramCurrentText').textContent = connection === 'y' ? '线电流 = 相电流' : '线电流 = √3 × 相电流';
+      q('#connectionStatus').textContent = connection === 'y'
+        ? `当前 Y 接：每相承受 ${engineering(phaseVoltage, 'V')}，三相有功功率为 ${engineering(active, 'W')}。`
+        : `当前 Δ 接：每相承受完整线电压，三相有功功率为 ${engineering(active, 'W')}。`;
+    }
+    qa('[data-connection]').forEach((button) => button.addEventListener('click', () => {
+      connection = button.dataset.connection;
+      qa('[data-connection]').forEach((item) => item.classList.toggle('is-active', item === button));
+      updateConnection();
+    }));
+    connectionInputs.forEach((input) => input.addEventListener('input', updateConnection));
+
+    let neutralConnected = true;
+    const neutralInputs = [q('#neutralVoltage'), q('#loadA'), q('#loadB'), q('#loadC')];
+    function positionCurrentVector(vectorId, labelId, current, maxCurrent, angle) {
+      const length = 96 * current / Math.max(maxCurrent, 0.001);
+      const endX = 200 + Math.cos(radians(angle)) * length;
+      const endY = 155 - Math.sin(radians(angle)) * length;
+      q(vectorId).setAttribute('x2', endX);
+      q(vectorId).setAttribute('y2', endY);
+      q(labelId).setAttribute('x', 200 + Math.cos(radians(angle)) * (length + 15));
+      q(labelId).setAttribute('y', 159 - Math.sin(radians(angle)) * (length + 15));
+    }
+
+    function updateNeutral() {
+      const phaseVoltage = Number(q('#neutralVoltage').value);
+      const resistances = [Number(q('#loadA').value), Number(q('#loadB').value), Number(q('#loadC').value)];
+      const sources = [polar(phaseVoltage, 0), polar(phaseVoltage, -120), polar(phaseVoltage, 120)];
+      let starShift = complex(0);
+      if (!neutralConnected) {
+        const conductance = resistances.reduce((sum, resistance) => sum + 1 / resistance, 0);
+        starShift = cScale(cAdd(...sources.map((source, index) => cScale(source, 1 / resistances[index]))), 1 / conductance);
+      }
+      const loadVoltages = sources.map((source) => cSubtract(source, starShift));
+      const currents = loadVoltages.map((voltage, index) => cScale(voltage, 1 / resistances[index]));
+      const currentMagnitudes = currents.map(cAbs);
+      const currentSum = cAdd(...currents);
+      const neutralCurrent = neutralConnected ? cAbs(currentSum) : 0;
+      const neutralAngle = Math.atan2(-currentSum.imaginary, -currentSum.real) * 180 / Math.PI;
+      const maxCurrent = Math.max(...currentMagnitudes, neutralCurrent);
+      const currentAngles = currents.map((value) => Math.atan2(value.imaginary, value.real) * 180 / Math.PI);
+      ['A', 'B', 'C'].forEach((phase, index) => {
+        q(`#load${phase}Value`).textContent = engineering(resistances[index], 'Ω');
+        q(`#neutralCurrent${phase}`).textContent = engineering(currentMagnitudes[index], 'A');
+        q(`#tableR${phase}`).textContent = engineering(resistances[index], 'Ω');
+        q(`#tableV${phase}`).textContent = engineering(cAbs(loadVoltages[index]), 'V');
+        q(`#tableI${phase}`).textContent = engineering(currentMagnitudes[index], 'A');
+        q(`#tableP${phase}`).textContent = `${compact(cAbs(loadVoltages[index]) / phaseVoltage * 100)}%`;
+        positionCurrentVector(`#neutralVector${phase}`, `#neutralLabel${phase}`, currentMagnitudes[index], maxCurrent, currentAngles[index]);
+      });
+      positionCurrentVector('#neutralVectorN', '#neutralLabelN', neutralCurrent, maxCurrent, neutralAngle);
+      q('#neutralVoltageValue').textContent = engineering(phaseVoltage, 'V');
+      q('#neutralCurrentN').textContent = engineering(neutralCurrent, 'A');
+      q('#neutralShift').textContent = engineering(cAbs(starShift), 'V');
+      q('#neutralState').textContent = neutralConnected ? '四线制' : '三线制悬浮星点';
+      q('#neutralToggle').textContent = neutralConnected ? '中性线：已连接' : '中性线：已断开（仿真）';
+      q('#neutralToggle').classList.toggle('is-danger', !neutralConnected);
+      q('#neutralFormula').textContent = neutralConnected
+        ? 'IN = −(IA + IB + IC)，相量必须带角度相加'
+        : "星点电压 VN′ = (VA/RA + VB/RB + VC/RC) / (1/RA + 1/RB + 1/RC)";
+      const voltageRatios = loadVoltages.map((value) => cAbs(value) / phaseVoltage);
+      const worstRatio = Math.max(...voltageRatios.map((ratio) => Math.abs(ratio - 1)));
+      const status = q('#neutralStatus');
+      status.className = 'status';
+      if (neutralConnected) {
+        status.textContent = `中性线把负载星点固定，各相均为 ${engineering(phaseVoltage, 'V')}；中性线承担 ${engineering(neutralCurrent, 'A')} 的不平衡电流。`;
+      } else if (worstRatio > 0.1) {
+        status.classList.add('is-danger');
+        status.textContent = `断零线后星点偏移 ${engineering(cAbs(starShift), 'V')}，至少一相偏差超过 ±10%，存在设备过压或欠压风险。`;
+      } else {
+        status.classList.add('is-warning');
+        status.textContent = `断零线后星点偏移 ${engineering(cAbs(starShift), 'V')}；当前负载接近平衡，但这不构成安全保证。`;
+      }
+    }
+
+    q('#neutralToggle').addEventListener('click', () => { neutralConnected = !neutralConnected; updateNeutral(); });
+    q('#neutralBalance').addEventListener('click', () => {
+      q('#loadA').value = '60'; q('#loadB').value = '60'; q('#loadC').value = '60'; updateNeutral();
+    });
+    neutralInputs.forEach((input) => input.addEventListener('input', updateNeutral));
+
+    let sourceView = 'original';
+    const sourceInputs = [q('#sourceVoltage'), q('#dividerR1'), q('#dividerR2'), q('#loadResistance')];
+    function powerCurvePath() {
+      const points = [];
+      for (let step = 0; step <= 120; step += 1) {
+        const logRatio = -2 + step / 30;
+        const ratio = 10 ** logRatio;
+        const normalizedPower = 4 * ratio / (1 + ratio) ** 2;
+        const x = 45 + step / 120 * 480;
+        const y = 170 - normalizedPower * 135;
+        points.push(`${step === 0 ? 'M' : 'L'}${x.toFixed(2)} ${y.toFixed(2)}`);
+      }
+      return points.join(' ');
+    }
+
+    function updateThevenin() {
+      const sourceVoltage = Number(q('#sourceVoltage').value);
+      const r1 = 10 ** Number(q('#dividerR1').value);
+      const r2 = 10 ** Number(q('#dividerR2').value);
+      const load = 10 ** Number(q('#loadResistance').value);
+      const vth = sourceVoltage * r2 / (r1 + r2);
+      const rth = r1 * r2 / (r1 + r2);
+      const norton = vth / rth;
+      const loadCurrent = vth / (rth + load);
+      const loadVoltage = loadCurrent * load;
+      const loadPower = loadCurrent ** 2 * load;
+      const maxPower = vth ** 2 / (4 * rth);
+      const efficiency = load / (rth + load) * 100;
+      const parallelLoad = r2 * load / (r2 + load);
+      const originalVoltage = sourceVoltage * parallelLoad / (r1 + parallelLoad);
+      const originalCurrent = originalVoltage / load;
+      const ratio = load / rth;
+      const markerX = 45 + clamp((Math.log10(ratio) + 2) / 4, 0, 1) * 480;
+      const normalizedPower = 4 * ratio / (1 + ratio) ** 2;
+      q('#sourceVoltageValue').textContent = engineering(sourceVoltage, 'V');
+      q('#dividerR1Value').textContent = engineering(r1, 'Ω');
+      q('#dividerR2Value').textContent = engineering(r2, 'Ω');
+      q('#loadResistanceValue').textContent = engineering(load, 'Ω');
+      q('#theveninVoltage').textContent = engineering(vth, 'V');
+      q('#theveninResistance').textContent = engineering(rth, 'Ω');
+      q('#nortonCurrent').textContent = engineering(norton, 'A');
+      q('#loadVoltageResult').textContent = engineering(loadVoltage, 'V');
+      q('#loadCurrentResult').textContent = engineering(loadCurrent, 'A');
+      q('#loadPowerResult').textContent = engineering(loadPower, 'W');
+      q('#loadEfficiency').textContent = `${compact(efficiency)}%`;
+      q('#svgVs').textContent = engineering(sourceVoltage, 'V');
+      q('#svgR1').textContent = `R1 ${engineering(r1, 'Ω')}`;
+      q('#svgR2').textContent = `R2 ${engineering(r2, 'Ω')}`;
+      q('#svgVth').textContent = engineering(vth, 'V');
+      q('#svgRth').textContent = `Rth ${engineering(rth, 'Ω')}`;
+      q('#svgIn').textContent = `IN ${engineering(norton, 'A')}`;
+      q('#svgRn').textContent = `RN ${engineering(rth, 'Ω')}`;
+      q('#svgRl').textContent = `RL ${engineering(load, 'Ω')}`;
+      q('#svgLoadOutput').textContent = `${engineering(loadVoltage, 'V')} / ${engineering(loadCurrent, 'A')}`;
+      const comparison = `${engineering(loadVoltage, 'V')} / ${engineering(loadCurrent, 'A')}`;
+      q('#compareOriginal').textContent = `${engineering(originalVoltage, 'V')} / ${engineering(originalCurrent, 'A')}`;
+      q('#compareThevenin').textContent = comparison;
+      q('#compareNorton').textContent = comparison;
+      q('#powerCurve').setAttribute('d', powerCurvePath());
+      q('#powerMarker').setAttribute('cx', markerX);
+      q('#powerMarker').setAttribute('cy', 170 - normalizedPower * 135);
+      q('#powerStatus').textContent = `当前 PL=${engineering(loadPower, 'W')}；理论最大值 ${engineering(maxPower, 'W')} 在 RL=Rth=${engineering(rth, 'Ω')} 时取得，但效率仅 50%。`;
+    }
+
+    qa('[data-source-view]').forEach((button) => button.addEventListener('click', () => {
+      sourceView = button.dataset.sourceView;
+      qa('[data-source-view]').forEach((item) => item.classList.toggle('is-active', item === button));
+      q('#sourceOriginal').hidden = sourceView !== 'original';
+      q('#sourceThevenin').hidden = sourceView !== 'thevenin';
+      q('#sourceNorton').hidden = sourceView !== 'norton';
+      q('#sourceViewTitle').textContent = sourceView === 'original' ? '原始分压网络' : sourceView === 'thevenin' ? '戴维南等效' : '诺顿等效';
+    }));
+    sourceInputs.forEach((input) => input.addEventListener('input', updateThevenin));
+
+    updateWave();
+    updateConnection();
+    updateNeutral();
+    updateThevenin();
+  </script>
+</body>
+</html>
