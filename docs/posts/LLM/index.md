@@ -22,4 +22,10 @@ LLM 分类用于整理大模型工程实践、训练与推理流程、提示词�
 - 推理部署、模型服务、上下文管理和性能优化。
 - LLM 工具链、评估方式和工程化集成经验。
 
+## 推荐阅读
+
+### [Transformer 与 QLoRA：从矩阵、量化到梯度更新](./Transformer与QLoRA从矩阵到梯度.md)
+
+结合 Transformer block 与 LoRA 分支结构图，从 $Q/K/V$ 矩阵、因果注意力、交叉熵损失一路推导到 LoRA 的 $A/B$ 梯度、NF4 量化和双重量化，并附不依赖 Transformers/PEFT/bitsandbytes 的纯 PyTorch 最小实现。
+
 [[toc]]
