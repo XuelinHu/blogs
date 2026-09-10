@@ -989,16 +989,20 @@ print(result.final_output)
 当任务更复杂时，可以拆成多个 Agent。
 
 ```mermaid
-flowchart LR
-    M["Manager Agent<br/>批次调度"] --> V["Vision Agent<br/>目标检测和分割"]
-    M --> O["OCR Agent<br/>标签识别"]
-    M --> Q["Rule Agent<br/>规则判断"]
-    M --> R["Report Agent<br/>报告生成"]
+flowchart TB
+    classDef manager fill:#dbeafe,stroke:#2563eb,color:#1e3a8a,stroke-width:1.5px
+    classDef specialist fill:#dcfce7,stroke:#16a34a,color:#14532d,stroke-width:1.5px
+    classDef rule fill:#fef3c7,stroke:#d97706,color:#78350f,stroke-width:1.5px
+    classDef report fill:#fce7f3,stroke:#db2777,color:#831843,stroke-width:1.5px
+    M(Manager Agent<br/>批次调度):::manager --> V(Vision Agent<br/>目标检测和分割):::specialist
+    M --> O(OCR Agent<br/>标签识别):::specialist
+    M --> Q(Rule Agent<br/>规则判断):::rule
+    M --> R(Report Agent<br/>报告生成):::report
     V --> Q
     O --> Q
     Q --> M
-    M --> H{"需要人工复核"}
-    H -->|是| T["Review Ticket<br/>复核工单"]
+    M --> H{需要人工复核}
+    H -->|是| T(Review Ticket<br/>复核工单):::report
     H -->|否| R
 ```
 

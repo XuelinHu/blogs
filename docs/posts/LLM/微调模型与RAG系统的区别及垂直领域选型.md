@@ -59,12 +59,16 @@ RAG 系统：不修改模型参数，在回答前检索外部资料供模型参�
 微调阶段先使用训练数据更新模型参数，部署后直接进行推理。
 
 ```mermaid
-flowchart LR
-    D["领域训练数据"] --> T["SFT / LoRA / QLoRA"]
-    B["基础模型"] --> T
-    T --> M["微调后模型"]
-    Q["用户问题"] --> M
-    M --> A["回答"]
+flowchart TB
+    classDef data fill:#dcfce7,stroke:#16a34a,color:#14532d,stroke-width:1.5px
+    classDef model fill:#dbeafe,stroke:#2563eb,color:#1e3a8a,stroke-width:1.5px
+    classDef train fill:#fef3c7,stroke:#d97706,color:#78350f,stroke-width:1.5px
+    classDef output fill:#fce7f3,stroke:#db2777,color:#831843,stroke-width:1.5px
+    D(领域训练数据):::data --> T(SFT / LoRA / QLoRA):::train
+    B(基础模型):::model --> T
+    T --> M(微调后模型):::model
+    Q(用户问题):::data --> M
+    M --> A(回答):::output
 ```
 
 例如，准备很多这样的训练样本：
@@ -98,14 +102,18 @@ flowchart LR
 它在回答问题前先查找外部资料：
 
 ```mermaid
-flowchart LR
-    Q["用户问题"] --> R["检索器"]
-    K["领域知识库"] --> R
-    R --> C["相关文档片段"]
-    Q --> P["提示词组装"]
+flowchart TB
+    classDef query fill:#dbeafe,stroke:#2563eb,color:#1e3a8a,stroke-width:1.5px
+    classDef knowledge fill:#dcfce7,stroke:#16a34a,color:#14532d,stroke-width:1.5px
+    classDef process fill:#fef3c7,stroke:#d97706,color:#78350f,stroke-width:1.5px
+    classDef output fill:#fce7f3,stroke:#db2777,color:#831843,stroke-width:1.5px
+    Q(用户问题):::query --> R(检索器):::process
+    K(领域知识库):::knowledge --> R
+    R --> C(相关文档片段):::knowledge
+    Q --> P(提示词组装):::process
     C --> P
-    P --> L["大语言模型"]
-    L --> A["带引用的回答"]
+    P --> L(大语言模型):::process
+    L --> A(带引用的回答):::output
 ```
 
 知识库可以包含：
