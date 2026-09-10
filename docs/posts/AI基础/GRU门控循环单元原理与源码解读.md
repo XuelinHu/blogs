@@ -43,18 +43,22 @@ $$
 当 $z_t\approx1$ 时，$h_t\approx h_{t-1}$，记忆被保留；当 $z_t\approx0$ 时，模型主要采用候选状态 $n_t$。
 
 ```mermaid
-flowchart LR
-    HP[h t-1] --> R[重置门 r t]
-    X[x t] --> R
-    HP --> Z[更新门 z t]
+flowchart TB
+    classDef state fill:#dbeafe,stroke:#2563eb,color:#1e3a8a,stroke-width:1.5px
+    classDef gate fill:#fef3c7,stroke:#d97706,color:#78350f,stroke-width:1.5px
+    classDef candidate fill:#dcfce7,stroke:#16a34a,color:#14532d,stroke-width:1.5px
+    classDef output fill:#fce7f3,stroke:#db2777,color:#831843,stroke-width:1.5px
+    HP(h t-1):::state --> R(重置门 r t):::gate
+    X(x t):::state --> R
+    HP --> Z(更新门 z t):::gate
     X --> Z
-    R --> N[候选状态 n t]
+    R --> N(候选状态 n t):::candidate
     HP --> N
     X --> N
-    Z --> MIX[旧状态与候选状态加权]
+    Z --> MIX(旧状态与候选状态加权):::candidate
     HP --> MIX
     N --> MIX
-    MIX --> H[h t]
+    MIX --> H(h t):::output
 ```
 
 ## 2. GRU 与 LSTM 的对应关系

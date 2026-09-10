@@ -73,20 +73,24 @@ $$
 Sigmoid 输出在 0 到 1，很适合做软开关；候选内容用 Tanh 限制在 -1 到 1。
 
 ```mermaid
-flowchart LR
-    C0[c t-1] --> MUL1[× 遗忘门]
-    X[x t 与 h t-1] --> F[Sigmoid: f t]
+flowchart TB
+    classDef state fill:#dbeafe,stroke:#2563eb,color:#1e3a8a,stroke-width:1.5px
+    classDef gate fill:#fef3c7,stroke:#d97706,color:#78350f,stroke-width:1.5px
+    classDef memory fill:#dcfce7,stroke:#16a34a,color:#14532d,stroke-width:1.5px
+    classDef output fill:#fce7f3,stroke:#db2777,color:#831843,stroke-width:1.5px
+    C0(c t-1):::state --> MUL1(× 遗忘门):::memory
+    X(x t 与 h t-1):::state --> F(Sigmoid: f t):::gate
     F --> MUL1
-    X --> I[Sigmoid: i t]
-    X --> G[Tanh: g t]
-    I --> MUL2[×]
+    X --> I(Sigmoid: i t):::gate
+    X --> G(Tanh: g t):::gate
+    I --> MUL2(×):::memory
     G --> MUL2
-    MUL1 --> ADD[+ 得到 c t]
+    MUL1 --> ADD(+ 得到 c t):::memory
     MUL2 --> ADD
-    ADD --> OUT[Tanh × 输出门]
-    X --> O[Sigmoid: o t]
+    ADD --> OUT(Tanh × 输出门):::memory
+    X --> O(Sigmoid: o t):::gate
     O --> OUT
-    OUT --> H[h t]
+    OUT --> H(h t):::output
 ```
 
 LSTM 并不能保证永远记住信息，但 $c_t$ 的更新包含加法通路。若 $f_t$ 接近 1，梯度可以较少衰减地沿细胞状态传播。

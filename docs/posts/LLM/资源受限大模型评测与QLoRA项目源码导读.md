@@ -66,26 +66,31 @@ paper/           论文 LaTeX 工作区
 ## 3. 一张图看完整流程
 
 ```mermaid
-flowchart TD
-    A[读取 experiment 配置] --> B[读取模型注册表]
-    A --> C[读取任务注册表]
-    B --> D[预下载 Hugging Face 模型]
-    C --> E[准备本地域 JSONL 数据]
-    D --> F[Baseline 评测]
+flowchart TB
+    classDef config fill:#dbeafe,stroke:#2563eb,color:#1e3a8a,stroke-width:1.5px
+    classDef data fill:#dcfce7,stroke:#16a34a,color:#14532d,stroke-width:1.5px
+    classDef eval fill:#fef3c7,stroke:#d97706,color:#78350f,stroke-width:1.5px
+    classDef train fill:#fce7f3,stroke:#db2777,color:#831843,stroke-width:1.5px
+    classDef report fill:#ede9fe,stroke:#7c3aed,color:#4c1d95,stroke-width:1.5px
+    A(读取 experiment 配置):::config --> B(读取模型注册表):::config
+    A --> C(读取任务注册表):::config
+    B --> D(预下载 Hugging Face 模型):::data
+    C --> E(准备本地域 JSONL 数据):::data
+    D --> F(Baseline 评测):::eval
     E --> F
-    F --> G[记录标准任务指标]
-    F --> H[记录领域问答指标]
-    F --> I[记录显存/时延/吞吐]
-    E --> J[QLoRA 训练]
+    F --> G(记录标准任务指标):::eval
+    F --> H(记录领域问答指标):::eval
+    F --> I(记录显存 / 时延 / 吞吐):::eval
+    E --> J(QLoRA 训练):::train
     D --> J
-    J --> K[保存 LoRA Adapter]
-    K --> L[加载基础模型 + Adapter]
-    L --> M[微调后再评测]
-    G --> N[汇总 CSV]
+    J --> K(保存 LoRA Adapter):::train
+    K --> L(加载基础模型 + Adapter):::train
+    L --> M(微调后再评测):::eval
+    G --> N(汇总 CSV):::report
     H --> N
     I --> N
     M --> N
-    N --> O[导出论文 LaTeX 表格]
+    N --> O(导出论文 LaTeX 表格):::report
 ```
 
 ## 4. 配置文件：项目的实验说明书

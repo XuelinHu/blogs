@@ -130,13 +130,25 @@ onUnmounted(() => {
   display: flex;
   justify-content: center;
   margin: 0;
-  min-width: max-content;
+  min-width: 0;
+  width: 100%;
   background: transparent;
 }
 
 :global(.vp-doc .mermaid-diagram svg) {
   max-width: 100%;
   height: auto;
+}
+
+/* Mermaid 的默认方形节点与博客卡片风格不一致，统一补上柔和圆角。 */
+:global(.vp-doc .mermaid-diagram .node rect) {
+  rx: 14px;
+  ry: 14px;
+}
+
+:global(.vp-doc .mermaid-diagram .nodeLabel),
+:global(.vp-doc .mermaid-diagram .edgeLabel) {
+  font-family: var(--vp-font-family-base);
 }
 
 :global(.vp-doc mjx-container[jax='SVG'][display='true']) {

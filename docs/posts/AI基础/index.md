@@ -16,12 +16,17 @@ updated: 2026-09-01
 ## 学习路线
 
 ```mermaid
-flowchart LR
-    A[神经网络与反向传播] --> B[CNN]
-    A --> C[LSTM]
-    A --> D[GRU]
-    A --> E[Transformer]
-    B --> F[ViT]
+flowchart TB
+    classDef foundation fill:#dbeafe,stroke:#2563eb,color:#1e3a8a,stroke-width:1.5px
+    classDef sequence fill:#dcfce7,stroke:#16a34a,color:#14532d,stroke-width:1.5px
+    classDef attention fill:#fef3c7,stroke:#d97706,color:#78350f,stroke-width:1.5px
+    classDef vision fill:#fce7f3,stroke:#db2777,color:#831843,stroke-width:1.5px
+    A(神经网络与反向传播):::foundation
+    A --> B(CNN):::vision
+    A --> C(LSTM):::sequence
+    A --> D(GRU):::sequence
+    A --> E(Transformer):::attention
+    B --> F(ViT):::vision
     E --> F
 ```
 

@@ -23,12 +23,16 @@ PyTorch 通常要求 `[B,C,H,W]`，OpenCV 读入的是 BGR，预训练模型还�
 卷积层只观察局部窗口，并让同一个卷积核滑过整张图像。一个“竖直边缘检测器”因此可以在所有位置复用。
 
 ```mermaid
-flowchart LR
-    A[输入图像 B,C,H,W] --> B[局部卷积]
-    B --> C[边缘与纹理]
-    C --> D[更深卷积]
-    D --> E[部件与语义]
-    E --> F[分类头]
+flowchart TB
+    classDef input fill:#dbeafe,stroke:#2563eb,color:#1e3a8a,stroke-width:1.5px
+    classDef feature fill:#dcfce7,stroke:#16a34a,color:#14532d,stroke-width:1.5px
+    classDef semantic fill:#fef3c7,stroke:#d97706,color:#78350f,stroke-width:1.5px
+    classDef output fill:#fce7f3,stroke:#db2777,color:#831843,stroke-width:1.5px
+    A(输入图像 B,C,H,W):::input --> B(局部卷积):::feature
+    B --> C(边缘与纹理):::feature
+    C --> D(更深卷积):::semantic
+    D --> E(部件与语义):::semantic
+    E --> F(分类头):::output
 ```
 
 ## 2. 二维卷积的计算

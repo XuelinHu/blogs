@@ -30,14 +30,18 @@ $$
 例如 `224 × 224` 图像、`P=16` 时得到 `14 × 14 = 196` 个 Patch Token。加入分类 Token 后序列长度为 197，注意力矩阵每个 head 的大小是 `197 × 197`。
 
 ```mermaid
-flowchart LR
-    A[图像 B,C,H,W] --> B[切成 P×P Patch]
-    B --> C[展平并线性投影]
-    C --> D[加入 CLS Token]
-    D --> E[加入位置编码]
-    E --> F[Transformer Encoder × L]
-    F --> G[取 CLS 表示]
-    G --> H[线性分类头]
+flowchart TB
+    classDef input fill:#dbeafe,stroke:#2563eb,color:#1e3a8a,stroke-width:1.5px
+    classDef embed fill:#dcfce7,stroke:#16a34a,color:#14532d,stroke-width:1.5px
+    classDef encoder fill:#fef3c7,stroke:#d97706,color:#78350f,stroke-width:1.5px
+    classDef output fill:#fce7f3,stroke:#db2777,color:#831843,stroke-width:1.5px
+    A(图像 B,C,H,W):::input --> B(切成 P×P Patch):::embed
+    B --> C(展平并线性投影):::embed
+    C --> D(加入 CLS Token):::embed
+    D --> E(加入位置编码):::embed
+    E --> F(Transformer Encoder × L):::encoder
+    F --> G(取 CLS 表示):::encoder
+    G --> H(线性分类头):::output
 ```
 
 ## 2. 手动 Patchify

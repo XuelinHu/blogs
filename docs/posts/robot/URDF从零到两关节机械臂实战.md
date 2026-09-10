@@ -38,11 +38,14 @@ ros2_ws/
 模型运动链为：
 
 ```mermaid
-flowchart LR
-    W[world] -->|fixed| B[base_link]
-    B -->|shoulder_joint revolute| L1[shoulder_link]
-    L1 -->|elbow_joint revolute| L2[forearm_link]
-    L2 -->|tool_joint fixed| T[tool0]
+flowchart TB
+    classDef frame fill:#dbeafe,stroke:#2563eb,color:#1e3a8a,stroke-width:1.5px
+    classDef joint fill:#dcfce7,stroke:#16a34a,color:#14532d,stroke-width:1.5px
+    classDef tool fill:#fef3c7,stroke:#d97706,color:#78350f,stroke-width:1.5px
+    W(world):::frame -->|fixed| B(base_link):::frame
+    B -->|shoulder_joint · revolute| L1(shoulder_link):::frame
+    L1 -->|elbow_joint · revolute| L2(forearm_link):::frame
+    L2 -->|tool_joint · fixed| T(tool0):::tool
 ```
 
 两根臂都沿各自 Link 坐标系的 X 轴伸展，两个旋转关节都绕 Z 轴旋转，因此运动发生在 XY 平面。`tool0` 是末端工具参考坐标系。
@@ -789,16 +792,20 @@ ros2 action send_goal \
 数据路径为：
 
 ```mermaid
-flowchart LR
-    A[FollowJointTrajectory Goal] --> B[joint_trajectory_controller]
-    B --> C[position command interface]
-    C --> D[gazebo_ros2_control]
-    D --> E[Gazebo Joint]
-    E --> F[state interface]
-    F --> G[joint_state_broadcaster]
-    G --> H[/joint_states]
-    H --> I[robot_state_publisher]
-    I --> J[/tf 与 RViz]
+flowchart TB
+    classDef command fill:#dbeafe,stroke:#2563eb,color:#1e3a8a,stroke-width:1.5px
+    classDef control fill:#dcfce7,stroke:#16a34a,color:#14532d,stroke-width:1.5px
+    classDef sim fill:#fef3c7,stroke:#d97706,color:#78350f,stroke-width:1.5px
+    classDef feedback fill:#fce7f3,stroke:#db2777,color:#831843,stroke-width:1.5px
+    A(FollowJointTrajectory Goal):::command --> B(joint_trajectory_controller):::control
+    B --> C(position command interface):::control
+    C --> D(gazebo_ros2_control):::sim
+    D --> E(Gazebo Joint):::sim
+    E --> F(state interface):::feedback
+    F --> G(joint_state_broadcaster):::feedback
+    G --> H(/joint_states):::feedback
+    H --> I(robot_state_publisher):::control
+    I --> J(/tf 与 RViz):::command
 ```
 
 可以同时打开 RViz，只保留 `robot_state_publisher` 的一个实例，并设置 `use_sim_time=true`。最简单的方式是以后在 Gazebo launch 中再加入 RViz Node，而不是另开 `display.launch.py`。

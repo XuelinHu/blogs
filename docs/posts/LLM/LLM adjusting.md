@@ -104,18 +104,22 @@ nohup llamafactory-cli webui > llamafactory.log 2>&1 &
 ### 5.2. 流程图
 
 ```mermaid
-flowchart TD
-    A[选择基座模型] --> B[准备训练数据]
-    B --> C[数据清洗与格式转换]
-    C --> D[Tokenizer 编码]
-    D --> E[选择训练方式: SFT / LoRA / QLoRA]
-    E --> F[加载模型与训练参数]
-    F --> G[前向计算 Loss]
-    G --> H[反向传播与参数更新]
-    H --> I[保存 Checkpoint]
-    I --> J[验证集评估]
-    J --> K[导出 Adapter 或合并权重]
-    K --> L[推理验证与上线]
+flowchart TB
+    classDef model fill:#dbeafe,stroke:#2563eb,color:#1e3a8a,stroke-width:1.5px
+    classDef data fill:#dcfce7,stroke:#16a34a,color:#14532d,stroke-width:1.5px
+    classDef train fill:#fef3c7,stroke:#d97706,color:#78350f,stroke-width:1.5px
+    classDef eval fill:#fce7f3,stroke:#db2777,color:#831843,stroke-width:1.5px
+    A(选择基座模型):::model --> B(准备训练数据):::data
+    B --> C(数据清洗与格式转换):::data
+    C --> D(Tokenizer 编码):::data
+    D --> E(选择训练方式：SFT / LoRA / QLoRA):::train
+    E --> F(加载模型与训练参数):::model
+    F --> G(前向计算 Loss):::train
+    G --> H(反向传播与参数更新):::train
+    H --> I(保存 Checkpoint):::eval
+    I --> J(验证集评估):::eval
+    J --> K(导出 Adapter 或合并权重):::model
+    K --> L(推理验证与上线):::eval
 ```
 
 ## 6. 常见 API 与组件

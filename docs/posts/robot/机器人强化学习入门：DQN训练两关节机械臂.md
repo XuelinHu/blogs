@@ -39,12 +39,16 @@ updated: 2026-09-01
 一次完整交互为：
 
 ```mermaid
-flowchart LR
-    S[状态 s] --> P[策略选择动作 a]
-    P --> E[机械臂环境执行]
-    E --> R[奖励 r]
-    E --> N[新状态 s']
-    R --> U[更新 Q 表或神经网络]
+flowchart TB
+    classDef state fill:#dbeafe,stroke:#2563eb,color:#1e3a8a,stroke-width:1.5px
+    classDef action fill:#dcfce7,stroke:#16a34a,color:#14532d,stroke-width:1.5px
+    classDef env fill:#fef3c7,stroke:#d97706,color:#78350f,stroke-width:1.5px
+    classDef learn fill:#fce7f3,stroke:#db2777,color:#831843,stroke-width:1.5px
+    S(状态 s):::state --> P(策略选择动作 a):::action
+    P --> E(机械臂环境执行):::env
+    E --> R(奖励 r):::env
+    E --> N(新状态 s'):::state
+    R --> U(更新 Q 表或神经网络):::learn
     N --> U
     U --> S
 ```
