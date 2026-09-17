@@ -11,7 +11,7 @@
 - Dev: `npm run docs:dev`.
 - Build: `npm run docs:build`.
 - Preview: `npm run docs:preview`.
-- Default VitePress dev port is usually `5173`; default preview port is usually `4173`.
+- Default VitePress dev port is usually `4025`; default preview port is usually `4173`.
 
 ## Data Storage
 
