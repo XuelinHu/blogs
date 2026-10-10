@@ -315,7 +315,7 @@ git push origin master
 ## 运行配置与数据存储
 
 - 开发服务：`npm run docs:dev`，VitePress 默认本机端口通常为 `4025`。
-- 构建预览：`npm run docs:preview`，VitePress 默认预览端口通常为 `4173`。
+- 构建预览：`npm run docs:preview`，固定预览端口为 `4025`。
 - 生产部署：GitHub Pages，通过 `.github/workflows/deploy.yml` 发布 `docs/.vitepress/dist`。
 - 数据库：无外部数据库；内容数据来自 `docs/posts/**.md`、VitePress 配置和静态资源。
 - 敏感信息：无数据库账号；如后续接入评论、搜索或统计服务，请使用环境变量，不要提交密钥。
@@ -324,3 +324,7 @@ git push origin master
 ## 开源协议
 
 本项目使用 GNU General Public License v2.0（GPL-2.0）开源，详见 `LICENSE`。
+
+## 启动端口
+
+网页入口：4025；后台服务：无独立后端。完整启动约定见 [PORTS.md](./PORTS.md)。

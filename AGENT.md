@@ -11,7 +11,7 @@
 - Dev: `npm run docs:dev`.
 - Build: `npm run docs:build`.
 - Preview: `npm run docs:preview`.
-- Default VitePress dev port is usually `4025`; default preview port is usually `4173`.
+- Dev and preview both use fixed port `4025`; occupied ports cause startup failure.
 
 ## Data Storage
 
@@ -28,3 +28,7 @@
 - Use English commit messages, for example `docs: update LLM notes` or `style: refine homepage layout`.
 - Before pushing, check the worktree with `git status --short`.
 - When the user asks to push, commit the requested changes and run `git push origin master`.
+
+## Port allocation
+
+Web: 4025. API/services: 无独立后端. See `PORTS.md`; keep dev/preview ports fixed and fail on conflicts.

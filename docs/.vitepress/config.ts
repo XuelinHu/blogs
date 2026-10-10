@@ -32,6 +32,10 @@ function configureMermaidFence(md: any) {
 }
 
 export default defineConfig({
+  vite: {
+    server: { port: 4025, strictPort: true },
+    preview: { port: 4025, strictPort: true }
+  },
   title: '技术博客与科研笔记',
   description: '技术博客与学习笔记，覆盖 AI、Java、数据库、分布式系统等领域。',
   base,

@@ -5,9 +5,9 @@
   "license": "GPL-2.0-only",
   "type": "module",
   "scripts": {
-    "docs:dev": "vitepress dev docs --host 0.0.0.0 --port 4025",
+    "docs:dev": "vitepress dev docs --host 0.0.0.0 --port 4025 --strictPort",
     "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs"
+    "docs:preview": "vitepress preview docs --port 4025"
   },
   "devDependencies": {
     "markdown-it-mathjax3": "^4.0.0",
